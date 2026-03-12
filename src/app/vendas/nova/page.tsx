@@ -200,7 +200,9 @@ export default function NovaVendaPage() {
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl shadow-2xl border-2">
                   {clients?.map(c => (
-                    <SelectItem key={c.id} value={c.id} className="text-base sm:text-xl font-bold p-3 sm:p-4 focus:bg-primary/5">{c.fullName}</SelectItem>
+                    <SelectItem key={c.id} value={c.id} className="text-base sm:text-xl font-bold p-3 sm:p-4 focus:bg-primary/5 text-foreground">
+                      {c.fullName}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -252,7 +254,9 @@ export default function NovaVendaPage() {
                     </SelectTrigger>
                     <SelectContent className="rounded-xl shadow-xl">
                       {products?.map(p => (
-                        <SelectItem key={p.id} value={p.id} className="text-sm sm:text-lg font-bold p-3">{p.name}</SelectItem>
+                        <SelectItem key={p.id} value={p.id} className="text-sm sm:text-lg font-bold p-3 text-foreground">
+                          {p.name}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
