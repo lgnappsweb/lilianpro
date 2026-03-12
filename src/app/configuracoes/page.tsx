@@ -121,7 +121,7 @@ export default function ConfiguracoesPage() {
         <div className="lg:col-span-7 space-y-10">
           {/* Nome do App */}
           <Card className="border-none shadow-2xl rounded-[2rem] overflow-hidden">
-            <CardHeader className="bg-muted/30 p-8 border-b-2">
+            <CardHeader className="bg-muted/80 p-8 border-b-2">
               <CardTitle className="flex flex-row items-center gap-3 text-2xl font-black px-2 uppercase tracking-widest">
                 <Type className="size-7 text-primary" />
                 IDENTIDADE
@@ -144,7 +144,7 @@ export default function ConfiguracoesPage() {
 
           {/* Cores */}
           <Card className="border-none shadow-2xl rounded-[2rem] overflow-hidden">
-            <CardHeader className="bg-muted/30 p-8 border-b-2">
+            <CardHeader className="bg-muted/80 p-8 border-b-2">
               <CardTitle className="flex flex-row items-center gap-3 text-2xl font-black px-2 uppercase tracking-widest">
                 <Palette className="size-7 text-primary" />
                 PALETA ELITE
@@ -217,7 +217,7 @@ export default function ConfiguracoesPage() {
 
           {/* Modo Escuro/Claro */}
           <Card className="border-none shadow-2xl rounded-[2rem] overflow-hidden">
-            <CardHeader className="bg-muted/30 p-8 border-b-2">
+            <CardHeader className="bg-muted/80 p-8 border-b-2">
               <CardTitle className="flex flex-row items-center gap-3 text-2xl font-black px-2 uppercase tracking-widest">
                 <Sun className="size-7 text-primary" />
                 INTERFACE
@@ -247,7 +247,7 @@ export default function ConfiguracoesPage() {
         <div className="lg:col-span-5 space-y-10 sticky top-10">
           <Card className="border-none shadow-2xl rounded-[3rem] overflow-hidden bg-muted/20 relative">
             <div className="absolute inset-0 bg-primary/5 -z-10" />
-            <CardHeader className="p-8 text-center border-b-2 bg-muted/30">
+            <CardHeader className="p-8 text-center border-b-2 bg-muted/80">
               <CardTitle className="text-xl font-black flex items-center justify-center gap-3 uppercase tracking-widest">
                 <Smartphone className="size-6 text-primary" />
                 PRÉVIA ELITE

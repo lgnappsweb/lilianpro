@@ -241,7 +241,7 @@ export default function NovaVendaPage() {
       <form onSubmit={handleSubmit} className="flex flex-col gap-6 sm:gap-10">
         {/* 1. Cliente */}
         <Card className="border-none shadow-xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="bg-muted/60 p-6 sm:p-8 border-b-2">
+          <CardHeader className="bg-muted/90 p-6 sm:p-8 border-b-2">
             <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left px-2">
               <User className="size-8 sm:size-10 text-primary" />
               1. Selecionar Cliente
@@ -268,7 +268,7 @@ export default function NovaVendaPage() {
 
         {/* 2. Produtos */}
         <Card className="border-none shadow-xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="bg-muted/60 p-6 sm:p-8 border-b-2">
+          <CardHeader className="bg-muted/90 p-6 sm:p-8 border-b-2">
             <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left px-2">
               <Package className="size-8 sm:size-10 text-primary" />
               2. Produtos
@@ -431,7 +431,7 @@ export default function NovaVendaPage() {
 
         {/* 3. Pagamento */}
         <Card className="border-none shadow-xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="bg-muted/60 p-6 sm:p-8 border-b-2">
+          <CardHeader className="bg-muted/90 p-6 sm:p-8 border-b-2">
             <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left px-2">
               <CreditCard className="size-8 sm:size-10 text-primary" />
               3. Pagamento
@@ -487,7 +487,7 @@ export default function NovaVendaPage() {
 
         {/* 4. Checklist do Pedido (Resumo) */}
         <Card className="border-none shadow-xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden bg-slate-900 text-white">
-          <CardHeader className="p-8 sm:p-10 border-b border-white/10">
+          <CardHeader className="p-8 sm:p-10 border-b border-white/10 bg-white/5">
             <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left px-2">
               <ShoppingBag className="size-8 sm:size-10 text-[#39FF14]" />
               4. Check-in da Venda
@@ -544,8 +544,8 @@ export default function NovaVendaPage() {
         </Card>
 
         {/* 5. Finalização Financeira */}
-        <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[3rem] overflow-hidden bg-primary text-primary-foreground">
-          <CardHeader className="p-8 sm:p-12 pb-4">
+        <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden bg-primary text-primary-foreground">
+          <CardHeader className="p-8 sm:p-12 pb-4 bg-white/10">
              <CardTitle className="flex flex-row items-center gap-4 text-3xl sm:text-5xl font-black tracking-tighter uppercase text-left px-2">
               <ReceiptText className="size-10 sm:size-14" />
               5. Finalização

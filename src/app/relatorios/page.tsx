@@ -289,7 +289,7 @@ export default function RelatoriosPage() {
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
         {/* Sales Trend Chart */}
         <Card className="md:col-span-2 border-none shadow-lg rounded-[2rem] overflow-hidden bg-background/50 backdrop-blur-sm border-2 border-primary/5">
-          <CardHeader className="bg-muted/10 pb-4">
+          <CardHeader className="bg-muted/40 pb-4">
             <CardTitle className="text-2xl font-black flex items-center gap-3 px-2">
               <TrendingUp className="size-7 text-primary" />
               Evolução de Vendas
@@ -317,7 +317,7 @@ export default function RelatoriosPage() {
 
         {/* Brands Distribution */}
         <Card className="border-none shadow-lg rounded-[2rem] overflow-hidden bg-background/50 backdrop-blur-sm border-2 border-primary/5">
-          <CardHeader className="bg-muted/10 pb-4">
+          <CardHeader className="bg-muted/40 pb-4">
             <CardTitle className="text-2xl font-black flex items-center gap-3 px-2">
               <Award className="size-7 text-primary" />
               Mix de Marcas
@@ -368,7 +368,7 @@ export default function RelatoriosPage() {
 
         {/* Top Clients Table */}
         <Card className="md:col-span-3 border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-background/50 backdrop-blur-sm border-2 border-primary/5">
-          <CardHeader className="bg-muted/10 pb-4">
+          <CardHeader className="bg-muted/40 pb-4">
             <CardTitle className="text-2xl font-black flex items-center gap-3 px-2">
               <Users className="size-7 text-primary" />
               Melhores Clientes do Período

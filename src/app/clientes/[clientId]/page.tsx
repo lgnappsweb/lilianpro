@@ -105,7 +105,7 @@ export default function DetalhesClientePage() {
         {/* Coluna 1: Contato e Ações Rápidas */}
         <div className="lg:col-span-4 space-y-8">
           <Card className="border-none shadow-2xl rounded-[2rem] overflow-hidden border-t-8 border-green-500 bg-background">
-            <CardHeader className="bg-muted/30 p-8 border-b-2">
+            <CardHeader className="bg-muted/80 p-8 border-b-2">
               <CardTitle className="flex flex-row items-center gap-3 text-2xl font-black px-2">
                 <Phone className="size-7 text-green-600" />
                 CONEXÃO
@@ -130,7 +130,7 @@ export default function DetalhesClientePage() {
         {/* Coluna 2: Localização e Notas */}
         <div className="lg:col-span-8 space-y-8">
           <Card className="border-none shadow-2xl rounded-[2rem] overflow-hidden bg-background">
-            <CardHeader className="bg-muted/30 p-8 border-b-2">
+            <CardHeader className="bg-muted/80 p-8 border-b-2">
               <CardTitle className="flex flex-row items-center gap-3 text-2xl font-black text-left px-2">
                 <MapPin className="size-7 text-primary" />
                 LOCALIZAÇÃO & ENTREGA
@@ -163,7 +163,7 @@ export default function DetalhesClientePage() {
           </Card>
 
           <Card className="border-none shadow-2xl rounded-[2rem] overflow-hidden bg-white/50 backdrop-blur-sm border-2 border-primary/5">
-            <CardHeader className="bg-primary/5 p-8 border-b-2 border-primary/10">
+            <CardHeader className="bg-primary/20 p-8 border-b-2 border-primary/10">
               <CardTitle className="flex flex-row items-center gap-3 text-2xl font-black text-left px-2">
                 <Info className="size-7 text-primary" />
                 OBSERVAÇÕES DO PERFIL

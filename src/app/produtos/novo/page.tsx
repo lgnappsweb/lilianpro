@@ -144,7 +144,7 @@ export default function NovoProdutoPage() {
       toast({
         variant: "destructive",
         title: "Erro ao salvar",
-        description: "Ocorreu um problema ao cadastrar o produto.",
+        description: "Ocorreu um problema ao cadastrar the produto.",
       });
     } finally {
       setIsLoading(false);
@@ -165,7 +165,7 @@ export default function NovoProdutoPage() {
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-10">
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="bg-muted/30 p-6 sm:p-8 border-b-2">
+          <CardHeader className="bg-muted/80 p-6 sm:p-8 border-b-2">
             <CardTitle className="flex flex-row items-center gap-3 text-xl sm:text-3xl font-black text-left px-2 whitespace-nowrap">
               <Tag className="size-6 sm:size-8 text-primary shrink-0" />
               Identificação & Marca
@@ -226,7 +226,7 @@ export default function NovoProdutoPage() {
         </Card>
 
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="bg-muted/30 p-6 sm:p-8 border-b-2">
+          <CardHeader className="bg-muted/80 p-6 sm:p-8 border-b-2">
             <CardTitle className="flex flex-row items-center gap-3 text-xl sm:text-3xl font-black text-left px-2 whitespace-nowrap">
               <DollarSign className="size-6 sm:size-8 text-primary shrink-0" />
               Preços & Referência
@@ -303,7 +303,7 @@ export default function NovoProdutoPage() {
         </Card>
 
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="bg-muted/30 p-6 sm:p-8 border-b-2">
+          <CardHeader className="bg-muted/80 p-6 sm:p-8 border-b-2">
             <CardTitle className="flex flex-row items-center gap-3 text-xl sm:text-3xl font-black text-left px-2 whitespace-nowrap">
               <Info className="size-6 sm:size-8 text-primary shrink-0" />
               Descrição & Notas

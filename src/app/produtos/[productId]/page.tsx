@@ -123,7 +123,7 @@ export default function DetalhesProdutoPage() {
 
           {/* Outros Preços */}
           <Card className="border-none shadow-2xl rounded-[2.5rem] overflow-hidden bg-background">
-            <CardHeader className="bg-muted/30 p-8 border-b-2">
+            <CardHeader className="bg-muted/80 p-8 border-b-2">
               <CardTitle className="flex flex-row items-center gap-3 text-xl font-black px-2 uppercase tracking-widest">
                 <DollarSign className="size-7 text-primary" />
                 CUSTOS & REVISTA
@@ -151,7 +151,7 @@ export default function DetalhesProdutoPage() {
         {/* Coluna 2: Descrição e Detalhes */}
         <div className="lg:col-span-7 space-y-8">
           <Card className="border-none shadow-2xl rounded-[2.5rem] overflow-hidden bg-background">
-            <CardHeader className="bg-muted/30 p-8 border-b-2">
+            <CardHeader className="bg-muted/80 p-8 border-b-2">
               <CardTitle className="flex flex-row items-center gap-3 text-xl font-black text-left px-2 uppercase tracking-widest">
                 <Info className="size-7 text-primary" />
                 SOBRE O PRODUTO

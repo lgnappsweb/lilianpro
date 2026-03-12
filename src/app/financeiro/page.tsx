@@ -314,7 +314,7 @@ export default function FinanceiroPage() {
 
       <div className="grid gap-8 md:grid-cols-2">
         <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-background/50 backdrop-blur-sm">
-          <CardHeader className="bg-muted/30 pb-8 p-8 border-b-2">
+          <CardHeader className="bg-muted/80 pb-8 p-8 border-b-2">
             <CardTitle className="text-2xl font-black px-2 uppercase tracking-tight italic flex items-center gap-3">
               <Clock className="text-orange-500" /> Pagamentos para Receber
             </CardTitle>
@@ -337,7 +337,7 @@ export default function FinanceiroPage() {
         </Card>
 
         <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-background/50 backdrop-blur-sm">
-          <CardHeader className="bg-green-50/50 pb-8 p-8 border-b-2 border-green-100">
+          <CardHeader className="bg-green-100 pb-8 p-8 border-b-2 border-green-100">
             <CardTitle className="text-2xl font-black px-2 uppercase tracking-tight italic flex items-center gap-3 text-green-700">
               <ArrowDownCircle className="text-green-600" /> Entradas Confirmadas
             </CardTitle>

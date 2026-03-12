@@ -233,7 +233,7 @@ export default function DashboardPage() {
 
       <div className="w-full">
         <Card className="border-4 border-muted shadow-xl rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="p-8 pb-4 bg-muted/20">
+          <CardHeader className="p-8 pb-4 bg-muted/50">
             <CardTitle className="text-2xl md:text-3xl font-black flex flex-col items-center gap-3 px-2">
               <ShoppingBag className="size-8 text-primary" />
               Catálogo
@@ -269,7 +269,7 @@ export default function DashboardPage() {
       </div>
 
       <Card className="border-4 border-muted shadow-xl rounded-[2.5rem] overflow-hidden">
-        <CardHeader className="flex flex-row items-center justify-between px-10 py-8 bg-muted/30">
+        <CardHeader className="flex flex-row items-center justify-between px-10 py-8 bg-muted/60">
           <CardTitle className="text-2xl md:text-3xl font-black px-2">Vendas Recentes</CardTitle>
           <Button variant="ghost" size="lg" className="text-base font-black text-primary hover:bg-primary/10 rounded-xl" asChild>
             <Link href="/pedidos">Ver Histórico</Link>

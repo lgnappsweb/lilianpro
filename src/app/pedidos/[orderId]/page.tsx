@@ -156,7 +156,7 @@ export default function DetalhesPedidoPage() {
         {/* Coluna 1: Informações de Pagamento e Logística */}
         <div className="lg:col-span-4 space-y-8">
           <Card className="border-none shadow-2xl rounded-[2rem] overflow-hidden bg-background">
-            <CardHeader className="bg-muted/30 p-8 border-b-2">
+            <CardHeader className="bg-muted/80 p-8 border-b-2">
               <CardTitle className="flex flex-row items-center gap-3 text-2xl font-black px-2 uppercase tracking-widest">
                 <CreditCard className="size-7 text-primary" />
                 CONEXÃO
@@ -193,7 +193,7 @@ export default function DetalhesPedidoPage() {
           </Card>
 
           <Card className="border-none shadow-2xl rounded-[2rem] overflow-hidden bg-white/50 backdrop-blur-sm border-2 border-primary/5">
-            <CardHeader className="bg-primary/5 p-8 border-b-2 border-primary/10">
+            <CardHeader className="bg-primary/20 p-8 border-b-2 border-primary/10">
               <CardTitle className="flex flex-row items-center gap-3 text-2xl font-black text-left px-2 uppercase tracking-widest">
                 <Info className="size-7 text-primary" />
                 NOTAS
@@ -212,7 +212,7 @@ export default function DetalhesPedidoPage() {
         {/* Coluna 2: Itens do Pedido e Resumo Financeiro */}
         <div className="lg:col-span-8 space-y-8">
           <Card className="border-none shadow-2xl rounded-[2rem] overflow-hidden bg-background">
-            <CardHeader className="bg-muted/30 p-8 border-b-2">
+            <CardHeader className="bg-muted/80 p-8 border-b-2">
               <CardTitle className="flex flex-row items-center gap-3 text-2xl font-black text-left px-2 uppercase tracking-widest">
                 <Package className="size-7 text-primary" />
                 ITENS NO PEDIDO

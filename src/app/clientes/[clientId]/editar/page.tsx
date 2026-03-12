@@ -139,7 +139,7 @@ export default function EditarClientePage() {
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-10">
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="bg-muted/30 p-8 border-b-2">
+          <CardHeader className="bg-muted/80 p-8 border-b-2">
             <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left px-2">
               <User className="size-8 text-primary" />
               Identificação & Contato
@@ -182,7 +182,7 @@ export default function EditarClientePage() {
         </Card>
 
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="bg-muted/30 p-8 border-b-2">
+          <CardHeader className="bg-muted/80 p-8 border-b-2">
             <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left px-2">
               <MapPin className="size-8 text-primary" />
               Localização & Endereço
@@ -239,7 +239,7 @@ export default function EditarClientePage() {
         </Card>
 
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="bg-muted/30 p-8 border-b-2">
+          <CardHeader className="bg-muted/80 p-8 border-b-2">
             <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left px-2">
               <Info className="size-8 text-primary" />
               Observações & Descrição
