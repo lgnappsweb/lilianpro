@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -72,7 +71,7 @@ export default function LoginPage() {
           </Alert>
         )}
 
-        <Card className="border-none shadow-lg">
+        <Card className="border-none shadow-lg overflow-hidden">
           <CardHeader className="text-center space-y-1">
             <div className="flex justify-center mb-4">
               <div className="bg-primary p-3 rounded-2xl text-primary-foreground shadow-sm">
@@ -124,13 +123,13 @@ export default function LoginPage() {
               <Button type="submit" className="w-full h-14 text-lg font-black uppercase tracking-widest shadow-xl" disabled={isLoading}>
                 {isLoading ? <><Loader2 className="mr-2 size-5 animate-spin" /> Validando...</> : <><LogIn className="mr-2 size-5" /> Entrar no Sistema</>}
               </Button>
-              <div className="text-center space-y-4">
+              <div className="text-center space-y-4 w-full">
                 <div>
                   <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Administradora Cadastrada</p>
                   <p className="text-xs text-primary font-black italic">{email}</p>
                 </div>
-                <div className="pt-4 border-t-2 border-muted/50">
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-black opacity-40 italic">
+                <div className="pt-4 border-t-2 border-muted/50 flex justify-center w-full">
+                  <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-black opacity-70 italic whitespace-nowrap">
                     Desenvolvedor: <span className="text-primary opacity-100 not-italic font-bold">Lucas Gregório do Nascimento</span>
                   </p>
                 </div>
