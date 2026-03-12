@@ -88,7 +88,7 @@ export default function ClientesPage() {
 
   return (
     <div className="space-y-10 animate-in fade-in duration-500 w-full">
-      {/* Cabeçalho Centralizado Padronizado */}
+      {/* Cabeçalho Centralizado */}
       <div className="flex flex-col items-center text-center gap-6 px-2">
         <div className="w-full">
           <div className="flex items-center justify-center gap-4 mb-2">
@@ -125,47 +125,61 @@ export default function ClientesPage() {
             </div>
           ) : (
             <>
-              {/* Visualização em Lista para Telas Pequenas (Mobile) */}
-              <div className="grid gap-4 md:hidden">
+              {/* Visualização Mobile (Cards) */}
+              <div className="grid gap-4 md:hidden p-4">
                 {filteredClientes.map((cliente) => (
                   <div key={cliente.id} className="bg-background border-4 border-muted rounded-[1.5rem] p-6 space-y-4 shadow-sm active:scale-[0.98] transition-all">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-black text-xl border-2 border-primary/20">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-4 min-w-0">
+                        <div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-black text-xl border-2 border-primary/20 shrink-0">
                           {cliente.fullName?.charAt(0).toUpperCase()}
                         </div>
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                           <h3 className="font-black text-lg truncate leading-tight uppercase tracking-tight">{cliente.fullName}</h3>
-                          <div className="flex items-center gap-2 text-muted-foreground mt-1">
-                            <MapPin className="size-3 text-primary/40" />
-                            <span className="text-[10px] font-black uppercase tracking-widest opacity-60">{cliente.city}</span>
+                          <div className="flex items-center gap-1.5 text-muted-foreground mt-1">
+                            <MapPin className="size-3 text-primary/40 shrink-0" />
+                            <span className="text-[10px] font-black uppercase tracking-widest opacity-60 truncate">{cliente.city}</span>
                           </div>
                         </div>
                       </div>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="size-10 rounded-xl">
+                          <Button variant="ghost" size="icon" className="size-12 rounded-xl border-2 border-transparent hover:border-muted-foreground/10">
                             <MoreHorizontal className="size-6" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl">
-                          <DropdownMenuItem asChild className="p-3 font-bold">
-                            <Link href={`/clientes/${cliente.id}`}>Ver Detalhes</Link>
+                        <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl shadow-2xl">
+                          <DropdownMenuItem asChild className="p-3 font-bold cursor-pointer">
+                            <Link href={`/clientes/${cliente.id}`}>
+                              <FileText className="mr-3 size-5 text-primary" />
+                              Ver Detalhes
+                            </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="p-3 font-bold text-destructive" onSelect={() => setClientToDelete(cliente)}>Excluir</DropdownMenuItem>
+                          <DropdownMenuItem className="p-3 font-bold cursor-pointer">
+                            <Edit className="mr-3 size-5 text-primary" />
+                            Editar Cadastro
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator className="my-1" />
+                          <DropdownMenuItem 
+                            className="p-3 font-bold text-destructive cursor-pointer" 
+                            onSelect={() => setClientToDelete(cliente)}
+                          >
+                            <Trash2 className="mr-3 size-5" />
+                            Excluir Cliente
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
 
-                    <div className="flex items-center justify-between gap-2 pt-2 border-t-2 border-muted/30">
-                      <div className="flex items-center gap-2 font-black text-muted-foreground text-sm">
-                        <Phone className="size-4 text-primary/40" />
-                        <span>{cliente.phone}</span>
+                    <div className="flex items-center justify-between gap-4 pt-4 border-t-2 border-muted/30">
+                      <div className="flex items-center gap-2 font-black text-muted-foreground text-sm min-w-0">
+                        <Phone className="size-4 text-primary/40 shrink-0" />
+                        <span className="truncate">{cliente.phone}</span>
                       </div>
                       <Button
                         variant="default"
                         size="sm"
-                        className="bg-green-600 hover:bg-green-700 h-10 px-4 rounded-xl font-black gap-2"
+                        className="bg-green-600 hover:bg-green-700 h-10 px-4 rounded-xl font-black gap-2 shadow-sm shrink-0"
                         onClick={() => openWhatsApp(cliente.phone)}
                       >
                         <MessageCircle className="size-4" />
@@ -268,18 +282,19 @@ export default function ClientesPage() {
         </CardContent>
       </Card>
 
+      {/* Alerta de Confirmação de Exclusão */}
       <AlertDialog open={!!clientToDelete} onOpenChange={(open) => !open && setClientToDelete(null)}>
-        <AlertDialogContent className="rounded-[2.5rem] p-10 border-4">
+        <AlertDialogContent className="rounded-[2.5rem] p-10 border-4 max-w-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-3xl font-black tracking-tight">Deseja excluir permanentemente?</AlertDialogTitle>
-            <AlertDialogDescription className="text-xl font-bold mt-4">
-              Os dados da cliente <strong className="text-primary text-2xl">{clientToDelete?.fullName}</strong> e seu histórico serão removidos do sistema.
+            <AlertDialogTitle className="text-3xl font-black tracking-tight text-primary">Deseja excluir permanentemente?</AlertDialogTitle>
+            <AlertDialogDescription className="text-xl font-bold mt-4 leading-relaxed">
+              Os dados da cliente <strong className="text-foreground border-b-2 border-primary">{clientToDelete?.fullName}</strong> e todo o seu histórico de pedidos serão removidos definitivamente do sistema.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-4 mt-10">
-            <AlertDialogCancel className="h-16 px-8 text-xl font-black rounded-2xl border-2">Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm} className="h-16 px-8 text-xl font-black bg-destructive text-white hover:bg-destructive/90 rounded-2xl shadow-xl">
-              Sim, Excluir
+            <AlertDialogCancel className="h-16 px-10 text-xl font-black rounded-2xl border-2">Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="h-16 px-10 text-xl font-black bg-destructive text-white hover:bg-destructive/90 rounded-2xl shadow-xl active:scale-95 transition-all">
+              Sim, Excluir Agora
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
