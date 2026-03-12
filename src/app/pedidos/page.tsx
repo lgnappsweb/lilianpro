@@ -173,7 +173,7 @@ export default function PedidosPage() {
           {filteredOrders.map((order) => (
             <Card 
               key={order.id} 
-              className="bg-background border-4 border-primary/5 rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 shadow-xl hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)] hover:-translate-y-2 hover:border-primary/20 transition-all duration-500 flex flex-col justify-between w-full relative overflow-hidden group transform-gpu"
+              className="bg-background border-4 border-muted rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 shadow-xl hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)] hover:-translate-y-2 hover:border-primary/40 transition-all duration-500 flex flex-col justify-between w-full relative overflow-hidden group transform-gpu"
             >
               {/* LINHA SUPERIOR: ID E DATA */}
               <div className="flex items-center justify-between w-full mb-4">

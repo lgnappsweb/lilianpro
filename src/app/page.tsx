@@ -110,7 +110,7 @@ export default function DashboardPage() {
     };
 
     let theme = {
-      bg: "bg-green-50 border-green-200",
+      bg: "bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-500/30",
       iconColor: "text-green-600",
       title: "TUDO EM DIA",
       desc: "Excelente! Todas as suas vendas estão liquidadas.",
@@ -119,7 +119,7 @@ export default function DashboardPage() {
 
     if (counts.atrasado > 0) {
       theme = {
-        bg: "bg-red-50 border-red-200",
+        bg: "bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-red-500/30",
         iconColor: "text-red-600",
         title: "ALERTA DE ATRASOS",
         desc: "Atenção! Existem pagamentos vencidos que precisam de cobrança.",
@@ -127,7 +127,7 @@ export default function DashboardPage() {
       };
     } else if (counts.pendente > 0) {
       theme = {
-        bg: "bg-orange-50 border-orange-200",
+        bg: "bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:border-orange-500/30",
         iconColor: "text-orange-600",
         title: "PAGAMENTOS PENDENTES",
         desc: "Você tem valores a receber dentro do prazo.",
@@ -173,7 +173,7 @@ export default function DashboardPage() {
       <div className="grid gap-6 grid-cols-1">
         {stats.map((stat, i) => (
           <Link href={stat.href} key={i} className="block group">
-            <Card className="border-none shadow-lg hover:shadow-2xl transition-all rounded-[2.5rem] overflow-hidden group-hover:scale-[1.01] active:scale-[0.99] border-2 border-transparent hover:border-primary/20">
+            <Card className="border-4 border-muted shadow-lg hover:shadow-2xl transition-all rounded-[2.5rem] overflow-hidden group-hover:scale-[1.01] active:scale-[0.99] hover:border-primary/40">
               <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 px-8 pt-8">
                 <CardTitle className="text-base font-black text-muted-foreground uppercase tracking-widest px-2">{stat.title}</CardTitle>
                 <div className={`${stat.bg} ${stat.color} p-4 rounded-2xl group-hover:scale-110 transition-transform shadow-inner`}>
@@ -197,7 +197,7 @@ export default function DashboardPage() {
         <Card className={cn("border-4 shadow-2xl rounded-[2.5rem] overflow-hidden transition-all duration-700", healthStatus.bg)}>
           <CardHeader className="p-8 pb-4">
             <div className="flex items-center gap-4">
-              <div className={cn("p-3 rounded-2xl bg-white shadow-sm", healthStatus.iconColor)}>
+              <div className={cn("p-3 rounded-2xl bg-white dark:bg-white/10 shadow-sm", healthStatus.iconColor)}>
                 <healthStatus.icon className="size-8" />
               </div>
               <div>
@@ -210,20 +210,20 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="p-8 pt-4">
             <div className="grid grid-cols-3 gap-4 mb-6">
-              <div className="bg-white/60 p-4 rounded-2xl text-center shadow-inner border border-white">
+              <div className="bg-white/60 dark:bg-white/5 p-4 rounded-2xl text-center shadow-inner border border-white/20">
                 <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Pagos</p>
                 <p className="text-3xl font-black text-green-600">{healthStatus.counts.pago}</p>
               </div>
-              <div className="bg-white/60 p-4 rounded-2xl text-center shadow-inner border border-white">
+              <div className="bg-white/60 dark:bg-white/5 p-4 rounded-2xl text-center shadow-inner border border-white/20">
                 <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">A Prazo</p>
                 <p className="text-3xl font-black text-orange-500">{healthStatus.counts.pendente}</p>
               </div>
-              <div className="bg-white/60 p-4 rounded-2xl text-center shadow-inner border border-white">
+              <div className="bg-white/60 dark:bg-white/5 p-4 rounded-2xl text-center shadow-inner border border-white/20">
                 <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Atrasados</p>
                 <p className="text-3xl font-black text-red-600">{healthStatus.counts.atrasado}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-4 bg-white/40 rounded-2xl border border-white/50">
+            <div className="flex items-center gap-3 p-4 bg-white/40 dark:bg-white/5 rounded-2xl border border-white/20">
               <Activity className={cn("size-5 shrink-0", healthStatus.iconColor)} />
               <p className="text-sm font-bold leading-tight opacity-80">{healthStatus.desc}</p>
             </div>
@@ -232,7 +232,7 @@ export default function DashboardPage() {
       )}
 
       <div className="w-full">
-        <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden">
+        <Card className="border-4 border-muted shadow-xl rounded-[2.5rem] overflow-hidden">
           <CardHeader className="p-8 pb-4 bg-muted/20">
             <CardTitle className="text-2xl md:text-3xl font-black flex flex-col items-center gap-3 px-2">
               <ShoppingBag className="size-8 text-primary" />
@@ -241,7 +241,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="p-8 space-y-6">
             <Link href="/produtos" className="block group/card">
-              <div className="flex items-center gap-5 p-5 rounded-[1.5rem] bg-background border-2 border-muted shadow-sm hover:border-primary/20 transition-all relative overflow-hidden">
+              <div className="flex items-center gap-5 p-5 rounded-[1.5rem] bg-background border-4 border-muted shadow-sm hover:border-primary/20 transition-all relative overflow-hidden">
                 <div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
                   <Package className="size-8" />
                 </div>
@@ -253,7 +253,7 @@ export default function DashboardPage() {
               </div>
             </Link>
             <Link href="/clientes" className="block group/card">
-              <div className="flex items-center gap-5 p-5 rounded-[1.5rem] bg-background border-2 border-muted shadow-sm hover:border-accent/20 transition-all relative overflow-hidden">
+              <div className="flex items-center gap-5 p-5 rounded-[1.5rem] bg-background border-4 border-muted shadow-sm hover:border-accent/20 transition-all relative overflow-hidden">
                 <div className="size-14 rounded-2xl bg-accent/10 flex items-center justify-center text-accent shadow-inner">
                   <Users className="size-8" />
                 </div>
@@ -268,7 +268,7 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden">
+      <Card className="border-4 border-muted shadow-xl rounded-[2.5rem] overflow-hidden">
         <CardHeader className="flex flex-row items-center justify-between px-10 py-8 bg-muted/30">
           <CardTitle className="text-2xl md:text-3xl font-black px-2">Vendas Recentes</CardTitle>
           <Button variant="ghost" size="lg" className="text-base font-black text-primary hover:bg-primary/10 rounded-xl" asChild>

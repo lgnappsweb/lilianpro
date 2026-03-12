@@ -37,33 +37,34 @@
   }
 
   .dark {
-    --background: 336 40% 5%;
-    --foreground: 336 20% 95%;
-    --card: 336 40% 8%;
-    --card-foreground: 336 20% 95%;
-    --popover: 336 40% 8%;
-    --popover-foreground: 336 20% 95%;
+    /* Tom mais preto e neutro, removendo o avermelhado */
+    --background: 0 0% 2%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 4%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 4%;
+    --popover-foreground: 0 0% 98%;
     --primary: 336 78% 55%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 336 40% 15%;
-    --secondary-foreground: 336 78% 85%;
-    --muted: 336 40% 15%;
-    --muted-foreground: 336 20% 65%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 65%;
     --accent: 314 68% 60%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 336 40% 15%;
-    --input: 336 40% 15%;
+    --border: 0 0% 20%; /* Borda padrão levemente visível */
+    --input: 0 0% 15%;
     --ring: 336 78% 55%;
 
-    --sidebar-background: 336 40% 7%;
-    --sidebar-foreground: 336 20% 85%;
+    --sidebar-background: 0 0% 3%;
+    --sidebar-foreground: 0 0% 85%;
     --sidebar-primary: 336 78% 55%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 336 40% 12%;
-    --sidebar-accent-foreground: 336 78% 75%;
-    --sidebar-border: 336 40% 15%;
+    --sidebar-accent: 0 0% 10%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 0 0% 15%;
     --sidebar-ring: 336 78% 55%;
   }
 }
@@ -77,6 +78,13 @@
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-headline font-black tracking-tight;
+  }
+
+  /* Efeito de destaque: borda clara em todos os cards no modo escuro */
+  .dark .card, 
+  .dark div[class*="rounded-"][class*="border"],
+  .dark div[class*="rounded-"][class*="shadow"] {
+    border-color: rgba(255, 255, 255, 0.15) !important;
   }
 }
 
