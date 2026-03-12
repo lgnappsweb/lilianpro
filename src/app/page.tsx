@@ -1,3 +1,4 @@
+
 import React from "react";
 import {
   Card,
@@ -23,7 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { generateMonthlySalesSummary } from "@/ai/flows/generate-monthly-sales-summary";
 
 export default async function DashboardPage() {
-  // Mock data for the dashboard summary
+  // Dados mockados para o resumo do dashboard
   const stats = [
     {
       title: "Total Vendido (Mês)",
@@ -72,7 +73,7 @@ export default async function DashboardPage() {
     { name: "Hidratante Tododia", category: "Corpo", sales: 18, growth: "+22%" },
   ];
 
-  // In a real app, these values would come from the database
+  // Em um app real, estes valores viriam do banco de dados
   const aiSummaryInput = {
     month: "Janeiro",
     year: 2024,
@@ -85,17 +86,19 @@ export default async function DashboardPage() {
     totalProductsRegistered: 156,
   };
 
-  let aiSummaryText = "Estamos preparando o seu resumo inteligente. Certifique-se de configurar sua chave de API para ativar esta funcionalidade.";
+  let aiSummaryText = "";
   
   try {
     const aiSummary = await generateMonthlySalesSummary(aiSummaryInput);
     if (aiSummary && aiSummary.summary) {
       aiSummaryText = aiSummary.summary;
+    } else {
+      aiSummaryText = "Não foi possível gerar os insights automáticos no momento.";
     }
   } catch (error) {
-    // Gracefully handle AI errors (like missing API keys) so the page doesn't crash
-    console.error("AI Summary generation failed:", error);
-    aiSummaryText = "O resumo de IA não pôde ser gerado no momento. Verifique suas configurações de API do Google Gemini.";
+    // Trata erros de IA (como chaves de API ausentes) para que a página não quebre
+    console.error("Erro na geração do resumo de IA:", error);
+    aiSummaryText = "O resumo inteligente está desativado. Para ativá-lo, configure sua chave de API do Google Gemini no arquivo .env.";
   }
 
   return (
@@ -118,7 +121,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Cards de Estatísticas */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat, i) => (
           <Card key={i} className="border-none shadow-sm hover:shadow-md transition-shadow">
@@ -137,7 +140,7 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-7">
-        {/* AI Insight Section */}
+        {/* Seção de Insight de IA */}
         <Card className="md:col-span-4 border-none shadow-sm overflow-hidden bg-gradient-to-br from-white to-pink-50 dark:from-slate-950 dark:to-pink-950/20">
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2 text-primary">
@@ -155,7 +158,7 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Top Selling Products */}
+        {/* Produtos em Alta */}
         <Card className="md:col-span-3 border-none shadow-sm">
           <CardHeader>
             <CardTitle className="text-xl font-headline flex items-center gap-2">
@@ -189,7 +192,7 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      {/* Recent Orders Table */}
+      {/* Tabela de Pedidos Recentes */}
       <Card className="border-none shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
