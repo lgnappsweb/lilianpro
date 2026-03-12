@@ -125,26 +125,32 @@ export default function ClientesPage() {
             </div>
           ) : (
             <>
-              {/* Visualização Mobile (Cards) */}
+              {/* Visualização Mobile (Cards Otimizados) */}
               <div className="grid gap-4 md:hidden p-4">
                 {filteredClientes.map((cliente) => (
                   <div key={cliente.id} className="bg-background border-4 border-muted rounded-[1.5rem] p-6 space-y-4 shadow-sm active:scale-[0.98] transition-all">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-4 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-4 min-w-0 flex-1">
                         <div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-black text-xl border-2 border-primary/20 shrink-0">
                           {cliente.fullName?.charAt(0).toUpperCase()}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <h3 className="font-black text-lg truncate leading-tight uppercase tracking-tight">{cliente.fullName}</h3>
-                          <div className="flex items-center gap-1.5 text-muted-foreground mt-1">
-                            <MapPin className="size-3 text-primary/40 shrink-0" />
-                            <span className="text-[10px] font-black uppercase tracking-widest opacity-60 truncate">{cliente.city}</span>
+                          <h3 className="font-black text-lg break-words leading-tight uppercase tracking-tight">{cliente.fullName}</h3>
+                          <div className="flex flex-col gap-1 mt-1">
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                              <MapPin className="size-3 text-primary/40 shrink-0" />
+                              <span className="text-[10px] font-black uppercase tracking-widest opacity-60 break-words">{cliente.city}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                              <Phone className="size-3 text-primary/40 shrink-0" />
+                              <span className="text-[10px] font-black uppercase tracking-widest opacity-60">{cliente.phone}</span>
+                            </div>
                           </div>
                         </div>
                       </div>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="size-12 rounded-xl border-2 border-transparent hover:border-muted-foreground/10">
+                          <Button variant="ghost" size="icon" className="size-10 rounded-xl border-2 border-transparent hover:border-muted-foreground/10 shrink-0">
                             <MoreHorizontal className="size-6" />
                           </Button>
                         </DropdownMenuTrigger>
@@ -171,19 +177,15 @@ export default function ClientesPage() {
                       </DropdownMenu>
                     </div>
 
-                    <div className="flex items-center justify-between gap-4 pt-4 border-t-2 border-muted/30">
-                      <div className="flex items-center gap-2 font-black text-muted-foreground text-sm min-w-0">
-                        <Phone className="size-4 text-primary/40 shrink-0" />
-                        <span className="truncate">{cliente.phone}</span>
-                      </div>
+                    <div className="pt-4 border-t-2 border-muted/30">
                       <Button
                         variant="default"
-                        size="sm"
-                        className="bg-green-600 hover:bg-green-700 h-10 px-4 rounded-xl font-black gap-2 shadow-sm shrink-0"
+                        size="lg"
+                        className="w-full bg-green-600 hover:bg-green-700 h-14 rounded-xl font-black gap-2 shadow-sm"
                         onClick={() => openWhatsApp(cliente.phone)}
                       >
-                        <MessageCircle className="size-4" />
-                        WHATSAPP
+                        <MessageCircle className="size-6" />
+                        CHAMAR NO WHATSAPP
                       </Button>
                     </div>
                   </div>
