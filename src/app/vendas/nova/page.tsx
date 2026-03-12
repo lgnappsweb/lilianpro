@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -59,13 +60,14 @@ export default function NovaVendaPage() {
 
   const [selectedClientId, setSelectedClientId] = useState("");
   const [selectedItems, setSelectedItems] = useState([
-    { id: `temp-${Date.now()}`, productId: "", quantity: 1, price: 0, name: "" }
+    { id: `temp-${Date.now()}`, productId: "", quantity: 1, price: 0, costPrice: 0, name: "" }
   ]);
   const [paymentMethod, setPaymentMethod] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [notes, setNotes] = useState("");
   const [discount, setDiscount] = useState(0);
   const [additionalFee, setAdditionalFee] = useState(0);
+  const [applyMarginDiscount, setApplyMarginDiscount] = useState(false);
   const [itemToDeleteId, setItemToDeleteId] = useState<string | null>(null);
 
   const clientsQuery = useMemoFirebase(() => {
@@ -86,7 +88,7 @@ export default function NovaVendaPage() {
   }, [clients, selectedClientId]);
 
   const addItem = () => {
-    setSelectedItems([{ id: `temp-${Date.now()}-${Math.random()}`, productId: "", quantity: 1, price: 0, name: "" }, ...selectedItems]);
+    setSelectedItems([{ id: `temp-${Date.now()}-${Math.random()}`, productId: "", quantity: 1, price: 0, costPrice: 0, name: "" }, ...selectedItems]);
   };
 
   const removeItem = () => {
@@ -100,7 +102,13 @@ export default function NovaVendaPage() {
     return selectedItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   }, [selectedItems]);
 
-  const finalTotal = Math.max(0, subtotal - discount + additionalFee);
+  const totalCost = useMemo(() => {
+    return selectedItems.reduce((acc, item) => acc + ((item.costPrice || 0) * item.quantity), 0);
+  }, [selectedItems]);
+
+  const margin = Math.max(0, subtotal - totalCost);
+
+  const finalTotal = Math.max(0, subtotal - (applyMarginDiscount ? margin : 0) - discount + additionalFee);
 
   const isReady = useMemo(() => {
     return !!selectedClientId && selectedItems.some(item => !!item.productId) && !!paymentMethod;
@@ -118,13 +126,15 @@ export default function NovaVendaPage() {
     }
 
     const orderId = `ord-${Date.now()}`;
+    const totalDiscount = (applyMarginDiscount ? margin : 0) + discount;
+    
     const orderData = {
       id: orderId,
       adminId: user.uid,
       clientId: selectedClientId,
       orderDate: new Date().toISOString(),
       totalAmount: subtotal,
-      discountAmount: discount,
+      discountAmount: totalDiscount,
       additionalFeeAmount: additionalFee,
       finalAmount: finalTotal,
       paymentMethod,
@@ -231,7 +241,8 @@ export default function NovaVendaPage() {
                     if (product) {
                       const newItems = [...selectedItems];
                       newItems[index].productId = val;
-                      newItems[index].price = product.salePrice;
+                      newItems[index].price = Number(product.salePrice) || 0;
+                      newItems[index].costPrice = Number(product.costPrice) || 0;
                       newItems[index].name = product.name;
                       setSelectedItems(newItems);
                     }
@@ -390,7 +401,7 @@ export default function NovaVendaPage() {
           </CardContent>
         </Card>
 
-        {/* 5. Finalização Financeira (Cores do Sistema) */}
+        {/* 5. Finalização Financeira */}
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[3rem] overflow-hidden bg-primary text-primary-foreground">
           <CardHeader className="p-8 sm:p-12 pb-4">
              <CardTitle className="flex flex-row items-center gap-4 text-3xl sm:text-5xl font-black tracking-tighter uppercase text-left px-2">
@@ -400,13 +411,42 @@ export default function NovaVendaPage() {
           </CardHeader>
           <CardContent className="p-8 sm:p-12 pt-4 space-y-10">
             <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 items-center">
-               <div className="space-y-6">
+               <div className="space-y-8">
+                  {/* Resumo de Valores Elite */}
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                      <span className="text-xs sm:text-sm font-black uppercase tracking-widest opacity-60">Subtotal (Venda)</span>
+                      <span className="text-xl sm:text-2xl font-black">R$ {subtotal.toFixed(2)}</span>
+                    </div>
+                    
+                    <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                      <div className="flex flex-col">
+                        <span className="text-xs sm:text-sm font-black uppercase tracking-widest opacity-60">Margem Estimada</span>
+                        <span className="text-[10px] font-bold opacity-40 italic">Diferença entre custo e venda</span>
+                      </div>
+                      <span className="text-xl sm:text-2xl font-black text-green-300">R$ {margin.toFixed(2)}</span>
+                    </div>
+
+                    <div className="flex justify-between items-center pt-2">
+                      <div className="flex flex-col">
+                        <Label htmlFor="profit-toggle" className="text-xs sm:text-sm font-black uppercase tracking-widest cursor-pointer">Descontar Lucro?</Label>
+                        <span className="text-[10px] font-bold opacity-40">Vender pelo preço de custo</span>
+                      </div>
+                      <Switch 
+                        id="profit-toggle"
+                        checked={applyMarginDiscount}
+                        onCheckedChange={setApplyMarginDiscount}
+                        className="data-[state=checked]:bg-green-500"
+                      />
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-3 text-left">
-                      <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] opacity-60 block">Desconto (R$)</Label>
+                      <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] opacity-60 block">Outros Desc. (R$)</Label>
                       <Input
                         type="number"
-                        className="h-14 sm:h-20 text-center text-xl sm:text-3xl font-black rounded-xl sm:rounded-3xl border-4 bg-white/10 border-white/20 text-white shadow-lg"
+                        className="h-14 sm:h-16 text-center text-lg sm:text-2xl font-black rounded-xl border-4 bg-white/10 border-white/20 text-white shadow-lg"
                         value={discount}
                         onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
                       />
@@ -415,7 +455,7 @@ export default function NovaVendaPage() {
                       <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] opacity-60 block">Taxas (R$)</Label>
                       <Input
                         type="number"
-                        className="h-14 sm:h-20 text-center text-xl sm:text-3xl font-black rounded-xl sm:rounded-3xl border-4 bg-white/10 border-white/20 text-white shadow-lg"
+                        className="h-14 sm:h-16 text-center text-lg sm:text-2xl font-black rounded-xl border-4 bg-white/10 border-white/20 text-white shadow-lg"
                         value={additionalFee}
                         onChange={(e) => setAdditionalFee(parseFloat(e.target.value) || 0)}
                       />
@@ -424,7 +464,7 @@ export default function NovaVendaPage() {
                </div>
 
                <div className="p-8 sm:p-12 rounded-[2rem] sm:rounded-[3rem] shadow-2xl text-center border-8 bg-white text-primary border-white animate-in zoom-in-95 duration-500">
-                  <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.4em] mb-4 opacity-60">Total a Pagar</p>
+                  <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.4em] mb-4 opacity-60">Total Final</p>
                   <p className="text-4xl sm:text-8xl font-black tracking-tighter leading-none px-2">R$ {finalTotal.toFixed(2)}</p>
                 </div>
             </div>
