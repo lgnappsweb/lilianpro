@@ -1,24 +1,50 @@
+
 'use client';
 
 import React, { useState } from 'react';
 import { useAuth } from '@/firebase';
-import { initiateEmailSignIn } from '@/firebase/non-blocking-login';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sparkles, LogIn, Eye, EyeOff } from 'lucide-react';
+import { Sparkles, LogIn, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function LoginPage() {
   const auth = useAuth();
-  // Definindo as credenciais solicitadas como padrão para o protótipo
+  const { toast } = useToast();
+  
   const [email, setEmail] = useState('litencarv@icloud.com');
   const [password, setPassword] = useState('Ltc1036');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    initiateEmailSignIn(auth, email, password);
+    setIsLoading(true);
+    
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      // O AppLayoutWrapper cuidará do redirecionamento após a mudança de estado do auth
+    } catch (error: any) {
+      console.error('Login error:', error);
+      let message = 'E-mail ou senha inválidos.';
+      
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        message = 'Acesso negado. Verifique se o usuário foi criado no console do Firebase e se o provedor E-mail/Senha está ativo.';
+      } else if (error.code === 'auth/too-many-requests') {
+        message = 'Muitas tentativas malsucedidas. Tente novamente mais tarde.';
+      }
+      
+      toast({
+        variant: 'destructive',
+        title: 'Falha no Login',
+        description: message,
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const togglePasswordVisibility = () => {
@@ -47,6 +73,7 @@ export default function LoginPage() {
                 placeholder="litencarv@icloud.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
                 required
               />
             </div>
@@ -59,6 +86,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="pr-10"
+                  disabled={isLoading}
                   required
                 />
                 <button
@@ -66,6 +94,7 @@ export default function LoginPage() {
                   onClick={togglePasswordVisibility}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
                   aria-label={showPassword ? 'Ocultar senha' : 'Ver senha'}
+                  disabled={isLoading}
                 >
                   {showPassword ? (
                     <EyeOff className="size-4" />
@@ -77,9 +106,18 @@ export default function LoginPage() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full h-11 text-lg font-semibold">
-              <LogIn className="mr-2 size-5" />
-              Entrar
+            <Button type="submit" className="w-full h-11 text-lg font-semibold" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 size-5 animate-spin" />
+                  Entrando...
+                </>
+              ) : (
+                <>
+                  <LogIn className="mr-2 size-5" />
+                  Entrar
+                </>
+              )}
             </Button>
             <p className="text-xs text-center text-muted-foreground">
               Acesso exclusivo para: litencarv@icloud.com
