@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useMemo, useState } from "react";
@@ -15,27 +16,50 @@ import {
   Clock,
   Loader2,
   Wallet,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection } from "firebase/firestore";
-import { format, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
+import { format, startOfMonth, endOfMonth, isWithinInterval, setDay, setMonth, setYear, getDate, getMonth, getYear } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
+
+const DAYS = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
+const MONTHS = [
+  { value: "0", label: "Janeiro" },
+  { value: "1", label: "Fevereiro" },
+  { value: "2", label: "Março" },
+  { value: "3", label: "Abril" },
+  { value: "4", label: "Maio" },
+  { value: "5", label: "Junho" },
+  { value: "6", label: "Julho" },
+  { value: "7", label: "Agosto" },
+  { value: "8", label: "Setembro" },
+  { value: "9", label: "Outubro" },
+  { value: "10", label: "Novembro" },
+  { value: "11", label: "Dezembro" },
+];
+const YEARS = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - 2 + i).toString());
 
 export default function FinanceiroPage() {
   const { user } = useUser();
   const db = useFirestore();
 
-  // Estado para o intervalo de datas (Inicia com o mês atual)
   const [date, setDate] = useState<DateRange | undefined>({
     from: startOfMonth(new Date()),
     to: endOfMonth(new Date()),
@@ -48,7 +72,6 @@ export default function FinanceiroPage() {
 
   const { data: orders, isLoading } = useCollection(ordersQuery);
 
-  // Filtra pedidos com base no período selecionado
   const filteredOrders = useMemo(() => {
     if (!orders) return [];
     if (!date?.from || !date?.to) return orders;
@@ -83,6 +106,18 @@ export default function FinanceiroPage() {
       .slice(0, 5);
   }, [filteredOrders]);
 
+  const updateDatePart = (type: 'from' | 'to', part: 'day' | 'month' | 'year', value: string) => {
+    if (!date) return;
+    const current = date[type] || new Date();
+    let newDate = new Date(current);
+
+    if (part === 'day') newDate = setDay(newDate, parseInt(value));
+    if (part === 'month') newDate = setMonth(newDate, parseInt(value));
+    if (part === 'year') newDate = setYear(newDate, parseInt(value));
+
+    setDate({ ...date, [type]: newDate });
+  };
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-4 text-muted-foreground">
@@ -103,7 +138,6 @@ export default function FinanceiroPage() {
           <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Controle real de entradas e contas a receber.</p>
         </div>
         
-        {/* Seletor de Período Monumental Elite */}
         <div className="w-full sm:w-auto">
           <Popover>
             <PopoverTrigger asChild>
@@ -111,21 +145,15 @@ export default function FinanceiroPage() {
                 id="date"
                 variant={"outline"}
                 className={cn(
-                  "w-full sm:min-w-[450px] h-16 sm:h-20 text-lg sm:text-2xl font-black justify-between text-left rounded-[1.5rem] border-4 border-muted hover:border-primary/40 bg-background shadow-2xl transition-all active:scale-95 px-8 group",
-                  !date && "text-muted-foreground"
+                  "w-full sm:min-w-[500px] h-16 sm:h-24 text-lg sm:text-3xl font-black justify-between text-left rounded-[1.5rem] sm:rounded-[2.5rem] border-4 border-muted hover:border-primary/40 bg-background shadow-2xl transition-all active:scale-95 px-8 group"
                 )}
               >
                 <div className="flex items-center">
                   <CalendarIcon className="mr-4 h-7 w-7 text-primary group-hover:scale-110 transition-transform" />
-                  {date?.from ? (
-                    date.to ? (
-                      <span className="uppercase tracking-tighter">
-                        {format(date.from, "dd MMM yy", { locale: ptBR })} -{" "}
-                        {format(date.to, "dd MMM yy", { locale: ptBR })}
-                      </span>
-                    ) : (
-                      <span className="uppercase tracking-tighter">{format(date.from, "dd MMM yy", { locale: ptBR })}</span>
-                    )
+                  {date?.from && date?.to ? (
+                    <span className="tracking-tighter">
+                      {format(date.from, "dd/MM/yyyy")} - {format(date.to, "dd/MM/yyyy")}
+                    </span>
                   ) : (
                     <span>SELECIONE O PERÍODO</span>
                   )}
@@ -133,16 +161,69 @@ export default function FinanceiroPage() {
                 <Badge variant="secondary" className="bg-primary/10 text-primary border-none font-black ml-4 hidden sm:flex">PERÍODO</Badge>
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 rounded-[2.5rem] overflow-hidden border-8 border-primary/5 shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)] bg-background" align="center" sideOffset={20}>
-              <Calendar
-                initialFocus
-                mode="range"
-                defaultMonth={date?.from}
-                selected={date}
-                onSelect={setDate}
-                numberOfMonths={1}
-                locale={ptBR}
-              />
+            <PopoverContent className="w-full sm:w-[500px] p-8 rounded-[2rem] sm:rounded-[3.5rem] border-8 border-primary/5 shadow-2xl bg-background space-y-8" align="center" sideOffset={20}>
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 px-2">Início do Período</p>
+                  <div className="grid grid-cols-3 gap-3">
+                    <Select value={date?.from ? getDate(date.from).toString() : ""} onValueChange={(v) => updateDatePart('from', 'day', v)}>
+                      <SelectTrigger className="h-14 font-black rounded-xl border-2">
+                        <SelectValue placeholder="Dia" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl font-bold">
+                        {DAYS.map(d => <SelectItem key={d} value={d}>{d.padStart(2, '0')}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <Select value={date?.from ? getMonth(date.from).toString() : ""} onValueChange={(v) => updateDatePart('from', 'month', v)}>
+                      <SelectTrigger className="h-14 font-black rounded-xl border-2">
+                        <SelectValue placeholder="Mês" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl font-bold">
+                        {MONTHS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <Select value={date?.from ? getYear(date.from).toString() : ""} onValueChange={(v) => updateDatePart('from', 'year', v)}>
+                      <SelectTrigger className="h-14 font-black rounded-xl border-2">
+                        <SelectValue placeholder="Ano" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl font-bold">
+                        {YEARS.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 px-2">Fim do Período</p>
+                  <div className="grid grid-cols-3 gap-3">
+                    <Select value={date?.to ? getDate(date.to).toString() : ""} onValueChange={(v) => updateDatePart('to', 'day', v)}>
+                      <SelectTrigger className="h-14 font-black rounded-xl border-2">
+                        <SelectValue placeholder="Dia" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl font-bold">
+                        {DAYS.map(d => <SelectItem key={d} value={d}>{d.padStart(2, '0')}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <Select value={date?.to ? getMonth(date.to).toString() : ""} onValueChange={(v) => updateDatePart('to', 'month', v)}>
+                      <SelectTrigger className="h-14 font-black rounded-xl border-2">
+                        <SelectValue placeholder="Mês" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl font-bold">
+                        {MONTHS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <Select value={date?.to ? getYear(date.to).toString() : ""} onValueChange={(v) => updateDatePart('to', 'year', v)}>
+                      <SelectTrigger className="h-14 font-black rounded-xl border-2">
+                        <SelectValue placeholder="Ano" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl font-bold">
+                        {YEARS.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+              <Button className="w-full h-14 rounded-2xl font-black uppercase tracking-widest bg-primary shadow-xl">Aplicar Período</Button>
             </PopoverContent>
           </Popover>
         </div>
@@ -171,7 +252,7 @@ export default function FinanceiroPage() {
             <CardTitle className="text-2xl font-black px-2 uppercase tracking-tight italic flex items-center gap-3">
               <Clock className="text-orange-500" /> Pagamentos para Receber
             </CardTitle>
-            <CardDescription className="text-sm font-bold uppercase tracking-widest opacity-60">Vendas "A Prazo" com vencimento no período</CardDescription>
+            <CardDescription className="text-sm font-bold uppercase tracking-widest opacity-60">Vendas "A PRAZO" com vencimento no período</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 p-8">
             {proximosRecebimentos.map((p, i) => (
