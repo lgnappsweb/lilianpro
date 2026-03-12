@@ -87,7 +87,7 @@ export default function ClientesPage() {
         <Button asChild className="w-full h-14 sm:h-20 px-10 text-xl font-black rounded-2xl shadow-xl bg-primary hover:bg-primary/90 transition-transform hover:scale-105">
           <Link href="/clientes/novo">
             <UserPlus className="mr-3 size-6 sm:size-8" />
-            Nova Cliente
+            Novo Cliente
           </Link>
         </Button>
       </div>
@@ -111,34 +111,34 @@ export default function ClientesPage() {
         ) : (
           <div className="grid grid-cols-1 gap-6 w-full">
             {filteredClientes.map((cliente) => (
-              <Card key={cliente.id} className="bg-background border-4 border-muted rounded-[1.5rem] sm:rounded-[2.5rem] p-6 sm:p-10 shadow-xl hover:border-primary/20 transition-all flex flex-col w-full min-h-0 text-center items-center">
-                <div className="mb-6 flex flex-col items-center gap-4">
-                  <div className="size-12 sm:size-20 rounded-full bg-primary/10 flex items-center justify-center text-primary shadow-inner">
-                    <User className="size-6 sm:size-10" />
+              <Card key={cliente.id} className="bg-background border-4 border-muted rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl hover:border-primary/20 transition-all flex flex-col justify-between h-full min-h-[350px] w-full max-w-none">
+                <div className="flex flex-col items-center justify-center gap-4 mb-2">
+                  <div className="size-16 sm:size-24 rounded-full bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                    <User className="size-10 sm:size-14" />
                   </div>
-                  <h3 className="font-black text-2xl sm:text-6xl break-words leading-tight uppercase tracking-tighter text-primary italic line-clamp-2 max-w-4xl">
+                  <h3 className="font-black text-3xl sm:text-5xl text-primary uppercase tracking-tighter italic text-center line-clamp-2 leading-tight">
                     {cliente.fullName}
                   </h3>
                 </div>
 
-                <div className="space-y-4 w-full">
-                  <div className="grid grid-cols-3 gap-3">
-                    <Button variant="outline" asChild className="h-12 sm:h-16 font-black text-[10px] sm:text-lg uppercase tracking-tighter rounded-xl sm:rounded-2xl border-4 hover:bg-primary/5 px-2">
+                <div className="space-y-4">
+                  <div className="flex flex-row items-center justify-center gap-2 w-full">
+                    <Button variant="outline" asChild className="h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2 flex-1">
                       <Link href={`/clientes/${cliente.id}`}>
-                        <FileText className="mr-1 size-4 sm:size-6" />
+                        <FileText className="mr-1 size-3 sm:size-4" />
                         Detalhes
                       </Link>
                     </Button>
-                    <Button variant="outline" className="h-12 sm:h-16 font-black text-[10px] sm:text-lg uppercase tracking-tighter rounded-xl sm:rounded-2xl border-4 hover:bg-primary/5 px-2">
-                      <Edit className="mr-1 size-4 sm:size-6" />
+                    <Button variant="outline" className="h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2 flex-1">
+                      <Edit className="mr-1 size-3 sm:size-4" />
                       Editar
                     </Button>
                     <Button 
                       variant="outline" 
-                      className="h-12 sm:h-16 font-black text-[10px] sm:text-lg uppercase tracking-tighter rounded-xl sm:rounded-2xl border-4 text-destructive border-destructive/20 hover:bg-destructive/5 hover:border-destructive px-2"
+                      className="h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 text-destructive border-destructive/20 hover:bg-destructive/5 hover:border-destructive px-2 flex-1"
                       onClick={() => setClientToDelete(cliente)}
                     >
-                      <Trash2 className="mr-1 size-4 sm:size-6" />
+                      <Trash2 className="mr-1 size-3 sm:size-4" />
                       Excluir
                     </Button>
                   </div>
@@ -146,10 +146,10 @@ export default function ClientesPage() {
                   <Button
                     variant="default"
                     size="lg"
-                    className="w-full bg-green-600 hover:bg-green-700 h-16 sm:h-24 rounded-xl sm:rounded-3xl font-black text-sm sm:text-2xl gap-3 shadow-xl transition-all active:scale-95 uppercase tracking-widest"
+                    className="w-full bg-green-600 hover:bg-green-700 h-16 sm:h-20 rounded-xl sm:rounded-2xl font-black text-sm sm:text-xl gap-3 shadow-xl transition-all active:scale-95 uppercase tracking-widest"
                     onClick={() => openWhatsApp(cliente.phone)}
                   >
-                    <MessageCircle className="size-6 sm:size-10" />
+                    <MessageCircle className="size-6 sm:size-8" />
                     Chamar no WhatsApp
                   </Button>
                 </div>
@@ -167,7 +167,6 @@ export default function ClientesPage() {
         )}
       </div>
 
-      {/* Alerta de Confirmação de Exclusão */}
       <AlertDialog open={!!clientToDelete} onOpenChange={(open) => !open && setClientToDelete(null)}>
         <AlertDialogContent className="rounded-[2.5rem] p-8 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto">
           <AlertDialogHeader>

@@ -7,7 +7,6 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,11 +21,10 @@ import {
   Info,
   Save,
   Loader2,
-  CheckCircle2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore } from "@/firebase";
-import { collection, doc } from "firebase/firestore";
+import { collection } from "firebase/firestore";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useRouter } from "next/navigation";
 
@@ -42,8 +40,8 @@ export default function NovoClientePage() {
     phone: "",
     city: "",
     neighborhood: "",
-    address: "", // Usado para Referência
-    notes: "",    // Usado para Descrição
+    address: "",
+    notes: "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -101,7 +99,7 @@ export default function NovoClientePage() {
         <div className="w-full">
           <div className="flex flex-col items-center justify-center gap-4">
             <UserPlus className="size-10 sm:size-16 text-primary" />
-            <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm">NOVA CLIENTE</h1>
+            <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm">NOVO CLIENTE</h1>
           </div>
           <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest">Adicione uma nova cliente ao seu catálogo de elite.</p>
         </div>
