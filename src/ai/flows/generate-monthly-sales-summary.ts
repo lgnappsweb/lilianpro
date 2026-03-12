@@ -45,10 +45,10 @@ export async function generateMonthlySalesSummary(
 ): Promise<GenerateMonthlySalesSummaryOutput> {
   try {
     return await generateMonthlySalesSummaryFlow(input);
-  } catch (error) {
-    console.error("Erro ao gerar resumo mensal:", error);
+  } catch (error: any) {
+    console.error("Erro no wrapper do resumo mensal:", error);
     return {
-      summary: "O resumo inteligente está temporariamente indisponível. Verifique as configurações da sua chave de API do Google Gemini."
+      summary: "O resumo inteligente está temporariamente indisponível. Verifique se a chave GEMINI_API_KEY está configurada corretamente no seu ambiente."
     };
   }
 }
@@ -93,7 +93,18 @@ const generateMonthlySalesSummaryFlow = ai.defineFlow(
     outputSchema: GenerateMonthlySalesSummaryOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    try {
+      const {output} = await prompt(input);
+      if (!output) {
+        throw new Error('A IA não retornou nenhum conteúdo.');
+      }
+      return output;
+    } catch (error: any) {
+      console.error("Erro dentro do fluxo Genkit:", error);
+      // Retorna um fallback amigável em vez de lançar o erro
+      return {
+        summary: "Não foi possível gerar os insights automáticos agora devido a um erro técnico ou falta de configuração da API Key do Gemini."
+      };
+    }
   }
 );

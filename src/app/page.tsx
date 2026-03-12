@@ -86,19 +86,14 @@ export default async function DashboardPage() {
     totalProductsRegistered: 156,
   };
 
-  let aiSummaryText = "";
+  let aiSummaryText = "Carregando insights...";
   
   try {
     const aiSummary = await generateMonthlySalesSummary(aiSummaryInput);
-    if (aiSummary && aiSummary.summary) {
-      aiSummaryText = aiSummary.summary;
-    } else {
-      aiSummaryText = "Não foi possível gerar os insights automáticos no momento.";
-    }
+    aiSummaryText = aiSummary?.summary || "Não foi possível obter os insights automáticos.";
   } catch (error) {
-    // Trata erros de IA (como chaves de API ausentes) para que a página não quebre
-    console.error("Erro na geração do resumo de IA:", error);
-    aiSummaryText = "O resumo inteligente está desativado. Para ativá-lo, configure sua chave de API do Google Gemini no arquivo .env.";
+    console.error("Erro crítico na DashboardPage ao chamar IA:", error);
+    aiSummaryText = "O resumo inteligente está desativado temporariamente devido a uma falha na conexão com o serviço de IA.";
   }
 
   return (
