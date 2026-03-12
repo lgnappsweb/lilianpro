@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 export default function DetalhesClientePage() {
   const { clientId } = useParams();
@@ -68,6 +69,10 @@ export default function DetalhesClientePage() {
     window.open(`https://wa.me/55${phone.replace(/\D/g, "")}`, "_blank");
   };
 
+  // Lógica para verificar quantidade de nomes
+  const nameParts = cliente.fullName?.trim().split(/\s+/) || [];
+  const isShortName = nameParts.length <= 2;
+
   return (
     <div className="space-y-12 animate-in fade-in duration-500 w-full pb-20">
       {/* CABEÇALHO ELITE MONUMENTAL */}
@@ -75,7 +80,7 @@ export default function DetalhesClientePage() {
         <div className="w-full">
           <div className="flex flex-col items-center justify-center gap-6">
             <ClipboardCheck className="size-16 sm:size-24 text-primary" />
-            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap px-2">
+            <h1 className="text-5xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap px-2">
               CADASTRO
             </h1>
           </div>
@@ -83,9 +88,12 @@ export default function DetalhesClientePage() {
         </div>
       </div>
 
-      {/* NOME DA CLIENTE (FLEXÍVEL - ATÉ 2 LINHAS) */}
+      {/* NOME DA CLIENTE (FLEXÍVEL - REGRAS DE LINHA) */}
       <div className="flex flex-col items-center text-center mb-10 px-4">
-        <h2 className="text-4xl md:text-7xl font-black tracking-tighter text-foreground font-headline uppercase leading-tight italic drop-shadow-sm max-w-5xl px-2">
+        <h2 className={cn(
+          "text-4xl md:text-7xl font-black tracking-tighter text-foreground font-headline uppercase leading-tight italic drop-shadow-sm max-w-5xl px-2",
+          isShortName && "whitespace-nowrap"
+        )}>
           {cliente.fullName}
         </h2>
         <Badge variant="secondary" className="mt-4 bg-primary/10 text-primary border-none font-black px-6 py-2 rounded-full text-xs sm:text-sm uppercase tracking-widest">
