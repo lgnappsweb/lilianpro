@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Card,
   CardContent,
@@ -12,8 +12,7 @@ import {
 import {
   ArrowDownCircle,
   AlertCircle,
-  Calendar,
-  Filter,
+  Calendar as CalendarIcon,
   Clock,
   Loader2,
   Wallet,
@@ -22,10 +21,26 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection } from "firebase/firestore";
+import { format, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { DateRange } from "react-day-picker";
 
 export default function FinanceiroPage() {
   const { user } = useUser();
   const db = useFirestore();
+
+  // Estado para o intervalo de datas (Inicia com o mês atual)
+  const [date, setDate] = useState<DateRange | undefined>({
+    from: startOfMonth(new Date()),
+    to: endOfMonth(new Date()),
+  });
 
   const ordersQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -34,26 +49,40 @@ export default function FinanceiroPage() {
 
   const { data: orders, isLoading } = useCollection(ordersQuery);
 
-  const stats = useMemo(() => {
+  // Filtra pedidos com base no período selecionado
+  const filteredOrders = useMemo(() => {
     if (!orders) return [];
-    const recebido = orders.filter(o => o.paymentStatus === "Pago").reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0);
-    const pendente = orders.filter(o => o.paymentStatus === "Pendente").reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0);
-    const atrasado = orders.filter(o => o.paymentStatus === "Atrasado").reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0);
+    if (!date?.from || !date?.to) return orders;
+    
+    return orders.filter((order) => {
+      const orderDate = new Date(order.orderDate);
+      return isWithinInterval(orderDate, { 
+        start: date.from!, 
+        end: date.to! 
+      });
+    });
+  }, [orders, date]);
+
+  const stats = useMemo(() => {
+    if (!filteredOrders) return [];
+    const recebido = filteredOrders.filter(o => o.paymentStatus === "Pago").reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0);
+    const pendente = filteredOrders.filter(o => o.paymentStatus === "Pendente").reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0);
+    const atrasado = filteredOrders.filter(o => o.paymentStatus === "Atrasado").reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0);
 
     return [
       { title: "Entradas Totais", value: `R$ ${recebido.toFixed(2)}`, icon: ArrowDownCircle, color: "text-green-600", bg: "bg-green-100" },
       { title: "Pendentes", value: `R$ ${pendente.toFixed(2)}`, icon: Clock, color: "text-orange-600", bg: "bg-orange-100" },
       { title: "Atrasados", value: `R$ ${atrasado.toFixed(2)}`, icon: AlertCircle, color: "text-red-600", bg: "bg-red-100" },
     ];
-  }, [orders]);
+  }, [filteredOrders]);
 
   const proximosRecebimentos = useMemo(() => {
-    if (!orders) return [];
-    return orders
+    if (!filteredOrders) return [];
+    return filteredOrders
       .filter(o => o.paymentStatus === "Pendente" && o.dueDate)
       .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
       .slice(0, 5);
-  }, [orders]);
+  }, [filteredOrders]);
 
   if (isLoading) {
     return (
@@ -74,15 +103,46 @@ export default function FinanceiroPage() {
           </div>
           <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Controle real de entradas e contas a receber.</p>
         </div>
-        <div className="flex gap-3 w-full sm:w-auto">
-          <Button variant="outline" className="flex-1 sm:flex-none h-12 px-6 text-base font-bold rounded-xl border-muted">
-            <Calendar className="mr-2 size-5" />
-            Este Mês
-          </Button>
-          <Button variant="outline" className="flex-1 sm:flex-none h-12 px-6 text-base font-bold rounded-xl border-muted">
-            <Filter className="mr-2 size-5" />
-            Filtros
-          </Button>
+        
+        {/* Seletor de Período Monumental */}
+        <div className="w-full sm:w-auto">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                id="date"
+                variant={"outline"}
+                className={cn(
+                  "w-full sm:w-[400px] h-14 sm:h-16 text-lg sm:text-xl font-black justify-start text-left rounded-2xl border-4 border-muted hover:border-primary/20 bg-background shadow-xl transition-all active:scale-95",
+                  !date && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-3 h-6 w-6 text-primary" />
+                {date?.from ? (
+                  date.to ? (
+                    <>
+                      {format(date.from, "dd/MM/yy", { locale: ptBR })} -{" "}
+                      {format(date.to, "dd/MM/yy", { locale: ptBR })}
+                    </>
+                  ) : (
+                    format(date.from, "dd/MM/yy", { locale: ptBR })
+                  )
+                ) : (
+                  <span>Selecione o período</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 rounded-3xl overflow-hidden border-4 border-primary/10 shadow-2xl" align="center">
+              <Calendar
+                initialFocus
+                mode="range"
+                defaultMonth={date?.from}
+                selected={date}
+                onSelect={setDate}
+                numberOfMonths={1}
+                locale={ptBR}
+              />
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
 
@@ -115,11 +175,11 @@ export default function FinanceiroPage() {
                 <div>
                   <p className="font-black text-xl px-2">Pedido #{p.id.slice(-6)}</p>
                   <p className="text-sm text-muted-foreground font-bold flex items-center gap-2 mt-1">
-                    <Calendar className="size-4" /> Vence em: {new Date(p.dueDate).toLocaleDateString()}
+                    <CalendarIcon className="size-4" /> Vence em: {new Date(p.dueDate).toLocaleDateString()}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-black text-primary px-2">R$ {Number(p.finalAmount).toFixed(2)}</p>
+                  <p className="text-2xl font-black text-green-600 px-2">R$ {Number(p.finalAmount).toFixed(2)}</p>
                   <Badge variant="outline" className="text-orange-600 border-orange-200 font-black px-3 py-1 mt-2">
                     Aguardando
                   </Badge>
@@ -127,7 +187,7 @@ export default function FinanceiroPage() {
               </div>
             ))}
             {proximosRecebimentos.length === 0 && (
-              <p className="text-center py-16 text-muted-foreground text-lg font-medium italic">Nenhum recebimento pendente para exibir.</p>
+              <p className="text-center py-16 text-muted-foreground text-lg font-medium italic">Nenhum recebimento pendente para o período selecionado.</p>
             )}
           </CardContent>
         </Card>
@@ -138,7 +198,7 @@ export default function FinanceiroPage() {
             <CardDescription className="text-base font-medium">Últimos pagamentos recebidos com sucesso</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 p-6">
-            {orders?.filter(o => o.paymentStatus === "Pago").slice(0, 5).map((p, i) => (
+            {filteredOrders?.filter(o => o.paymentStatus === "Pago").slice(0, 5).map((p, i) => (
               <div key={i} className="flex items-center justify-between p-6 rounded-2xl bg-green-50/40 border border-green-100 shadow-sm hover:shadow-md transition-all">
                 <div className="flex items-center gap-4">
                   <div className="size-14 rounded-2xl bg-green-100 flex items-center justify-center text-green-700 shadow-inner">
@@ -147,7 +207,7 @@ export default function FinanceiroPage() {
                   <div>
                     <p className="font-black text-xl px-2">Via {p.paymentMethod}</p>
                     <p className="text-sm text-muted-foreground font-bold flex items-center gap-2 mt-1">
-                      <Calendar className="size-4" /> {new Date(p.orderDate).toLocaleDateString()}
+                      <CalendarIcon className="size-4" /> {new Date(p.orderDate).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
@@ -156,8 +216,8 @@ export default function FinanceiroPage() {
                 </div>
               </div>
             ))}
-            {orders?.filter(o => o.paymentStatus === "Pago").length === 0 && (
-              <p className="text-center py-16 text-muted-foreground text-lg font-medium italic">Nenhuma entrada confirmada registrada ainda.</p>
+            {filteredOrders?.filter(o => o.paymentStatus === "Pago").length === 0 && (
+              <p className="text-center py-16 text-muted-foreground text-lg font-medium italic">Nenhuma entrada confirmada registrada no período.</p>
             )}
           </CardContent>
         </Card>
