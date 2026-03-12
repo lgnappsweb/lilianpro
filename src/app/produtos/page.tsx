@@ -63,7 +63,7 @@ export default function ProdutosPage() {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8 animate-in fade-in duration-500 w-full overflow-x-hidden">
       <div className="flex flex-col items-center text-center gap-6 px-2 mb-10">
         <div className="w-full">
           <div className="flex flex-col items-center justify-center gap-6">
@@ -78,42 +78,44 @@ export default function ProdutosPage() {
         </Button>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-6 text-muted-foreground" />
+      <div className="flex flex-col gap-6 w-full">
+        <div className="relative w-full">
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 size-6 sm:size-8 text-muted-foreground" />
           <Input
             placeholder="Pesquisar por nome do produto..."
-            className="pl-12 h-14 text-lg bg-background rounded-2xl shadow-inner border-muted focus-visible:ring-primary font-bold"
+            className="pl-14 sm:pl-20 h-14 sm:h-24 text-lg sm:text-3xl bg-background rounded-xl sm:rounded-[2rem] border-4 border-muted shadow-inner font-black"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <div className="flex gap-3 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+        
+        {/* Filtros em Grade no Mobile para exibição total */}
+        <div className="grid grid-cols-2 sm:flex sm:flex-row gap-3 w-full md:w-auto">
           <Button
             variant={activeBrand === null ? "default" : "outline"}
             onClick={() => setActiveBrand(null)}
-            className={`h-14 px-6 text-base font-bold rounded-2xl shrink-0 ${activeBrand === null ? "shadow-lg" : "border-muted"}`}
+            className={`h-12 sm:h-14 px-4 sm:px-8 text-sm sm:text-base font-black rounded-xl sm:rounded-2xl transition-all ${activeBrand === null ? "shadow-lg scale-105" : "border-muted opacity-60"}`}
           >
             Todos
           </Button>
           <Button
             variant={activeBrand === "VERDE (N)" ? "default" : "outline"}
             onClick={() => setActiveBrand("VERDE (N)")}
-            className={`h-14 px-6 text-base font-bold rounded-2xl shrink-0 ${activeBrand === "VERDE (N)" ? "bg-green-600 hover:bg-green-700 shadow-lg border-none text-white" : "border-muted"}`}
+            className={`h-12 sm:h-14 px-4 sm:px-8 text-sm sm:text-base font-black rounded-xl sm:rounded-2xl transition-all ${activeBrand === "VERDE (N)" ? "bg-green-600 hover:bg-green-700 shadow-lg scale-105 border-none text-white" : "border-muted opacity-60"}`}
           >
             Verde (N)
           </Button>
           <Button
             variant={activeBrand === "ROSA (A)" ? "default" : "outline"}
             onClick={() => setActiveBrand("ROSA (A)")}
-            className={`h-14 px-6 text-base font-bold rounded-2xl shrink-0 ${activeBrand === "ROSA (A)" ? "bg-primary hover:bg-primary/90 shadow-lg border-none text-white" : "border-muted"}`}
+            className={`h-12 sm:h-14 px-4 sm:px-8 text-sm sm:text-base font-black rounded-xl sm:rounded-2xl transition-all ${activeBrand === "ROSA (A)" ? "bg-primary hover:bg-primary/90 shadow-lg scale-105 border-none text-white" : "border-muted opacity-60"}`}
           >
             Rosa (A)
           </Button>
           <Button
             variant={activeBrand === "MARROM (C&E)" ? "default" : "outline"}
             onClick={() => setActiveBrand("MARROM (C&E)")}
-            className={`h-14 px-6 text-base font-bold rounded-2xl shrink-0 ${activeBrand === "MARROM (C&E)" ? "bg-amber-900 hover:bg-amber-950 shadow-lg border-none text-white" : "border-muted"}`}
+            className={`h-12 sm:h-14 px-4 sm:px-8 text-sm sm:text-base font-black rounded-xl sm:rounded-2xl transition-all ${activeBrand === "MARROM (C&E)" ? "bg-amber-900 hover:bg-amber-950 shadow-lg scale-105 border-none text-white" : "border-muted opacity-60"}`}
           >
             Marrom (C&E)
           </Button>
@@ -121,14 +123,14 @@ export default function ProdutosPage() {
       </div>
 
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-32 gap-4 text-muted-foreground">
+        <div className="flex flex-col items-center justify-center py-32 gap-6 text-muted-foreground">
           <Loader2 className="size-16 animate-spin text-primary" />
-          <p className="text-xl font-medium animate-pulse text-center px-2">Carregando seu catálogo...</p>
+          <p className="text-2xl font-black animate-pulse uppercase tracking-widest text-center">Carregando catálogo...</p>
         </div>
       ) : (
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 w-full">
           {filteredProducts.map((product) => (
-            <Card key={product.id} className="border-none shadow-md group hover:shadow-2xl transition-all rounded-3xl overflow-hidden border-b-4 border-b-primary/20">
+            <Card key={product.id} className="border-none shadow-md group hover:shadow-2xl transition-all rounded-[2rem] overflow-hidden border-b-8 border-b-primary/10">
               <div className="relative aspect-square overflow-hidden bg-muted">
                 <Image
                   src={product.imageUrl || `https://picsum.photos/seed/${product.id}/500/500`}
@@ -138,36 +140,38 @@ export default function ProdutosPage() {
                   data-ai-hint="beauty product"
                 />
                 <div className="absolute top-4 left-4 flex gap-2">
-                  <Badge className={`text-xs font-black px-4 py-1.5 rounded-xl shadow-lg border-none text-white ${getBrandBadgeColor(product.brand)}`}>
+                  <Badge className={`text-[10px] font-black px-4 py-1.5 rounded-xl shadow-lg border-none text-white ${getBrandBadgeColor(product.brand)}`}>
                     {product.brand}
                   </Badge>
                 </div>
               </div>
-              <CardHeader className="pb-3 pt-6 px-6">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="space-y-1">
-                    <CardTitle className="text-2xl font-black leading-tight group-hover:text-primary transition-colors line-clamp-2 px-2">{product.name}</CardTitle>
-                    <CardDescription className="text-sm font-bold uppercase tracking-wider text-primary/60 px-2">{product.category}</CardDescription>
-                  </div>
+              <CardHeader className="pb-3 pt-8 px-8 text-left">
+                <div className="space-y-2">
+                  <CardTitle className="text-2xl font-black leading-tight group-hover:text-primary transition-colors line-clamp-2 px-2 italic uppercase tracking-tighter">
+                    {product.name}
+                  </CardTitle>
+                  <CardDescription className="text-xs font-black uppercase tracking-widest text-primary/60 px-2">
+                    {product.category}
+                  </CardDescription>
                 </div>
               </CardHeader>
-              <CardContent className="pb-6 px-6 space-y-4">
-                <div className="flex items-center justify-between">
-                  <p className="text-3xl font-black text-primary px-2">R$ {Number(product.salePrice).toFixed(2)}</p>
-                  <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-xl">
-                    <Package className="size-4" />
+              <CardContent className="pb-8 px-8 space-y-6">
+                <div className="flex items-center justify-between border-t-2 pt-6">
+                  <p className="text-3xl font-black text-primary tracking-tighter px-2">R$ {Number(product.salePrice).toFixed(2)}</p>
+                  <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-xl uppercase tracking-tighter">
+                    <Package className="size-3" />
                     <span>COD: {product.productCode}</span>
                   </div>
                 </div>
               </CardContent>
-              <CardFooter className="pt-0 px-6 pb-6 flex gap-3">
-                <Button variant="secondary" className="flex-1 h-12 text-base font-bold rounded-2xl shadow-sm border border-border/50" size="sm">
+              <CardFooter className="pt-0 px-8 pb-8 flex gap-3">
+                <Button variant="secondary" className="flex-1 h-12 text-xs font-black rounded-xl shadow-sm border-2 border-muted uppercase tracking-widest" size="sm">
                   <Edit3 className="mr-2 size-4" />
                   Editar
                 </Button>
                 <Button 
                   variant="ghost" 
-                  className="size-12 rounded-2xl text-destructive hover:bg-destructive/10 border border-transparent hover:border-destructive/20" 
+                  className="size-12 rounded-xl text-destructive hover:bg-destructive/10 border-2 border-transparent hover:border-destructive/20" 
                   size="icon"
                   onClick={() => handleDelete(product)}
                 >
@@ -180,10 +184,10 @@ export default function ProdutosPage() {
       )}
 
       {!isLoading && filteredProducts.length === 0 && (
-        <div className="text-center py-32 bg-muted/10 rounded-3xl border-2 border-dashed border-muted">
-          <ShoppingBag className="size-20 text-muted-foreground/30 mx-auto mb-6" />
-          <h3 className="text-2xl font-black text-foreground">Nenhum produto encontrado</h3>
-          <p className="text-lg text-muted-foreground mt-2 font-medium">Adicione produtos ao seu estoque para começar as vendas.</p>
+        <div className="text-center py-32 bg-muted/10 rounded-[2.5rem] border-4 border-dashed border-muted w-full">
+          <ShoppingBag className="size-24 text-muted-foreground/20 mx-auto mb-6" />
+          <h3 className="font-black text-3xl text-muted-foreground uppercase tracking-tighter">Catálogo Vazio</h3>
+          <p className="text-xl text-muted-foreground mt-4 font-bold italic opacity-60 px-4">Adicione produtos ao seu estoque para começar a vender com estilo.</p>
         </div>
       )}
     </div>
