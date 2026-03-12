@@ -150,30 +150,44 @@ export default function ProdutosPage() {
       ) : (
         <div className="grid grid-cols-1 gap-6 w-full">
           {filteredProducts.map((product) => (
-            <Card key={product.id} className="bg-background border-4 border-primary/5 rounded-2xl p-6 shadow-xl hover:border-primary/20 transition-all flex flex-col justify-between w-full">
+            <Card key={product.id} className="bg-background border-4 border-primary/5 rounded-2xl p-6 shadow-xl hover:border-primary/20 transition-all flex flex-col justify-between w-full relative overflow-hidden">
+              {/* Categoria no canto superior direito para Mobile, Inline para Desktop */}
+              <div className="absolute top-4 right-4 sm:static flex justify-end">
+                <Badge variant="outline" className="text-[8px] sm:text-[10px] font-black border-2 border-primary text-muted-foreground uppercase px-3 py-1 rounded-lg bg-background/50 backdrop-blur-sm shadow-sm">
+                  {product.category}
+                </Badge>
+              </div>
+
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-6">
-                <div className="flex items-center gap-6">
-                  <div className="size-14 sm:size-20 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner shrink-0">
-                    <Package className="size-8 sm:size-10" />
-                  </div>
-                  <div className="text-left">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Badge className={`text-[8px] sm:text-[10px] font-black px-3 py-1 rounded-lg border-none text-white ${getBrandBadgeColor(product.brand)}`}>
-                        {product.brand}
-                      </Badge>
-                      <Badge variant="outline" className="text-[8px] sm:text-[10px] font-black border-2 border-muted text-muted-foreground uppercase">
-                        {product.category}
-                      </Badge>
+                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 w-full">
+                  {/* Marca em cima do ícone no Mobile */}
+                  <div className="flex flex-col items-center gap-2 shrink-0 mt-4 sm:mt-0">
+                    <Badge className={`text-[8px] sm:text-[10px] font-black px-3 py-1 rounded-lg border-none text-white ${getBrandBadgeColor(product.brand)}`}>
+                      {product.brand}
+                    </Badge>
+                    <div className="size-14 sm:size-20 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                      <Package className="size-8 sm:size-10" />
                     </div>
-                    <h3 className="font-black text-xl sm:text-3xl text-primary uppercase tracking-tighter italic leading-tight px-2 line-clamp-1">
+                  </div>
+
+                  <div className="text-center sm:text-left flex-1 min-w-0">
+                    <h3 className="font-black text-2xl sm:text-3xl text-primary uppercase tracking-tighter italic leading-tight px-2 line-clamp-2 sm:line-clamp-1">
                       {product.name}
                     </h3>
                     <p className="text-[10px] sm:text-sm text-muted-foreground font-bold mt-1 opacity-60 uppercase tracking-widest px-2">
                       COD: {product.productCode}
                     </p>
+
+                    {/* Preço em baixo no Mobile */}
+                    <div className="mt-4 sm:hidden">
+                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Preço Venda</p>
+                      <p className="text-4xl font-black text-primary tracking-tighter px-2 leading-none">R$ {Number(product.salePrice).toFixed(2)}</p>
+                    </div>
                   </div>
                 </div>
-                <div className="text-left sm:text-right border-t-2 sm:border-none pt-4 sm:pt-0">
+
+                {/* Preço no Desktop */}
+                <div className="hidden sm:block text-right border-none pt-0">
                   <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Preço Venda</p>
                   <p className="text-3xl sm:text-5xl font-black text-primary tracking-tighter px-2 leading-none">R$ {Number(product.salePrice).toFixed(2)}</p>
                 </div>
