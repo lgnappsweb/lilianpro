@@ -19,6 +19,7 @@ import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebas
 import { collection, doc } from "firebase/firestore";
 import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
+import Link from "next/link";
 
 export default function ProdutosPage() {
   const { user } = useUser();
@@ -68,13 +69,15 @@ export default function ProdutosPage() {
         <div className="w-full">
           <div className="flex flex-col items-center justify-center gap-6">
             <Package className="size-16 sm:size-24 text-primary" />
-            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap px-2">PRODUTOS</h1>
+            <h1 className="text-5xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap px-2">PRODUTOS</h1>
           </div>
           <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Organize seus produtos da Avon, Natura e outras marcas.</p>
         </div>
-        <Button className="w-full h-14 sm:h-20 px-10 text-xl font-black rounded-2xl shadow-xl bg-primary hover:bg-primary/90 transition-transform hover:scale-105">
-          <Plus className="mr-3 size-6 sm:size-8" />
-          Novo Produto
+        <Button asChild className="w-full h-14 sm:h-20 px-10 text-xl font-black rounded-2xl shadow-xl bg-primary hover:bg-primary/90 transition-transform hover:scale-105">
+          <Link href="/produtos/novo">
+            <Plus className="mr-3 size-6 sm:size-8" />
+            Novo Produto
+          </Link>
         </Button>
       </div>
 
@@ -89,7 +92,6 @@ export default function ProdutosPage() {
           />
         </div>
         
-        {/* Filtros em Grade no Mobile para exibição total */}
         <div className="grid grid-cols-2 sm:flex sm:flex-row gap-3 w-full md:w-auto">
           <Button
             variant={activeBrand === null ? "default" : "outline"}
