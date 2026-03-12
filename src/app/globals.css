@@ -37,7 +37,6 @@
   }
 
   .dark {
-    /* Tom mais preto e neutro, removendo o avermelhado */
     --background: 0 0% 2%;
     --foreground: 0 0% 98%;
     --card: 0 0% 4%;
@@ -54,7 +53,7 @@
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 20%; /* Borda padrão levemente visível */
+    --border: 0 0% 20%;
     --input: 0 0% 15%;
     --ring: 336 78% 55%;
 
@@ -80,10 +79,9 @@
     @apply font-headline font-black tracking-tight;
   }
 
-  /* Efeito de destaque: borda clara em todos os cards no modo escuro */
-  .dark .card, 
-  .dark div[class*="rounded-"][class*="border"],
-  .dark div[class*="rounded-"][class*="shadow"] {
+  /* Efeito de destaque: borda clara em todos os cards no modo escuro, exceto a borda principal da página */
+  .dark div[class*="rounded-"][class*="border"]:not(.border-primary),
+  .dark div[class*="rounded-"][class*="shadow"]:not(.border-primary) {
     border-color: rgba(255, 255, 255, 0.15) !important;
   }
 }
