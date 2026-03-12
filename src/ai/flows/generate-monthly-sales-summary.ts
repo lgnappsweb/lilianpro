@@ -40,17 +40,27 @@ export type GenerateMonthlySalesSummaryOutput = z.infer<
   typeof GenerateMonthlySalesSummaryOutputSchema
 >;
 
+/**
+ * Função principal para gerar o resumo. 
+ * É ultra-segura para evitar que o Next.js quebre se a chave de IA estiver faltando.
+ */
 export async function generateMonthlySalesSummary(
   input: GenerateMonthlySalesSummaryInput
 ): Promise<GenerateMonthlySalesSummaryOutput> {
+  // Verificação rápida de ambiente para evitar chamadas inúteis que resultam em erro fatal
+  if (!process.env.GEMINI_API_KEY && !process.env.GOOGLE_GENAI_API_KEY) {
+    return {
+      summary: "O resumo inteligente está aguardando a configuração da GEMINI_API_KEY no arquivo .env para ser ativado."
+    };
+  }
+
   try {
-    // Chama o fluxo e garante que ele retorne um objeto válido mesmo em caso de falha interna
     const result = await generateMonthlySalesSummaryFlow(input);
     return result;
   } catch (error: any) {
-    console.error("Erro fatal no fluxo de resumo mensal:", error);
+    console.warn("Aviso: Falha controlada ao gerar resumo mensal de IA:", error.message || "Erro desconhecido");
     return {
-      summary: "O resumo inteligente está temporariamente indisponível. Para ativá-lo, configure a chave GEMINI_API_KEY no arquivo .env."
+      summary: "Não foi possível gerar os insights automáticos agora. Verifique sua conexão e a validade da chave de API do Google Gemini."
     };
   }
 }
@@ -96,22 +106,22 @@ const generateMonthlySalesSummaryFlow = ai.defineFlow(
   },
   async input => {
     try {
-      // Tenta gerar a resposta da IA. Se a API Key estiver ausente, o Genkit lançará um erro aqui.
+      // Tenta gerar a resposta da IA.
       const {output} = await prompt(input);
       
       if (!output || !output.summary) {
         return {
-          summary: "A IA não conseguiu gerar o resumo com os dados atuais. Por favor, tente novamente mais tarde."
+          summary: "A IA processou os dados, mas não conseguiu formatar um resumo legível no momento."
         };
       }
       
       return output;
     } catch (error: any) {
-      // Captura o erro (ex: falta de chave de API) e retorna um fallback sem quebrar o servidor
-      console.error("Erro ao chamar prompt da IA:", error.message || error);
+      // Captura o erro específico do Genkit e retorna um fallback seguro
+      console.warn("Erro controlado dentro do fluxo Genkit:", error.message || error);
       
       return {
-        summary: "Os insights automáticos do mês não puderam ser gerados agora. Verifique se a sua chave de API do Google Gemini está configurada corretamente no ambiente de desenvolvimento."
+        summary: "Os insights automáticos do mês estão temporariamente indisponíveis devido a uma falha na comunicação com o serviço de IA."
       };
     }
   }

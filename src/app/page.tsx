@@ -86,14 +86,16 @@ export default async function DashboardPage() {
     totalProductsRegistered: 156,
   };
 
-  let aiSummaryText = "Carregando insights...";
+  let aiSummaryText = "Os insights automáticos estão sendo preparados...";
   
   try {
+    // Chamada ultra-segura para o fluxo de IA
     const aiSummary = await generateMonthlySalesSummary(aiSummaryInput);
-    aiSummaryText = aiSummary?.summary || "Não foi possível obter os insights automáticos.";
+    aiSummaryText = aiSummary?.summary || "Não foi possível carregar o resumo inteligente neste momento.";
   } catch (error) {
-    console.error("Erro crítico na DashboardPage ao chamar IA:", error);
-    aiSummaryText = "O resumo inteligente está desativado temporariamente devido a uma falha na conexão com o serviço de IA.";
+    // Falha silenciosa para garantir que a dashboard carregue o resto dos dados
+    console.error("DashboardPage: Falha controlada ao obter resumo de IA:", error);
+    aiSummaryText = "O resumo de IA está temporariamente indisponível. O restante dos seus dados está visível abaixo.";
   }
 
   return (
