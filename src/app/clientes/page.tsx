@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from "react";
@@ -13,11 +14,13 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
   Search,
-  Plus,
   MoreHorizontal,
   MessageCircle,
   Phone,
   UserPlus,
+  Trash2,
+  FileText,
+  Edit,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -27,9 +30,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import Link from "next/link";
+import { useToast } from "@/hooks/use-toast";
 
-const mockClientes = [
+const initialClientes = [
   { id: "1", name: "Maria Oliveira", phone: "11999998888", city: "São Paulo", neighborhood: "Jardins", status: "Ativo", orders: 12 },
   { id: "2", name: "Ana Paula Souza", phone: "11988887777", city: "São Paulo", neighborhood: "Itaim Bibi", status: "Inativo", orders: 2 },
   { id: "3", name: "Juliana Ferreira", phone: "11977776666", city: "Osasco", neighborhood: "Centro", status: "Ativo", orders: 25 },
@@ -38,14 +52,29 @@ const mockClientes = [
 ];
 
 export default function ClientesPage() {
+  const [clientes, setClientes] = useState(initialClientes);
   const [searchTerm, setSearchTerm] = useState("");
+  const [clientToDelete, setClientToDelete] = useState<typeof initialClientes[0] | null>(null);
+  const { toast } = useToast();
 
-  const filteredClientes = mockClientes.filter(c =>
-    c.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredClientes = clientes.filter(c =>
+    c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    c.neighborhood.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const openWhatsApp = (phone: string) => {
     window.open(`https://wa.me/55${phone}`, "_blank");
+  };
+
+  const handleDeleteConfirm = () => {
+    if (clientToDelete) {
+      setClientes(clientes.filter(c => c.id !== clientToDelete.id));
+      toast({
+        title: "Cliente excluída",
+        description: `${clientToDelete.name} foi removida com sucesso.`,
+      });
+      setClientToDelete(null);
+    }
   };
 
   return (
@@ -73,9 +102,6 @@ export default function ClientesPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <Button variant="outline" className="h-10 hidden sm:flex">
-              Filtros
-            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -136,16 +162,31 @@ export default function ClientesPage() {
                               <MoreHorizontal className="size-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuLabel>Opções</DropdownMenuLabel>
+                          <DropdownMenuContent align="end" className="w-56">
+                            <DropdownMenuLabel>Opções para {cliente.name}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
-                              <Link href={`/clientes/${cliente.id}`}>Ver Perfil Completo</Link>
+                              <Link href={`/clientes/${cliente.id}`} className="cursor-pointer">
+                                <FileText className="mr-2 size-4" />
+                                Ver Perfil Completo
+                              </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem>Histórico de Compras</DropdownMenuItem>
-                            <DropdownMenuItem>Editar Dados</DropdownMenuItem>
+                            <DropdownMenuItem className="cursor-pointer">
+                              <Search className="mr-2 size-4" />
+                              Histórico de Compras
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="cursor-pointer">
+                              <Edit className="mr-2 size-4" />
+                              Editar Dados
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-destructive">Excluir</DropdownMenuItem>
+                            <DropdownMenuItem 
+                              className="text-destructive cursor-pointer"
+                              onSelect={() => setClientToDelete(cliente)}
+                            >
+                              <Trash2 className="mr-2 size-4" />
+                              Excluir Cliente
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
@@ -166,6 +207,25 @@ export default function ClientesPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Alerta de Confirmação de Exclusão */}
+      <AlertDialog open={!!clientToDelete} onOpenChange={(open) => !open && setClientToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tem certeza que deseja excluir?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. Isso excluirá permanentemente os dados da cliente 
+              <strong> {clientToDelete?.name}</strong> e removerá seu histórico de nosso sistema.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Sim, excluir cliente
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
