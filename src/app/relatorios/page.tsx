@@ -52,7 +52,7 @@ export default function RelatoriosPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
           <h1 className="text-4xl font-black tracking-tight text-primary font-headline">Relatórios e Análises</h1>
-          <p className="text-lg text-muted-foreground mt-2 font-medium">Visualize o desempenho do seu negócio em gráficos detalhados.</p>
+          <p className="text-sm sm:text-lg text-muted-foreground mt-2 font-medium">Visualize o desempenho do seu negócio em gráficos detalhados.</p>
         </div>
         <Button variant="outline" className="h-14 px-8 text-lg font-black rounded-2xl border-muted text-primary">
           <Download className="mr-3 size-6" />

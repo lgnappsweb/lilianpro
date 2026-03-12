@@ -40,7 +40,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import Link from "next/link";
+import Link from "link";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, doc } from "firebase/firestore";
@@ -93,7 +93,7 @@ export default function ClientesPage() {
             <Users className="size-10 sm:size-16 text-primary" />
             <h1 className="text-4xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm">CLIENTES</h1>
           </div>
-          <p className="text-lg sm:text-xl text-muted-foreground mt-3 font-bold opacity-60 uppercase tracking-widest">Gerencie seu catálogo de contatos e histórico.</p>
+          <p className="text-sm sm:text-xl text-muted-foreground mt-3 font-bold opacity-60 uppercase tracking-widest">Gerencie seu catálogo de contatos e histórico.</p>
         </div>
         <Button asChild className="w-full h-16 px-10 text-xl font-black rounded-2xl shadow-xl bg-primary hover:bg-primary/90 transition-transform hover:scale-105">
           <Link href="/clientes/novo">

@@ -146,7 +146,7 @@ export default function DashboardPage() {
       <div className="flex flex-col items-start text-left sm:items-center sm:text-center gap-6 px-2">
         <div className="w-full">
           <h1 className="text-3xl md:text-4xl font-black tracking-tight text-primary font-headline uppercase">Olá, {user?.displayName || 'Administradora'}!</h1>
-          <p className="text-xl text-muted-foreground mt-2 font-bold opacity-80">Veja como está o seu negócio hoje.</p>
+          <p className="text-base sm:text-xl text-muted-foreground mt-2 font-bold opacity-80">Veja como está o seu negócio hoje.</p>
         </div>
         <Button asChild className="w-full h-16 px-10 text-xl font-black shadow-xl rounded-2xl bg-primary hover:bg-primary/90 transition-all hover:scale-105">
           <Link href="/vendas/nova">

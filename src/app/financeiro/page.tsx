@@ -68,7 +68,7 @@ export default function FinanceiroPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
           <h1 className="text-4xl font-black tracking-tight text-primary font-headline">Controle Financeiro</h1>
-          <p className="text-lg text-muted-foreground mt-2 font-medium">Dados reais de entradas e contas a receber.</p>
+          <p className="text-sm sm:text-lg text-muted-foreground mt-2 font-medium">Dados reais de entradas e contas a receber.</p>
         </div>
         <div className="flex gap-3">
           <Button variant="outline" className="h-12 px-6 text-base font-bold rounded-xl border-muted">
