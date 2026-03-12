@@ -124,9 +124,16 @@ export default function LoginPage() {
               <Button type="submit" className="w-full h-14 text-lg font-black uppercase tracking-widest shadow-xl" disabled={isLoading}>
                 {isLoading ? <><Loader2 className="mr-2 size-5 animate-spin" /> Validando...</> : <><LogIn className="mr-2 size-5" /> Entrar no Sistema</>}
               </Button>
-              <div className="text-center">
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Administradora Cadastrada</p>
-                <p className="text-xs text-primary font-black italic">{email}</p>
+              <div className="text-center space-y-4">
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Administradora Cadastrada</p>
+                  <p className="text-xs text-primary font-black italic">{email}</p>
+                </div>
+                <div className="pt-4 border-t-2 border-muted/50">
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-black opacity-40 italic">
+                    Desenvolvedor: Lucas Gregório do Nascimento
+                  </p>
+                </div>
               </div>
             </CardFooter>
           </form>
