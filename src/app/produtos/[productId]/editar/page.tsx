@@ -189,7 +189,7 @@ export default function EditarProdutoPage() {
         <div className="w-full">
           <div className="flex flex-col items-center justify-center gap-6">
             <Edit className="size-16 sm:size-24 text-primary" />
-            <h1 className="text-5xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap px-2">EDITAR PRODUTO</h1>
+            <h1 className="text-[2.6rem] sm:text-5xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap px-2">EDITAR PRODUTO</h1>
           </div>
           <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">ATUALIZE AS INFORMAÇÕES DO SEU ITEM ELITE</p>
         </div>
