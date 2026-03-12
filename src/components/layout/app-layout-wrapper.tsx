@@ -49,15 +49,15 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
       <SidebarInset className="overflow-x-hidden bg-background">
         {/* Branding condicional exclusivo do Dashboard */}
         {isDashboard ? (
-          <div className="flex flex-col items-center justify-center pt-8 pb-4 gap-3 animate-in fade-in slide-in-from-top-4 duration-700">
-            <div className="bg-primary p-4 rounded-3xl text-primary-foreground shadow-lg border-2 border-white sm:p-5">
-              <Sparkles className="size-10 sm:size-12" />
+          <div className="flex flex-col items-center justify-center pt-10 pb-6 gap-4 animate-in fade-in slide-in-from-top-4 duration-700">
+            <div className="bg-primary p-5 rounded-[2rem] text-primary-foreground shadow-xl border-4 border-white sm:p-6">
+              <Sparkles className="size-14 sm:size-16" />
             </div>
-            <div className="text-center">
-              <h1 className="text-4xl sm:text-6xl font-black tracking-tighter text-primary font-headline italic drop-shadow-sm px-4">
+            <div className="text-center px-4">
+              <h1 className="text-5xl sm:text-7xl font-black tracking-tighter text-primary font-headline italic drop-shadow-md">
                 GlamGestão
               </h1>
-              <p className="text-[10px] sm:text-xs text-muted-foreground font-black uppercase tracking-[0.25em] mt-1 opacity-60">
+              <p className="text-[11px] sm:text-sm text-muted-foreground font-black uppercase tracking-[0.3em] mt-2 opacity-70">
                 LINHAS ROSA VERDE E MARROM
               </p>
             </div>
@@ -74,7 +74,7 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
         )}
 
         <main className="flex-1 p-3 sm:p-6 pb-24 md:pb-12 overflow-x-hidden">
-          <div className="max-w-7xl mx-auto border-[3px] border-primary rounded-[2rem] sm:rounded-[3rem] p-4 sm:p-8 bg-card/60 backdrop-blur-xl shadow-xl overflow-x-hidden relative min-h-[calc(100vh-16rem)] w-full">
+          <div className="max-w-7xl mx-auto border-[4px] border-primary rounded-[2.5rem] sm:rounded-[3.5rem] p-4 sm:p-8 bg-card/60 backdrop-blur-xl shadow-2xl overflow-x-hidden relative min-h-[calc(100vh-16rem)] w-full">
             {children}
           </div>
         </main>
