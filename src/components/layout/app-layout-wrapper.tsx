@@ -1,3 +1,4 @@
+
 "use client";
 
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
@@ -44,14 +45,14 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
       <SidebarInset className="overflow-x-hidden bg-background">
         {/* Branding Refinado com Subtítulo Personalizado */}
         <div className="flex flex-col items-center justify-center pt-8 pb-6 gap-4 animate-in fade-in slide-in-from-top-4 duration-700">
-          <div className="bg-primary p-4 rounded-[1.5rem] text-primary-foreground shadow-xl scale-90 md:scale-100 border-2 border-white">
-            <Sparkles className="size-10 md:size-12" />
+          <div className="bg-primary p-5 md:p-6 rounded-[2rem] text-primary-foreground shadow-xl border-4 border-white">
+            <Sparkles className="size-14 md:size-16" />
           </div>
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-primary font-headline italic drop-shadow-sm px-4">
+            <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-primary font-headline italic drop-shadow-sm px-4">
               GlamGestão
             </h1>
-            <p className="text-sm md:text-base text-muted-foreground font-black uppercase tracking-[0.3em] mt-1 opacity-60">
+            <p className="text-base md:text-lg text-muted-foreground font-black uppercase tracking-[0.3em] mt-1 opacity-60">
               LINHAS ROSA VERDE E MARROM
             </p>
           </div>
