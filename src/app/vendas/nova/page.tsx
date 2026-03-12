@@ -142,31 +142,31 @@ export default function NovaVendaPage() {
   };
 
   return (
-    <div className="space-y-10 max-w-5xl mx-auto w-full animate-in fade-in duration-500 pb-32">
+    <div className="space-y-6 sm:space-y-10 max-w-5xl mx-auto w-full animate-in fade-in duration-500 pb-32">
       <div className="px-2 text-center">
-        <h1 className="text-4xl md:text-5xl font-black tracking-tight text-primary font-headline uppercase">Nova Venda</h1>
-        <p className="text-xl text-muted-foreground mt-2 font-bold opacity-60">Cadastre uma venda rapidamente no seu sistema.</p>
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-primary font-headline uppercase">Nova Venda</h1>
+        <p className="text-base sm:text-lg md:text-xl text-muted-foreground mt-2 font-bold opacity-60">Cadastre uma venda rapidamente no seu sistema.</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-10">
-        {/* 1. Selecionar Cliente - Container Isolado */}
-        <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="bg-muted/30 p-8">
-            <CardTitle className="flex items-center gap-4 text-2xl md:text-3xl font-black">
-              <User className="size-8 text-primary" />
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6 sm:gap-10">
+        {/* 1. Selecionar Cliente */}
+        <Card className="border-none shadow-xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
+          <CardHeader className="bg-muted/30 p-6 sm:p-8">
+            <CardTitle className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 text-xl sm:text-2xl md:text-3xl font-black text-center sm:text-left">
+              <User className="size-6 sm:size-8 text-primary" />
               1. Selecionar Cliente
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-8">
+          <CardContent className="p-6 sm:p-8">
             <div className="space-y-4">
-              <Label className="text-sm font-black uppercase tracking-widest text-muted-foreground">Quem está comprando?</Label>
+              <Label className="text-[10px] sm:text-sm font-black uppercase tracking-widest text-muted-foreground block text-center sm:text-left">Quem está comprando?</Label>
               <Select onValueChange={setSelectedClientId} value={selectedClientId}>
-                <SelectTrigger className="h-16 text-xl font-bold rounded-2xl bg-background border-4 border-muted shadow-inner focus:border-primary/30 transition-all">
-                  <SelectValue placeholder="Busque pelo nome da cliente..." />
+                <SelectTrigger className="h-12 sm:h-16 text-base sm:text-xl font-bold rounded-xl sm:rounded-2xl bg-background border-4 border-muted shadow-inner focus:border-primary/30 transition-all">
+                  <SelectValue placeholder="Busque pelo nome..." />
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl shadow-2xl border-2">
                   {clients?.map(c => (
-                    <SelectItem key={c.id} value={c.id} className="text-lg font-bold p-4 focus:bg-primary/5">{c.fullName}</SelectItem>
+                    <SelectItem key={c.id} value={c.id} className="text-base sm:text-lg font-bold p-3 sm:p-4 focus:bg-primary/5">{c.fullName}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -174,24 +174,24 @@ export default function NovaVendaPage() {
           </CardContent>
         </Card>
 
-        {/* 2. Adicionar Produtos - Container Isolado */}
-        <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="flex flex-row items-center justify-between bg-muted/30 p-8">
-            <CardTitle className="flex items-center gap-4 text-2xl md:text-3xl font-black">
-              <Package className="size-8 text-primary" />
+        {/* 2. Adicionar Produtos */}
+        <Card className="border-none shadow-xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
+          <CardHeader className="flex flex-col sm:flex-row items-center justify-between bg-muted/30 p-6 sm:p-8 gap-4">
+            <CardTitle className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 text-xl sm:text-2xl md:text-3xl font-black text-center sm:text-left">
+              <Package className="size-6 sm:size-8 text-primary" />
               2. Produtos
             </CardTitle>
-            <Button type="button" variant="outline" size="lg" className="h-14 px-8 text-lg font-black border-4 border-primary/20 text-primary rounded-2xl hover:bg-primary/5 transition-all" onClick={addItem}>
-              <Plus className="size-6 mr-2" />
-              Item
+            <Button type="button" variant="outline" size="lg" className="w-full sm:w-auto h-12 sm:h-14 px-6 sm:px-8 text-base sm:text-lg font-black border-4 border-primary/20 text-primary rounded-xl sm:rounded-2xl hover:bg-primary/5 transition-all" onClick={addItem}>
+              <Plus className="size-5 sm:size-6 mr-2" />
+              Adicionar Item
             </Button>
           </CardHeader>
-          <CardContent className="p-8 space-y-8">
+          <CardContent className="p-4 sm:p-8 space-y-4 sm:space-y-8">
             {selectedItems.map((item, index) => (
-              <div key={item.id} className="grid grid-cols-1 md:grid-cols-12 gap-6 items-end animate-in slide-in-from-left-4 duration-500 bg-muted/10 p-8 rounded-[2rem] border-2 border-border/30 relative group">
+              <div key={item.id} className="flex flex-col gap-4 animate-in slide-in-from-left-4 duration-500 bg-muted/10 p-4 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] border-2 border-border/30 relative group">
                 
-                <div className={cn("space-y-3 col-span-1", item.productId ? "md:col-span-6" : "md:col-span-11")}>
-                  <Label className="text-sm font-black uppercase tracking-widest text-muted-foreground">Escolha o Produto</Label>
+                <div className="space-y-2">
+                  <Label className="text-[10px] sm:text-sm font-black uppercase tracking-widest text-muted-foreground block text-center sm:text-left">Escolha o Produto</Label>
                   <Select onValueChange={(val) => {
                     const product = products?.find(p => p.id === val);
                     if (product) {
@@ -202,25 +202,25 @@ export default function NovaVendaPage() {
                       setSelectedItems(newItems);
                     }
                   }} value={item.productId}>
-                    <SelectTrigger className="h-14 text-lg font-black rounded-xl bg-background border-2 border-border shadow-sm group-hover:border-primary/20 transition-all">
-                      <SelectValue placeholder="Selecione..." />
+                    <SelectTrigger className="h-12 sm:h-14 text-sm sm:text-lg font-black rounded-xl bg-background border-2 border-border shadow-sm group-hover:border-primary/20 transition-all">
+                      <SelectValue placeholder="Selecione o item..." />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl shadow-xl">
                       {products?.map(p => (
-                        <SelectItem key={p.id} value={p.id} className="text-base font-bold p-3">{p.name}</SelectItem>
+                        <SelectItem key={p.id} value={p.id} className="text-sm sm:text-base font-bold p-3">{p.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 
                 {item.productId && (
-                  <>
-                    <div className="col-span-1 md:col-span-2 space-y-3">
-                      <Label className="text-sm font-black uppercase tracking-widest text-muted-foreground text-center block">Qtd</Label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] sm:text-sm font-black uppercase tracking-widest text-muted-foreground text-center block">Quantidade</Label>
                       <Input
                         type="number"
                         min="1"
-                        className="h-14 text-center text-xl font-black rounded-xl border-2 border-border bg-background"
+                        className="h-12 sm:h-14 text-center text-lg sm:text-xl font-black rounded-xl border-2 border-border bg-background"
                         value={item.quantity}
                         onChange={(e) => {
                           const newItems = [...selectedItems];
@@ -229,66 +229,64 @@ export default function NovaVendaPage() {
                         }}
                       />
                     </div>
-                    <div className="col-span-1 md:col-span-3 space-y-3">
-                      <Label className="text-sm font-black uppercase tracking-widest text-muted-foreground">Subtotal</Label>
-                      <div className="h-14 flex items-center px-6 bg-primary/10 rounded-xl text-xl font-black text-primary border-2 border-primary/20 shadow-inner">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] sm:text-sm font-black uppercase tracking-widest text-muted-foreground text-center block">Subtotal</Label>
+                      <div className="h-12 sm:h-14 flex items-center justify-center bg-primary/10 rounded-xl text-lg sm:text-xl font-black text-primary border-2 border-primary/20 shadow-inner">
                         R$ {(item.price * item.quantity).toFixed(2)}
                       </div>
                     </div>
-                  </>
+                  </div>
                 )}
 
-                <div className="col-span-1 md:col-span-1 flex justify-end">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="size-14 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition-colors"
-                    onClick={() => removeItem(item.id)}
-                  >
-                    <Trash2 className="size-7" />
-                  </Button>
-                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute -top-2 -right-2 size-10 sm:size-12 bg-background border-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full shadow-md transition-colors"
+                  onClick={() => removeItem(item.id)}
+                >
+                  <Trash2 className="size-5 sm:size-6" />
+                </Button>
               </div>
             ))}
           </CardContent>
         </Card>
 
-        {/* 3. Pagamento - Container Isolado */}
-        <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="bg-muted/30 p-8">
-            <CardTitle className="flex items-center gap-4 text-2xl md:text-3xl font-black">
-              <CreditCard className="size-8 text-primary" />
+        {/* 3. Pagamento */}
+        <Card className="border-none shadow-xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
+          <CardHeader className="bg-muted/30 p-6 sm:p-8">
+            <CardTitle className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 text-xl sm:text-2xl md:text-3xl font-black text-center sm:text-left">
+              <CreditCard className="size-6 sm:size-8 text-primary" />
               3. Pagamento
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-8">
-            <div className="grid gap-10 sm:grid-cols-2">
+          <CardContent className="p-6 sm:p-8">
+            <div className="grid gap-6 sm:gap-10 sm:grid-cols-2">
               <div className="space-y-4">
-                <Label className="text-sm font-black uppercase tracking-widest text-muted-foreground">Forma de Pagamento</Label>
+                <Label className="text-[10px] sm:text-sm font-black uppercase tracking-widest text-muted-foreground block text-center sm:text-left">Forma de Pagamento</Label>
                 <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <SelectTrigger className="h-16 text-xl font-black rounded-2xl border-4 border-muted bg-background">
+                  <SelectTrigger className="h-12 sm:h-16 text-base sm:text-xl font-black rounded-xl sm:rounded-2xl border-4 border-muted bg-background">
                     <SelectValue placeholder="Selecione..." />
                   </SelectTrigger>
                   <SelectContent className="rounded-2xl">
-                    <SelectItem value="pix" className="text-lg font-bold p-4">Pix</SelectItem>
-                    <SelectItem value="dinheiro" className="text-lg font-bold p-4">Dinheiro</SelectItem>
-                    <SelectItem value="cartao" className="text-lg font-bold p-4">Cartão</SelectItem>
-                    <SelectItem value="fiado" className="text-lg font-bold p-4">Fiado / Prazo</SelectItem>
+                    <SelectItem value="pix" className="text-base sm:text-lg font-bold p-3 sm:p-4">Pix</SelectItem>
+                    <SelectItem value="dinheiro" className="text-base sm:text-lg font-bold p-3 sm:p-4">Dinheiro</SelectItem>
+                    <SelectItem value="cartao" className="text-base sm:text-lg font-bold p-3 sm:p-4">Cartão</SelectItem>
+                    <SelectItem value="fiado" className="text-base sm:text-lg font-bold p-3 sm:p-4">Fiado / Prazo</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-4">
-                <Label className="text-sm font-black uppercase tracking-widest text-muted-foreground">Vencimento</Label>
+                <Label className="text-[10px] sm:text-sm font-black uppercase tracking-widest text-muted-foreground block text-center sm:text-left">Vencimento</Label>
                 <div className="relative">
-                  <CalendarIcon className="absolute left-4 top-1/2 -translate-y-1/2 size-6 text-muted-foreground" />
-                  <Input type="date" className="h-16 pl-14 text-xl font-black rounded-2xl border-4 border-muted bg-background" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+                  <CalendarIcon className="absolute left-4 top-1/2 -translate-y-1/2 size-5 sm:size-6 text-muted-foreground hidden sm:block" />
+                  <Input type="date" className="h-12 sm:h-16 sm:pl-14 text-base sm:text-xl font-black rounded-xl sm:rounded-2xl border-4 border-muted bg-background" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
                 </div>
               </div>
               <div className="sm:col-span-2 space-y-4">
-                <Label className="text-sm font-black uppercase tracking-widest text-muted-foreground">Notas Adicionais</Label>
+                <Label className="text-[10px] sm:text-sm font-black uppercase tracking-widest text-muted-foreground block text-center sm:text-left">Notas Adicionais</Label>
                 <textarea 
-                  className="w-full min-h-[120px] rounded-[1.5rem] border-4 border-muted bg-background px-6 py-5 text-xl font-bold focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20 transition-all" 
+                  className="w-full min-h-[100px] sm:min-h-[120px] rounded-[1rem] sm:rounded-[1.5rem] border-4 border-muted bg-background px-4 sm:px-6 py-4 sm:py-5 text-base sm:text-xl font-bold focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20 transition-all" 
                   placeholder="Ex: Entrega amanhã..."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
@@ -298,64 +296,65 @@ export default function NovaVendaPage() {
           </CardContent>
         </Card>
 
-        {/* 4. Resumo da Venda (Check-in) - Container Isolado e Estabilizado */}
+        {/* 4. Check-in da Venda */}
         <Card className={cn(
-          "border-none shadow-2xl rounded-[3rem] overflow-hidden transition-all duration-700 transform",
-          isReady ? "bg-primary text-primary-foreground scale-[1.02]" : "bg-muted/50 text-muted-foreground opacity-50"
+          "border-none shadow-2xl rounded-[1.5rem] sm:rounded-[3rem] overflow-hidden transition-all duration-700 transform",
+          isReady ? "bg-primary text-primary-foreground scale-[1.01] sm:scale-[1.02]" : "bg-muted/50 text-muted-foreground opacity-50"
         )}>
-          <CardHeader className="p-10 pb-4">
-            <CardTitle className="flex items-center gap-4 text-3xl md:text-4xl font-black tracking-tighter uppercase">
-              <ClipboardCheck className="size-10" />
+          <CardHeader className="p-6 sm:p-10 pb-4">
+            <CardTitle className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-2xl sm:text-3xl md:text-4xl font-black tracking-tighter uppercase text-center sm:text-left">
+              <ClipboardCheck className="size-8 sm:size-10" />
               Check-in da Venda
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-10 pt-4 space-y-10">
-            <div className="grid md:grid-cols-2 gap-8">
-              <div className="space-y-6">
+          <CardContent className="p-6 sm:p-10 pt-4 space-y-8 sm:space-y-10">
+            <div className="grid md:grid-cols-2 gap-6 sm:gap-8">
+              <div className="space-y-4 sm:space-y-6">
                 <div className={cn(
-                  "p-8 rounded-[2rem] border-2",
+                  "p-4 sm:p-8 rounded-[1rem] sm:rounded-[2rem] border-2",
                   isReady ? "bg-white/10 border-white/20" : "bg-background border-muted"
                 )}>
-                  <p className="text-xs font-black uppercase tracking-[0.2em] opacity-60 mb-2">Cliente Selecionada</p>
-                  <p className="text-2xl font-black truncate">{selectedClient?.fullName || "Aguardando..."}</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-2">Cliente Selecionada</p>
+                  <p className="text-lg sm:text-2xl font-black truncate">{selectedClient?.fullName || "Aguardando..."}</p>
                 </div>
 
                 <div className={cn(
-                  "p-8 rounded-[2rem] border-2",
+                  "p-4 sm:p-8 rounded-[1rem] sm:rounded-[2rem] border-2",
                   isReady ? "bg-white/10 border-white/20" : "bg-background border-muted"
                 )}>
-                  <p className="text-xs font-black uppercase tracking-[0.2em] opacity-60 mb-4">Itens no Pedido</p>
-                  <div className="space-y-3">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-4">Itens no Pedido</p>
+                  <div className="space-y-2 sm:space-y-3 max-h-40 overflow-y-auto scrollbar-hide">
                     {selectedItems.filter(i => i.productId).map((item, idx) => (
-                      <div key={idx} className="flex justify-between items-center text-lg font-bold border-b border-white/10 pb-2 last:border-0 last:pb-0">
+                      <div key={idx} className="flex justify-between items-center text-sm sm:text-lg font-bold border-b border-white/10 pb-2 last:border-0 last:pb-0">
                         <span className="opacity-90">{item.quantity}x {item.name}</span>
                         <span className="font-black">R$ {(item.price * item.quantity).toFixed(2)}</span>
                       </div>
                     ))}
+                    {selectedItems.filter(i => i.productId).length === 0 && <p className="text-sm italic opacity-40">Nenhum item...</p>}
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-8">
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-3">
-                    <Label className="text-xs font-black uppercase tracking-widest opacity-60">Desconto (R$)</Label>
+              <div className="space-y-6 sm:space-y-8">
+                <div className="grid grid-cols-2 gap-4 sm:gap-6">
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest opacity-60 block text-center">Desconto (R$)</Label>
                     <Input
                       type="number"
                       className={cn(
-                        "h-14 text-xl font-black rounded-xl border-2",
+                        "h-12 sm:h-14 text-center text-lg sm:text-xl font-black rounded-xl border-2",
                         isReady ? "bg-white/10 border-white/20 text-white" : "bg-background"
                       )}
                       value={discount}
                       onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
                     />
                   </div>
-                  <div className="space-y-3">
-                    <Label className="text-xs font-black uppercase tracking-widest opacity-60">Taxas (R$)</Label>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase tracking-widest opacity-60 block text-center">Taxas (R$)</Label>
                     <Input
                       type="number"
                       className={cn(
-                        "h-14 text-xl font-black rounded-xl border-2",
+                        "h-12 sm:h-14 text-center text-lg sm:text-xl font-black rounded-xl border-2",
                         isReady ? "bg-white/10 border-white/20 text-white" : "bg-background"
                       )}
                       value={additionalFee}
@@ -365,28 +364,28 @@ export default function NovaVendaPage() {
                 </div>
 
                 <div className={cn(
-                  "p-10 rounded-[2.5rem] shadow-2xl text-center border-4",
+                  "p-6 sm:p-10 rounded-[1.5rem] sm:rounded-[2.5rem] shadow-2xl text-center border-4",
                   isReady ? "bg-white text-primary border-white" : "bg-background text-muted-foreground border-muted"
                 )}>
-                  <p className="text-xs font-black uppercase tracking-[0.3em] mb-2 opacity-60">Total a Pagar</p>
-                  <p className="text-5xl md:text-7xl font-black tracking-tighter">R$ {finalTotal.toFixed(2)}</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-2 opacity-60">Total a Pagar</p>
+                  <p className="text-3xl sm:text-5xl md:text-7xl font-black tracking-tighter">R$ {finalTotal.toFixed(2)}</p>
                 </div>
               </div>
             </div>
           </CardContent>
-          <CardFooter className="p-10 pt-0">
+          <CardFooter className="p-6 sm:p-10 pt-0">
             <Button 
               type="submit" 
               size="lg"
               className={cn(
-                "w-full h-24 text-2xl font-black rounded-[2rem] shadow-2xl transition-all active:scale-95 uppercase",
+                "w-full h-16 sm:h-24 text-lg sm:text-2xl font-black rounded-xl sm:rounded-[2rem] shadow-2xl transition-all active:scale-95 uppercase",
                 isReady 
                   ? "bg-white text-primary hover:bg-white/90 scale-[1.01]" 
                   : "bg-muted text-muted-foreground cursor-not-allowed"
               )}
               disabled={!isReady}
             >
-              <ReceiptText className="mr-4 size-10" />
+              <ReceiptText className="mr-2 sm:mr-4 size-6 sm:size-10" />
               FINALIZAR VENDA
             </Button>
           </CardFooter>
