@@ -112,16 +112,19 @@ export default function ClientesPage() {
           <div className="grid grid-cols-1 gap-6 w-full">
             {filteredClientes.map((cliente) => (
               <Card key={cliente.id} className="bg-background border-4 border-muted rounded-2xl p-6 sm:p-8 shadow-xl hover:border-primary/20 transition-all flex flex-col justify-between w-full min-h-[220px]">
-                <div className="mb-4">
+                <div className="mb-2">
                   <h3 className="font-black text-2xl sm:text-4xl break-words leading-tight uppercase tracking-tighter text-primary italic text-left">
                     {cliente.fullName}
                   </h3>
+                  <p className="text-sm font-bold text-muted-foreground mt-1 uppercase tracking-widest text-left opacity-60">
+                    {cliente.city} {cliente.neighborhood ? `• ${cliente.neighborhood}` : ""}
+                  </p>
                 </div>
 
                 <div className="space-y-4">
                   <div className="grid grid-cols-3 gap-2">
                     <Button variant="outline" asChild className="h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2">
-                      <Link href={`/clientes/${cliente.id}`} target="_blank">
+                      <Link href={`/clientes/${cliente.id}`}>
                         <FileText className="mr-1 size-4" />
                         Detalhes
                       </Link>
