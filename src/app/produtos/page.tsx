@@ -149,62 +149,61 @@ export default function ProdutosPage() {
           {filteredProducts.map((product) => (
             <Card key={product.id} className="bg-background border-4 border-primary/5 rounded-2xl p-4 sm:p-6 shadow-xl hover:border-primary/20 transition-all flex flex-col justify-between w-full relative overflow-hidden group">
               
-              <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10">
+              {/* LINHA SUPERIOR: MARCA/ICONE E CATEGORIA */}
+              <div className="flex items-center justify-between w-full mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="size-10 sm:size-14 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                    <Package className="size-5 sm:size-7" />
+                  </div>
+                  <Badge className={`text-[10px] sm:text-[14px] font-black px-2 py-0.5 rounded-md border-none text-white shadow-sm ${getBrandBadgeColor(product.brand)}`}>
+                    {product.brand}
+                  </Badge>
+                </div>
                 <Badge variant="outline" className="text-[10px] sm:text-[14px] font-black border-2 border-primary text-primary/60 uppercase px-2 py-0.5 sm:px-3 sm:py-1 rounded-lg bg-background/50 backdrop-blur-sm shadow-sm">
                   {product.category}
                 </Badge>
               </div>
 
-              <div className="flex flex-col gap-4 mb-4 pt-10 sm:pt-12">
-                <div className="flex items-center gap-4 sm:gap-6">
-                  <div className="flex flex-col items-center gap-1 shrink-0">
-                    <Badge className={`text-[10px] sm:text-[13px] font-black px-2 py-0.5 rounded-md border-none text-white shadow-sm ${getBrandBadgeColor(product.brand)}`}>
-                      {product.brand}
-                    </Badge>
-                    <div className="size-12 sm:size-20 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
-                      <Package className="size-6 sm:size-10" />
-                    </div>
-                  </div>
-
-                  <div className="flex-1 min-w-0 text-left">
-                    <h3 className="font-black text-2xl sm:text-5xl text-primary uppercase tracking-tighter italic leading-tight px-1 line-clamp-1">
-                      {product.name}
-                    </h3>
-                    <p className="text-[11px] sm:text-xl text-muted-foreground font-bold opacity-60 uppercase tracking-widest px-1">
-                      COD: {product.productCode}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex flex-col items-end justify-end self-end text-right -mt-2 sm:-mt-4">
-                  <p className="text-3xl sm:text-6xl font-black text-primary tracking-tighter leading-none px-1">
-                    R$ {Number(product.salePrice).toFixed(2)}
-                  </p>
-                  <p className="text-[10px] sm:text-[14px] font-black text-muted-foreground uppercase tracking-widest opacity-60 mt-1 px-1">
-                    Preço Venda
-                  </p>
-                </div>
+              {/* CONTEÚDO PRINCIPAL: NOME E CÓDIGO (TOTALMENTE À ESQUERDA) */}
+              <div className="flex flex-col gap-1 mb-6 text-left">
+                <h3 className="font-black text-3xl sm:text-6xl text-primary uppercase tracking-tighter italic leading-tight px-1 line-clamp-2">
+                  {product.name}
+                </h3>
+                <p className="text-[12px] sm:text-2xl text-muted-foreground font-bold opacity-60 uppercase tracking-widest px-1">
+                  COD: {product.productCode}
+                </p>
+              </div>
+              
+              {/* PREÇO: CANTO DIREITO ACIMA DA LINHA */}
+              <div className="flex flex-col items-end justify-end w-full mb-4 pr-1">
+                <p className="text-4xl sm:text-7xl font-black text-primary tracking-tighter leading-none">
+                  R$ {Number(product.salePrice).toFixed(2)}
+                </p>
+                <p className="text-[10px] sm:text-[16px] font-black text-muted-foreground uppercase tracking-widest opacity-60 mt-1">
+                  Preço Venda
+                </p>
               </div>
 
+              {/* BOTÕES DE AÇÃO */}
               <div className="flex flex-row items-center justify-center gap-2 w-full pt-3 sm:pt-4 border-t-2">
-                <Button variant="outline" asChild className="h-10 sm:h-14 font-black text-[11px] sm:text-[15px] uppercase tracking-tighter rounded-lg sm:rounded-xl border-2 hover:bg-primary/5 px-2 flex-1 shadow-sm">
+                <Button variant="outline" asChild className="h-10 sm:h-14 font-black text-[11px] sm:text-[16px] uppercase tracking-tighter rounded-lg sm:rounded-xl border-2 hover:bg-primary/5 px-2 flex-1 shadow-sm">
                   <Link href={`/produtos/${product.id}`}>
-                    <FileText className="mr-1 size-4 sm:size-5" />
+                    <FileText className="mr-1 size-4 sm:size-6" />
                     Detalhes
                   </Link>
                 </Button>
-                <Button variant="outline" asChild className="h-10 sm:h-14 font-black text-[11px] sm:text-[15px] uppercase tracking-tighter rounded-lg sm:rounded-xl border-2 hover:bg-primary/5 px-2 flex-1 shadow-sm">
+                <Button variant="outline" asChild className="h-10 sm:h-14 font-black text-[11px] sm:text-[16px] uppercase tracking-tighter rounded-lg sm:rounded-xl border-2 hover:bg-primary/5 px-2 flex-1 shadow-sm">
                   <Link href={`/produtos/${product.id}/editar`}>
-                    <Edit className="mr-1 size-4 sm:size-5" />
+                    <Edit className="mr-1 size-4 sm:size-6" />
                     Editar
                   </Link>
                 </Button>
                 <Button 
                   variant="outline" 
-                  className="h-10 sm:h-14 font-black text-[11px] sm:text-[15px] uppercase tracking-tighter rounded-lg sm:rounded-xl border-2 text-destructive border-destructive/20 hover:bg-destructive/5 hover:border-destructive px-2 flex-1 shadow-sm"
+                  className="h-10 sm:h-14 font-black text-[11px] sm:text-[16px] uppercase tracking-tighter rounded-lg sm:rounded-xl border-2 text-destructive border-destructive/20 hover:bg-destructive/5 hover:border-destructive px-2 flex-1 shadow-sm"
                   onClick={() => setProductToDelete(product)}
                 >
-                  <Trash2 className="mr-1 size-4 sm:size-5" />
+                  <Trash2 className="mr-1 size-4 sm:size-6" />
                   Excluir
                 </Button>
               </div>
