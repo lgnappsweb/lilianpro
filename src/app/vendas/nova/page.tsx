@@ -36,6 +36,7 @@ import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebas
 import { collection, doc } from "firebase/firestore";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 export default function NovaVendaPage() {
   const { user } = useUser();
@@ -180,7 +181,7 @@ export default function NovaVendaPage() {
             <CardContent className="p-6 space-y-6">
               {selectedItems.map((item, index) => (
                 <div key={item.id} className="grid grid-cols-12 gap-4 items-end animate-in slide-in-from-left-4 duration-500 bg-muted/10 p-4 rounded-2xl border border-border/30">
-                  <div className="col-span-12 sm:col-span-6 space-y-2">
+                  <div className={cn("space-y-2 transition-all duration-300", item.productId ? "col-span-12 sm:col-span-6" : "col-span-10 sm:col-span-11")}>
                     <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Produto</Label>
                     <Select onValueChange={(val) => {
                       const product = products?.find(p => p.id === val);
@@ -191,7 +192,7 @@ export default function NovaVendaPage() {
                         newItems[index].name = product.name;
                         setSelectedItems(newItems);
                       }
-                    }}>
+                    }} value={item.productId}>
                       <SelectTrigger className="text-base h-12 font-bold rounded-xl bg-background shadow-inner">
                         <SelectValue placeholder="Escolha um produto..." />
                       </SelectTrigger>
@@ -202,27 +203,33 @@ export default function NovaVendaPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="col-span-4 sm:col-span-2 space-y-2">
-                    <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground text-center block">Qtd</Label>
-                    <Input
-                      type="number"
-                      min="1"
-                      className="h-12 text-lg font-black text-center rounded-xl bg-background shadow-inner"
-                      value={item.quantity}
-                      onChange={(e) => {
-                        const newItems = [...selectedItems];
-                        newItems[index].quantity = parseInt(e.target.value) || 1;
-                        setSelectedItems(newItems);
-                      }}
-                    />
-                  </div>
-                  <div className="col-span-6 sm:col-span-3 space-y-2">
-                    <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Total Item</Label>
-                    <div className="h-12 flex items-center px-4 bg-primary/10 rounded-xl text-lg font-black text-primary border border-primary/10">
-                      R$ {(item.price * item.quantity).toFixed(2)}
-                    </div>
-                  </div>
-                  <div className="col-span-2 sm:col-span-1 flex justify-end">
+                  
+                  {item.productId ? (
+                    <>
+                      <div className="col-span-4 sm:col-span-2 space-y-2 animate-in fade-in zoom-in-95 duration-300">
+                        <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground text-center block">Qtd</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          className="h-12 text-lg font-black text-center rounded-xl bg-background shadow-inner"
+                          value={item.quantity}
+                          onChange={(e) => {
+                            const newItems = [...selectedItems];
+                            newItems[index].quantity = parseInt(e.target.value) || 1;
+                            setSelectedItems(newItems);
+                          }}
+                        />
+                      </div>
+                      <div className="col-span-6 sm:col-span-3 space-y-2 animate-in fade-in zoom-in-95 duration-300">
+                        <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Total Item</Label>
+                        <div className="h-12 flex items-center px-4 bg-primary/10 rounded-xl text-lg font-black text-primary border border-primary/10">
+                          R$ {(item.price * item.quantity).toFixed(2)}
+                        </div>
+                      </div>
+                    </>
+                  ) : null}
+
+                  <div className={cn("flex justify-end", item.productId ? "col-span-2 sm:col-span-1" : "col-span-2 sm:col-span-1")}>
                     <Button
                       type="button"
                       variant="ghost"
