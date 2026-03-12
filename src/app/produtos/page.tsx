@@ -6,20 +6,45 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, Package, ShoppingBag, Edit3, Trash2, Loader2 } from "lucide-react";
+import { 
+  Search, 
+  Plus, 
+  Package, 
+  ShoppingBag, 
+  Edit3, 
+  Trash2, 
+  Loader2,
+  MoreVertical,
+  Edit
+} from "lucide-react";
 import Image from "next/image";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, doc } from "firebase/firestore";
 import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function ProdutosPage() {
   const { user } = useUser();
@@ -28,6 +53,7 @@ export default function ProdutosPage() {
   
   const [searchTerm, setSearchTerm] = useState("");
   const [activeBrand, setActiveBrand] = useState<string | null>(null);
+  const [productToDelete, setProductToDelete] = useState<any | null>(null);
 
   const productsQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -45,14 +71,15 @@ export default function ProdutosPage() {
     });
   }, [products, searchTerm, activeBrand]);
 
-  const handleDelete = (product: any) => {
-    if (user && db) {
-      const docRef = doc(db, "users", user.uid, "products", product.id);
+  const handleDeleteConfirm = () => {
+    if (productToDelete && user && db) {
+      const docRef = doc(db, "users", user.uid, "products", productToDelete.id);
       deleteDocumentNonBlocking(docRef);
       toast({
-        title: "Produto removido",
-        description: `${product.name} foi excluído do seu catálogo.`,
+        title: "Removendo produto...",
+        description: `${productToDelete.name} será excluído em instantes.`,
       });
+      setProductToDelete(null);
     }
   };
 
@@ -132,7 +159,32 @@ export default function ProdutosPage() {
       ) : (
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 w-full">
           {filteredProducts.map((product) => (
-            <Card key={product.id} className="border-none shadow-md group hover:shadow-2xl transition-all rounded-[2rem] overflow-hidden border-b-8 border-b-primary/10">
+            <Card key={product.id} className="border-none shadow-md group hover:shadow-2xl transition-all rounded-[2rem] overflow-hidden border-b-8 border-b-primary/10 relative">
+              <div className="absolute top-4 right-4 z-10">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="secondary" size="icon" className="size-10 sm:size-12 rounded-2xl shadow-xl bg-white/80 backdrop-blur-sm hover:bg-white transition-all">
+                      <MoreVertical className="size-6 text-primary" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl shadow-2xl border-2">
+                    <DropdownMenuItem asChild className="p-3 rounded-xl text-sm font-black cursor-pointer hover:bg-primary/5">
+                      <Link href={`/produtos/${product.id}/editar`}>
+                        <Edit className="mr-3 size-4" />
+                        EDITAR PRODUTO
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      className="p-3 rounded-xl text-sm font-black cursor-pointer text-destructive hover:bg-destructive/5" 
+                      onSelect={() => setProductToDelete(product)}
+                    >
+                      <Trash2 className="mr-3 size-4" />
+                      EXCLUIR PRODUTO
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
               <div className="relative aspect-square overflow-hidden bg-muted">
                 <Image
                   src={product.imageUrl || `https://picsum.photos/seed/${product.id}/500/500`}
@@ -157,7 +209,7 @@ export default function ProdutosPage() {
                   </CardDescription>
                 </div>
               </CardHeader>
-              <CardContent className="pb-8 px-8 space-y-6">
+              <CardContent className="pb-10 px-8 space-y-6">
                 <div className="flex items-center justify-between border-t-2 pt-6">
                   <p className="text-3xl font-black text-primary tracking-tighter px-2">R$ {Number(product.salePrice).toFixed(2)}</p>
                   <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-xl uppercase tracking-tighter">
@@ -166,20 +218,6 @@ export default function ProdutosPage() {
                   </div>
                 </div>
               </CardContent>
-              <CardFooter className="pt-0 px-8 pb-8 flex gap-3">
-                <Button variant="secondary" className="flex-1 h-12 text-xs font-black rounded-xl shadow-sm border-2 border-muted uppercase tracking-widest" size="sm">
-                  <Edit3 className="mr-2 size-4" />
-                  Editar
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  className="size-12 rounded-xl text-destructive hover:bg-destructive/10 border-2 border-transparent hover:border-destructive/20" 
-                  size="icon"
-                  onClick={() => handleDelete(product)}
-                >
-                  <Trash2 className="size-6" />
-                </Button>
-              </CardFooter>
             </Card>
           ))}
         </div>
@@ -192,6 +230,23 @@ export default function ProdutosPage() {
           <p className="text-xl text-muted-foreground mt-4 font-bold italic opacity-60 px-4">Adicione produtos ao seu estoque para começar a vender com estilo.</p>
         </div>
       )}
+
+      <AlertDialog open={!!productToDelete} onOpenChange={(open) => !open && setProductToDelete(null)}>
+        <AlertDialogContent className="rounded-[2.5rem] p-8 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-3xl sm:text-5xl font-black tracking-tighter text-primary uppercase leading-none text-left px-2">Excluir permanentemente?</AlertDialogTitle>
+            <AlertDialogDescription className="text-xl sm:text-2xl font-bold mt-6 leading-relaxed text-muted-foreground text-left">
+              O produto <strong className="text-foreground border-b-4 border-primary px-1">{productToDelete?.name}</strong> será removido definitivamente do seu catálogo.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-4 mt-12 flex-col sm:flex-row">
+            <AlertDialogCancel className="h-16 sm:h-24 px-10 text-xl font-black rounded-2xl sm:rounded-3xl border-4 border-muted hover:bg-muted/50">Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="h-16 sm:h-24 px-10 text-xl font-black bg-destructive text-white hover:bg-destructive/90 rounded-2xl sm:rounded-3xl shadow-xl active:scale-95 transition-all">
+              SIM, EXCLUIR AGORA
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
