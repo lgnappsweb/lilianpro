@@ -138,7 +138,7 @@ export default function NovaVendaPage() {
       additionalFeeAmount: additionalFee,
       finalAmount: finalTotal,
       paymentMethod,
-      paymentStatus: paymentMethod === "fiado" ? "Pendente" : "Pago",
+      paymentStatus: paymentMethod === "a prazo" ? "Pendente" : "Pago",
       dueDate: dueDate || null,
       notes,
     };
@@ -311,7 +311,7 @@ export default function NovaVendaPage() {
                     { id: 'pix', label: 'Pix', icon: Smartphone },
                     { id: 'dinheiro', label: 'Dinheiro', icon: Banknote },
                     { id: 'cartao', label: 'Cartão', icon: CreditCard },
-                    { id: 'fiado', label: 'Fiado', icon: HandCoins },
+                    { id: 'a prazo', label: 'A Prazo', icon: HandCoins },
                   ].map((option) => (
                     <button
                       key={option.id}
@@ -331,7 +331,7 @@ export default function NovaVendaPage() {
                 </div>
               </div>
               <div className="space-y-4 text-left">
-                <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Vencimento (Fiado)</Label>
+                <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Vencimento (A Prazo)</Label>
                 <div className="relative">
                   <CalendarIcon className="absolute left-5 top-1/2 -translate-y-1/2 size-6 text-muted-foreground hidden sm:block" />
                   <Input type="date" className="h-14 sm:h-20 sm:pl-16 text-base sm:text-2xl font-black rounded-xl sm:rounded-3xl border-4 border-muted bg-background" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
@@ -400,7 +400,7 @@ export default function NovaVendaPage() {
                 <div className="flex-1 min-w-0">
                   <p className={cn("text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] mb-1 transition-colors", paymentMethod ? "text-[#39FF14]" : "text-white/40")}>Forma de Pagamento</p>
                   <p className={cn("text-xl sm:text-3xl font-black uppercase transition-colors px-2", paymentMethod ? "text-white" : "text-white/20")}>
-                    {paymentMethod || "Aguardando..."}
+                    {paymentMethod?.toUpperCase() || "Aguardando..."}
                   </p>
                 </div>
               </div>

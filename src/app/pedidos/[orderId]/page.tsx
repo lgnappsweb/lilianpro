@@ -182,7 +182,7 @@ export default function DetalhesPedidoPage() {
               {order.dueDate && (
                 <div className="space-y-2 text-left pt-6 border-t-2 bg-orange-50/50 p-4 rounded-2xl border-orange-100">
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-600 flex items-center gap-2">
-                    <Clock className="size-3" /> DATA DE VENCIMENTO (FIADO)
+                    <Clock className="size-3" /> DATA DE VENCIMENTO (A PRAZO)
                   </p>
                   <p className="text-2xl font-black text-orange-700">
                     {new Date(order.dueDate).toLocaleDateString()}

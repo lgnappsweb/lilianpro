@@ -80,7 +80,7 @@ export default function PedidosPage() {
       case "pix": return <Smartphone className="size-4" />;
       case "dinheiro": return <Banknote className="size-4" />;
       case "cartao": return <CreditCard className="size-4" />;
-      case "fiado": return <HandCoins className="size-4" />;
+      case "a prazo": return <HandCoins className="size-4" />;
       default: return <CreditCard className="size-4" />;
     }
   };
@@ -196,7 +196,7 @@ export default function PedidosPage() {
                     {getPaymentIcon(order.paymentMethod)}
                   </div>
                   <p className="text-[10px] sm:text-xs text-muted-foreground font-black uppercase tracking-[0.2em]">
-                    PAGO VIA {order.paymentMethod}
+                    PAGO VIA {order.paymentMethod?.toUpperCase()}
                   </p>
                 </div>
               </div>

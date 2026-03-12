@@ -107,7 +107,7 @@ export default function FinanceiroPage() {
         <Card className="border-none shadow-lg rounded-3xl overflow-hidden">
           <CardHeader className="bg-muted/30 pb-6">
             <CardTitle className="text-2xl font-black px-2">Pagamentos para Receber</CardTitle>
-            <CardDescription className="text-base font-medium">Vendas "Fiado" com vencimento próximo</CardDescription>
+            <CardDescription className="text-base font-medium">Vendas "A Prazo" com vencimento próximo</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 p-6">
             {proximosRecebimentos.map((p, i) => (
