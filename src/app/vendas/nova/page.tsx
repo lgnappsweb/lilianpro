@@ -90,10 +90,6 @@ export default function NovaVendaPage() {
   const removeItem = () => {
     if (itemToDeleteId) {
       setSelectedItems(selectedItems.filter(item => item.id !== itemToDeleteId));
-      toast({
-        title: "Item removido",
-        description: "O produto foi retirado da lista de venda.",
-      });
       setItemToDeleteId(null);
     }
   };
@@ -159,6 +155,9 @@ export default function NovaVendaPage() {
     });
     router.push("/pedidos");
   };
+
+  const hasItems = selectedItems.some(item => !!item.productId);
+  const fluorescentGreen = "text-[#39FF14]";
 
   return (
     <div className="space-y-6 sm:space-y-10 max-w-5xl mx-auto w-full animate-in fade-in duration-500 pb-32">
@@ -329,11 +328,8 @@ export default function NovaVendaPage() {
           </CardContent>
         </Card>
 
-        {/* 4. Resumo do Pedido (Novo Card Separado) */}
-        <Card className={cn(
-          "border-none shadow-xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden transition-all",
-          isReady ? "bg-white dark:bg-slate-900 border-2 border-primary/20" : "bg-muted/50 opacity-50"
-        )}>
+        {/* 4. Resumo do Pedido */}
+        <Card className="border-none shadow-xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden bg-white dark:bg-slate-900 border-2 border-primary/20">
           <CardHeader className="bg-muted/30 p-6 sm:p-8 border-b-2">
             <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left">
               <ClipboardCheck className="size-8 sm:size-10 text-primary" />
@@ -341,37 +337,46 @@ export default function NovaVendaPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 sm:p-10 space-y-6">
-             <div className={cn(
-                  "p-6 sm:p-10 rounded-[1.5rem] sm:rounded-[2rem] border-4",
-                  isReady ? "bg-primary/5 border-primary/10 shadow-inner" : "bg-background border-muted"
-                )}>
-                  <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] text-primary/60 mb-3">Cliente Selecionada</p>
-                  <p className="text-xl sm:text-3xl font-black truncate leading-tight text-foreground">{selectedClient?.fullName || "Aguardando seleção..."}</p>
-                </div>
+             {/* Cliente */}
+             <div className="p-6 sm:p-8 rounded-[1.5rem] border-4 bg-background border-muted shadow-inner">
+                <p className={cn("text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] mb-2", selectedClientId ? fluorescentGreen : "opacity-40")}>
+                  Cliente Selecionada
+                </p>
+                <p className={cn("text-xl sm:text-2xl font-black truncate", selectedClientId ? fluorescentGreen : "opacity-20")}>
+                  {selectedClient?.fullName || "Aguardando seleção..."}
+                </p>
+             </div>
 
-                <div className={cn(
-                  "p-6 sm:p-10 rounded-[1.5rem] sm:rounded-[2rem] border-4",
-                  isReady ? "bg-primary/5 border-primary/10 shadow-inner" : "bg-background border-muted"
-                )}>
-                  <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] text-primary/60 mb-6">Itens no Pedido</p>
-                  <div className="space-y-4 sm:space-y-6 max-h-60 overflow-y-auto scrollbar-hide">
-                    {selectedItems.filter(i => i.productId).map((item, idx) => (
-                      <div key={idx} className="flex justify-between items-center text-base sm:text-xl font-bold border-b-2 border-primary/5 pb-4 last:border-0 last:pb-0">
-                        <span className="text-foreground/80">{item.quantity}x {item.name}</span>
-                        <span className="font-black text-primary">R$ {(item.price * item.quantity).toFixed(2)}</span>
-                      </div>
-                    ))}
-                    {selectedItems.filter(i => i.productId).length === 0 && <p className="text-lg italic opacity-40">Nenhum item adicionado ainda...</p>}
-                  </div>
+             {/* Itens */}
+             <div className="p-6 sm:p-8 rounded-[1.5rem] border-4 bg-background border-muted shadow-inner">
+                <p className={cn("text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] mb-4", hasItems ? fluorescentGreen : "opacity-40")}>
+                  Itens no Pedido
+                </p>
+                <div className="space-y-4 max-h-60 overflow-y-auto scrollbar-hide">
+                  {selectedItems.filter(i => i.productId).map((item, idx) => (
+                    <div key={idx} className={cn("flex justify-between items-center text-sm sm:text-lg font-bold border-b-2 border-muted pb-3 last:border-0 last:pb-0", fluorescentGreen)}>
+                      <span>{item.quantity}x {item.name}</span>
+                      <span className="font-black">R$ {(item.price * item.quantity).toFixed(2)}</span>
+                    </div>
+                  ))}
+                  {!hasItems && <p className="text-lg italic opacity-20">Nenhum item adicionado ainda...</p>}
                 </div>
+             </div>
+
+             {/* Forma de Pagamento */}
+             <div className="p-6 sm:p-8 rounded-[1.5rem] border-4 bg-background border-muted shadow-inner">
+                <p className={cn("text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] mb-2", paymentMethod ? fluorescentGreen : "opacity-40")}>
+                  Forma de Pagamento
+                </p>
+                <p className={cn("text-xl sm:text-2xl font-black uppercase", paymentMethod ? fluorescentGreen : "opacity-20")}>
+                  {paymentMethod || "Aguardando..."}
+                </p>
+             </div>
           </CardContent>
         </Card>
 
-        {/* 5. Finalização Financeira (Novo Card Separado) */}
-        <Card className={cn(
-          "border-none shadow-2xl rounded-[1.5rem] sm:rounded-[3rem] overflow-hidden transition-all duration-700 transform",
-          isReady ? "bg-primary text-primary-foreground scale-[1.02]" : "bg-muted/50 text-muted-foreground opacity-50"
-        )}>
+        {/* 5. Finalização Financeira */}
+        <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[3rem] overflow-hidden bg-primary text-primary-foreground">
           <CardHeader className="p-8 sm:p-12 pb-4">
              <CardTitle className="flex flex-row items-center gap-4 text-3xl sm:text-5xl font-black tracking-tighter uppercase text-left">
               <ReceiptText className="size-10 sm:size-14" />
@@ -386,10 +391,7 @@ export default function NovaVendaPage() {
                       <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] opacity-60 block text-left">Desconto (R$)</Label>
                       <Input
                         type="number"
-                        className={cn(
-                          "h-14 sm:h-20 text-center text-xl sm:text-3xl font-black rounded-xl sm:rounded-3xl border-4",
-                          isReady ? "bg-white/10 border-white/20 text-white shadow-lg" : "bg-background"
-                        )}
+                        className="h-14 sm:h-20 text-center text-xl sm:text-3xl font-black rounded-xl sm:rounded-3xl border-4 bg-white/10 border-white/20 text-white shadow-lg"
                         value={discount}
                         onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
                       />
@@ -398,10 +400,7 @@ export default function NovaVendaPage() {
                       <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] opacity-60 block text-left">Taxas (R$)</Label>
                       <Input
                         type="number"
-                        className={cn(
-                          "h-14 sm:h-20 text-center text-xl sm:text-3xl font-black rounded-xl sm:rounded-3xl border-4",
-                          isReady ? "bg-white/10 border-white/20 text-white shadow-lg" : "bg-background"
-                        )}
+                        className="h-14 sm:h-20 text-center text-xl sm:text-3xl font-black rounded-xl sm:rounded-3xl border-4 bg-white/10 border-white/20 text-white shadow-lg"
                         value={additionalFee}
                         onChange={(e) => setAdditionalFee(parseFloat(e.target.value) || 0)}
                       />
@@ -409,10 +408,7 @@ export default function NovaVendaPage() {
                   </div>
                </div>
 
-               <div className={cn(
-                  "p-8 sm:p-12 rounded-[2rem] sm:rounded-[3rem] shadow-2xl text-center border-8",
-                  isReady ? "bg-white text-primary border-white" : "bg-background text-muted-foreground border-muted"
-                )}>
+               <div className="p-8 sm:p-12 rounded-[2rem] sm:rounded-[3rem] shadow-2xl text-center border-8 bg-white text-primary border-white">
                   <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.4em] mb-4 opacity-60">Total a Pagar</p>
                   <p className="text-4xl sm:text-7xl md:text-8xl font-black tracking-tighter leading-none">R$ {finalTotal.toFixed(2)}</p>
                 </div>
@@ -423,10 +419,8 @@ export default function NovaVendaPage() {
               type="submit" 
               size="lg"
               className={cn(
-                "w-full h-20 sm:h-28 text-xl sm:text-3xl font-black rounded-2xl sm:rounded-[2.5rem] shadow-2xl transition-all active:scale-95 uppercase tracking-widest",
-                isReady 
-                  ? "bg-white text-primary hover:bg-white/90 shadow-white/20" 
-                  : "bg-muted text-muted-foreground cursor-not-allowed"
+                "w-full h-20 sm:h-28 text-xl sm:text-3xl font-black rounded-2xl sm:rounded-[2.5rem] shadow-2xl transition-all active:scale-95 uppercase tracking-widest bg-white text-primary hover:bg-white/90 shadow-white/20",
+                !isReady && "opacity-50 cursor-not-allowed"
               )}
               disabled={!isReady}
             >
