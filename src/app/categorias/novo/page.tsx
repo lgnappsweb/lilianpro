@@ -18,12 +18,38 @@ import {
   Loader2,
   Info,
   Type,
+  ChevronDown,
+  Sparkles,
 } from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore } from "@/firebase";
 import { collection } from "firebase/firestore";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
+
+const SUGESTOES_CATEGORIAS = {
+  "NATURA": [
+    "Perfumaria Feminina", "Perfumaria Masculina", "Corpo e Banho (Tododia)", 
+    "Rosto (Chronos)", "Maquiagem (Una/Faces)", "Cabelos (Lumina)", 
+    "Mamãe e Bebê", "Sabonetes", "Desodorantes"
+  ],
+  "AVON": [
+    "Perfumaria", "Maquiagem (Color Trend)", "Rosto (Renew)", 
+    "Cuidados Diários (Care)", "Cabelos (Advance Techniques)", 
+    "Higiene Íntima", "Proteção Solar", "Corpo"
+  ],
+  "CASA & ESTILO": [
+    "Cozinha e Utensílios", "Cama, Mesa e Banho", "Organização", 
+    "Moda e Acessórios", "Infantil e Brinquedos", "Saúde e Bem-estar", 
+    "Decoração"
+  ]
+};
 
 export default function NovaCategoriaPage() {
   const { user } = useUser();
@@ -32,6 +58,7 @@ export default function NovaCategoriaPage() {
   const { toast } = useToast();
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -40,6 +67,15 @@ export default function NovaCategoriaPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const selectSuggestion = (name: string) => {
+    setFormData((prev) => ({ ...prev, name }));
+    setIsSuggestionsOpen(false);
+    toast({
+      title: "Sugestão aplicada!",
+      description: `Categoria definida como: ${name}`,
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -105,21 +141,65 @@ export default function NovaCategoriaPage() {
               Dados da Categoria
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-8 sm:p-12 space-y-8">
-            <div className="space-y-4 text-left">
-              <Label htmlFor="name" className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Nome da Categoria</Label>
-              <div className="relative">
-                <Tag className="absolute left-5 top-1/2 -translate-y-1/2 size-6 text-muted-foreground/30 hidden sm:block" />
-                <Input
-                  id="name"
-                  name="name"
-                  placeholder="Ex: Perfumaria, Maquiagem, Hidratantes"
-                  className="h-16 sm:h-20 sm:pl-16 text-xl sm:text-3xl font-black rounded-xl sm:rounded-3xl border-4 border-muted bg-background focus:border-primary transition-all placeholder:text-muted-foreground/40"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                />
+          <CardContent className="p-8 sm:p-12 space-y-10">
+            <div className="space-y-6 text-left">
+              <div className="space-y-4">
+                <Label htmlFor="name" className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Nome da Categoria</Label>
+                <div className="relative">
+                  <Tag className="absolute left-5 top-1/2 -translate-y-1/2 size-6 text-muted-foreground/30 hidden sm:block" />
+                  <Input
+                    id="name"
+                    name="name"
+                    placeholder="Ex: Perfumaria, Maquiagem, Hidratantes"
+                    className="h-16 sm:h-20 sm:pl-16 text-xl sm:text-3xl font-black rounded-xl sm:rounded-3xl border-4 border-muted bg-background focus:border-primary transition-all placeholder:text-muted-foreground/40"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
               </div>
+
+              {/* Menu Expansivo de Sugestões */}
+              <Collapsible
+                open={isSuggestionsOpen}
+                onOpenChange={setIsSuggestionsOpen}
+                className="w-full space-y-4"
+              >
+                <CollapsibleTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    type="button"
+                    className="w-full h-12 sm:h-14 rounded-2xl border-2 border-primary/20 bg-primary/5 text-primary font-black uppercase tracking-widest flex items-center justify-between px-6 hover:bg-primary/10 transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Sparkles className="size-5" />
+                      Sugestões Elite
+                    </div>
+                    <ChevronDown className={cn("size-6 transition-transform duration-300", isSuggestionsOpen && "rotate-180")} />
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-8 animate-in slide-in-from-top-4 duration-300 overflow-hidden">
+                  {Object.entries(SUGESTOES_CATEGORIAS).map(([brand, categories]) => (
+                    <div key={brand} className="space-y-4">
+                      <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 border-b-2 border-primary/10 pb-2">{brand}</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {categories.map((cat) => (
+                          <Button
+                            key={cat}
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            className="rounded-full font-bold text-xs px-4 h-8 bg-muted hover:bg-primary hover:text-white transition-colors"
+                            onClick={() => selectSuggestion(cat)}
+                          >
+                            {cat}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </CollapsibleContent>
+              </Collapsible>
             </div>
 
             <div className="space-y-4 text-left">
