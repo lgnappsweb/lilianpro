@@ -25,7 +25,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const primaryItems = [
-  { name: "Venda", icon: PlusCircle, href: "/vendas/nova" },
   { name: "Painel", icon: LayoutDashboard, href: "/" },
   { name: "Clientes", icon: Users, href: "/clientes" },
 ];
@@ -43,7 +42,23 @@ export function MobileNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around border-t bg-background/80 backdrop-blur-lg md:hidden px-2">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-20 items-center justify-around border-t bg-background/80 backdrop-blur-lg md:hidden px-4 pb-4">
+      {/* Nova Venda em Destaque no Início */}
+      <Link
+        href="/vendas/nova"
+        className={cn(
+          "flex flex-col items-center justify-center gap-1 transition-all duration-200 px-3 py-1 rounded-xl",
+          pathname === "/vendas/nova" 
+            ? "text-primary bg-primary/10 border border-primary/20 scale-110" 
+            : "text-primary font-bold"
+        )}
+      >
+        <div className="p-2 bg-primary rounded-full text-primary-foreground shadow-md">
+          <PlusCircle className="size-6" />
+        </div>
+        <span className="text-[10px] font-bold">Venda</span>
+      </Link>
+
       {primaryItems.map((item) => (
         <Link
           key={item.name}
@@ -62,9 +77,10 @@ export function MobileNav() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button className="flex flex-col items-center justify-center gap-1 text-muted-foreground">
-            <div className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg -translate-y-1">
+            <div className="flex size-11 items-center justify-center rounded-full bg-muted border border-border text-muted-foreground shadow-sm">
               <Plus className="size-6" />
             </div>
+            <span className="text-[10px] font-medium">Mais</span>
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56 mb-4">

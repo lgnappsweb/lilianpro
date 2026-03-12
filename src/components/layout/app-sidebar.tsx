@@ -28,9 +28,9 @@ import {
   SidebarGroupLabel,
   SidebarGroupContent,
 } from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
 
 const navItems = [
-  { name: "Nova Venda", icon: PlusCircle, href: "/vendas/nova" },
   { name: "Painel", icon: LayoutDashboard, href: "/" },
   { name: "Clientes", icon: Users, href: "/clientes" },
   { name: "Categorias", icon: Tag, href: "/categorias" },
@@ -57,6 +57,30 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
       <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">Ação Principal</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname === "/vendas/nova"}
+                  tooltip="Nova Venda"
+                  className={cn(
+                    "mb-2 h-11 bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground shadow-sm transition-all duration-200",
+                    pathname === "/vendas/nova" && "ring-2 ring-primary ring-offset-2"
+                  )}
+                >
+                  <Link href="/vendas/nova">
+                    <PlusCircle className="size-5" />
+                    <span className="font-bold">Nova Venda</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
         <SidebarGroup>
           <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">Navegação</SidebarGroupLabel>
           <SidebarGroupContent>
