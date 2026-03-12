@@ -27,6 +27,7 @@ import {
   Users,
   Calendar,
   Download,
+  BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -49,14 +50,17 @@ const COLORS = ["#C2185B", "#AD1457", "#D028A9", "#F8BBD0"];
 export default function RelatoriosPage() {
   return (
     <div className="space-y-10 animate-in fade-in duration-500">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-        <div>
-          <h1 className="text-4xl font-black tracking-tight text-primary font-headline">Relatórios e Análises</h1>
-          <p className="text-sm sm:text-lg text-muted-foreground mt-2 font-medium">Visualize o desempenho do seu negócio em gráficos detalhados.</p>
+      <div className="flex flex-col items-center text-center gap-6 px-2 mb-10">
+        <div className="w-full">
+          <div className="flex flex-col items-center justify-center gap-4">
+            <BarChart3 className="size-10 sm:size-16 text-primary" />
+            <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm">RELATÓRIOS</h1>
+          </div>
+          <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Desempenho do seu negócio em gráficos detalhados.</p>
         </div>
-        <Button variant="outline" className="h-14 px-8 text-lg font-black rounded-2xl border-muted text-primary">
+        <Button variant="outline" className="w-full h-14 sm:h-20 px-8 text-lg font-black rounded-2xl border-4 border-muted text-primary hover:bg-primary/5 transition-transform hover:scale-105 shadow-xl">
           <Download className="mr-3 size-6" />
-          Baixar PDF
+          Baixar PDF Elite
         </Button>
       </div>
 

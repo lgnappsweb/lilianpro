@@ -20,6 +20,7 @@ import {
   Package,
   PlusCircle,
   Loader2,
+  LayoutDashboard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -143,14 +144,17 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-12 animate-in fade-in duration-500 w-full overflow-hidden">
-      <div className="flex flex-col items-start text-left sm:items-center sm:text-center gap-6 px-2">
+      <div className="flex flex-col items-center text-center gap-6 px-2 mb-10">
         <div className="w-full">
-          <h1 className="text-3xl md:text-4xl font-black tracking-tight text-primary font-headline uppercase">Olá, {user?.displayName || 'Administradora'}!</h1>
-          <p className="text-base sm:text-xl text-muted-foreground mt-2 font-bold opacity-80">Veja como está o seu negócio hoje.</p>
+          <div className="flex flex-col items-center justify-center gap-4">
+            <LayoutDashboard className="size-10 sm:size-16 text-primary" />
+            <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm">Olá, {user?.displayName?.split(' ')[0] || 'Admin'}!</h1>
+          </div>
+          <p className="text-base sm:text-xl text-muted-foreground mt-4 font-bold opacity-80 uppercase tracking-widest">Veja como está o seu negócio hoje.</p>
         </div>
-        <Button asChild className="w-full h-16 px-10 text-xl font-black shadow-xl rounded-2xl bg-primary hover:bg-primary/90 transition-all hover:scale-105">
+        <Button asChild className="w-full h-16 sm:h-20 px-10 text-xl font-black shadow-xl rounded-2xl bg-primary hover:bg-primary/90 transition-all hover:scale-105">
           <Link href="/vendas/nova">
-            <PlusCircle className="mr-3 size-7" />
+            <PlusCircle className="mr-3 size-7 sm:size-8" />
             Nova Venda
           </Link>
         </Button>

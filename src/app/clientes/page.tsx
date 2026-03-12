@@ -76,14 +76,13 @@ export default function ClientesPage() {
 
   return (
     <div className="space-y-8 sm:space-y-12 animate-in fade-in duration-500 w-full">
-      {/* Cabeçalho Alinhado com Padrão Nova Venda */}
-      <div className="flex flex-col items-center text-center gap-6 px-2">
+      <div className="flex flex-col items-center text-center gap-6 px-2 mb-10">
         <div className="w-full">
-          <div className="flex items-center justify-center gap-4 mb-2">
+          <div className="flex flex-col items-center justify-center gap-4">
             <Users className="size-10 sm:size-16 text-primary" />
-            <h1 className="text-4xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm">CLIENTES</h1>
+            <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm">CLIENTES</h1>
           </div>
-          <p className="text-xs sm:text-xl text-muted-foreground mt-3 font-bold opacity-60 uppercase tracking-widest text-center">Gerencie seu catálogo de contatos e histórico.</p>
+          <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Gerencie seu catálogo de contatos e histórico.</p>
         </div>
         <Button asChild className="w-full h-14 sm:h-20 px-10 text-xl font-black rounded-2xl shadow-xl bg-primary hover:bg-primary/90 transition-transform hover:scale-105">
           <Link href="/clientes/novo">

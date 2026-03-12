@@ -16,6 +16,7 @@ import {
   Filter,
   Clock,
   Loader2,
+  Wallet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -65,17 +66,20 @@ export default function FinanceiroPage() {
 
   return (
     <div className="space-y-10 animate-in fade-in duration-500">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-        <div>
-          <h1 className="text-4xl font-black tracking-tight text-primary font-headline">Controle Financeiro</h1>
-          <p className="text-sm sm:text-lg text-muted-foreground mt-2 font-medium">Dados reais de entradas e contas a receber.</p>
+      <div className="flex flex-col items-center text-center gap-6 px-2 mb-10">
+        <div className="w-full">
+          <div className="flex flex-col items-center justify-center gap-4">
+            <Wallet className="size-10 sm:size-16 text-primary" />
+            <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm">FINANCEIRO</h1>
+          </div>
+          <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest">Controle real de entradas e contas a receber.</p>
         </div>
-        <div className="flex gap-3">
-          <Button variant="outline" className="h-12 px-6 text-base font-bold rounded-xl border-muted">
+        <div className="flex gap-3 w-full sm:w-auto">
+          <Button variant="outline" className="flex-1 sm:flex-none h-12 px-6 text-base font-bold rounded-xl border-muted">
             <Calendar className="mr-2 size-5" />
             Este Mês
           </Button>
-          <Button variant="outline" className="h-12 px-6 text-base font-bold rounded-xl border-muted">
+          <Button variant="outline" className="flex-1 sm:flex-none h-12 px-6 text-base font-bold rounded-xl border-muted">
             <Filter className="mr-2 size-5" />
             Filtros
           </Button>
