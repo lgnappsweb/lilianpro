@@ -292,10 +292,10 @@ export default function DetalhesPedidoPage() {
       <div className="flex flex-col gap-6">
         <Button
           onClick={shareOnWhatsApp}
-          className="w-full h-24 sm:h-32 text-2xl sm:text-4xl font-black rounded-[1.5rem] sm:rounded-[3rem] bg-green-600 text-white hover:bg-green-700 shadow-2xl transition-all active:scale-95 uppercase tracking-widest gap-6"
+          className="w-full h-24 sm:h-32 text-lg sm:text-4xl font-black rounded-[1.5rem] sm:rounded-[3rem] bg-green-600 text-white hover:bg-green-700 shadow-2xl transition-all active:scale-95 uppercase tracking-wide sm:tracking-widest gap-4 sm:gap-6 px-4"
         >
-          <MessageCircle className="size-10 sm:size-14" />
-          COMPARTILHAR VENDA
+          <MessageCircle className="size-10 sm:size-14 shrink-0" />
+          <span className="truncate">COMPARTILHAR VENDA</span>
         </Button>
 
         <Button
