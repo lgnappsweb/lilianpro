@@ -16,6 +16,7 @@ import {
   Edit,
   Loader2,
   Users,
+  User,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -78,8 +79,8 @@ export default function ClientesPage() {
       {/* Cabeçalho Centralizado */}
       <div className="flex flex-col items-center text-center gap-6 px-2">
         <div className="w-full">
-          <div className="flex items-center justify-center gap-4 mb-2">
-            <Users className="size-8 sm:size-16 text-primary" />
+          <div className="flex flex-col items-center justify-center gap-4 mb-2">
+            <Users className="size-12 sm:size-20 text-primary" />
             <h1 className="text-3xl md:text-7xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm text-center">CLIENTES</h1>
           </div>
           <p className="text-[10px] sm:text-lg text-muted-foreground mt-2 font-bold opacity-60 uppercase tracking-widest text-center">Gerencie seu catálogo de contatos e histórico.</p>
@@ -111,14 +112,17 @@ export default function ClientesPage() {
         ) : (
           <div className="grid grid-cols-1 gap-6 w-full">
             {filteredClientes.map((cliente) => (
-              <Card key={cliente.id} className="bg-background border-4 border-muted rounded-[1.5rem] sm:rounded-[2.5rem] p-6 sm:p-10 shadow-xl hover:border-primary/20 transition-all flex flex-col w-full min-h-0">
-                <div className="mb-4">
-                  <h3 className="font-black text-2xl sm:text-6xl break-words leading-tight uppercase tracking-tighter text-primary italic text-left">
+              <Card key={cliente.id} className="bg-background border-4 border-muted rounded-[1.5rem] sm:rounded-[2.5rem] p-6 sm:p-10 shadow-xl hover:border-primary/20 transition-all flex flex-col w-full min-h-0 text-center items-center">
+                <div className="mb-6 flex flex-col items-center gap-4">
+                  <div className="size-12 sm:size-20 rounded-full bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                    <User className="size-6 sm:size-10" />
+                  </div>
+                  <h3 className="font-black text-2xl sm:text-6xl break-words leading-tight uppercase tracking-tighter text-primary italic line-clamp-2 max-w-4xl">
                     {cliente.fullName}
                   </h3>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-4 w-full">
                   <div className="grid grid-cols-3 gap-3">
                     <Button variant="outline" asChild className="h-12 sm:h-16 font-black text-[10px] sm:text-lg uppercase tracking-tighter rounded-xl sm:rounded-2xl border-4 hover:bg-primary/5 px-2">
                       <Link href={`/clientes/${cliente.id}`}>

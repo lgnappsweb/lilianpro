@@ -71,16 +71,18 @@ export default function DetalhesClientePage() {
 
   return (
     <div className="space-y-12 animate-in fade-in duration-500 w-full pb-20">
-      {/* Cabeçalho de Perfil */}
+      {/* Cabeçalho de Perfil Reorganizado */}
       <div className="flex flex-col items-center text-center gap-6 px-2">
-        <div className="w-full">
-          <div className="flex items-center justify-center gap-4 mb-2">
-            <div className="bg-primary/10 p-4 rounded-3xl shadow-inner border-4 border-primary/20">
-               <User className="size-10 sm:size-16 text-primary" />
-            </div>
-            <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm break-words">{cliente.fullName}</h1>
+        <div className="w-full flex flex-col items-center gap-6">
+          <div className="bg-primary/10 p-6 sm:p-10 rounded-[2.5rem] shadow-inner border-4 border-primary/20 animate-in zoom-in duration-500">
+             <User className="size-16 sm:size-24 text-primary" />
           </div>
-          <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Ficha Cadastral Elite - GlamGestão</p>
+          <div className="space-y-4 max-w-5xl">
+            <h1 className="text-4xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-tight italic drop-shadow-sm break-words line-clamp-2">
+              {cliente.fullName}
+            </h1>
+            <p className="text-xs sm:text-xl text-muted-foreground font-bold opacity-60 uppercase tracking-[0.3em] text-center">Ficha Cadastral Elite - GlamGestão</p>
+          </div>
         </div>
       </div>
 
