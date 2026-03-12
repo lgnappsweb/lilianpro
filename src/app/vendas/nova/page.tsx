@@ -47,6 +47,7 @@ import {
   ShoppingBag,
   BookOpen,
   DollarSign,
+  Tag,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from "@/firebase";
@@ -63,8 +64,7 @@ interface SaleItem {
   catalogPrice: number;
   salePrice: number;
   name: string;
-  useCatalogPrice: boolean;
-  useCostPrice: boolean;
+  priceStrategy: 'sale' | 'catalog' | 'cost';
 }
 
 export default function NovaVendaPage() {
@@ -84,8 +84,7 @@ export default function NovaVendaPage() {
       catalogPrice: 0,
       salePrice: 0,
       name: "", 
-      useCatalogPrice: false, 
-      useCostPrice: false 
+      priceStrategy: 'sale'
     }
   ]);
   const [paymentMethod, setPaymentMethod] = useState("");
@@ -122,8 +121,7 @@ export default function NovaVendaPage() {
       catalogPrice: 0,
       salePrice: 0,
       name: "", 
-      useCatalogPrice: false, 
-      useCostPrice: false 
+      priceStrategy: 'sale'
     }, ...selectedItems]);
   };
 
@@ -134,28 +132,19 @@ export default function NovaVendaPage() {
     }
   };
 
-  const updateItemPrice = (item: SaleItem) => {
-    let effectivePrice = item.salePrice;
-    if (item.useCostPrice) {
-      effectivePrice = item.costPrice;
-    } else if (item.useCatalogPrice) {
-      effectivePrice = item.catalogPrice;
+  const calculateEffectivePrice = (item: SaleItem) => {
+    switch (item.priceStrategy) {
+      case 'cost': return item.costPrice;
+      case 'catalog': return item.catalogPrice;
+      default: return item.salePrice;
     }
-    return { ...item, price: effectivePrice };
   };
 
-  const toggleItemCatalog = (index: number, checked: boolean) => {
+  const updateItemStrategy = (index: number, strategy: 'sale' | 'catalog' | 'cost') => {
     const newItems = [...selectedItems];
-    newItems[index].useCatalogPrice = checked;
-    if (checked) newItems[index].useCostPrice = false; // Mutualmente exclusivo para facilitar
-    setSelectedItems(newItems.map(it => updateItemPrice(it)));
-  };
-
-  const toggleItemCost = (index: number, checked: boolean) => {
-    const newItems = [...selectedItems];
-    newItems[index].useCostPrice = checked;
-    if (checked) newItems[index].useCatalogPrice = false; // Mutualmente exclusivo para facilitar
-    setSelectedItems(newItems.map(it => updateItemPrice(it)));
+    newItems[index].priceStrategy = strategy;
+    newItems[index].price = calculateEffectivePrice(newItems[index]);
+    setSelectedItems(newItems);
   };
 
   const subtotal = useMemo(() => {
@@ -314,8 +303,8 @@ export default function NovaVendaPage() {
                       newItems[index].catalogPrice = Number(product.catalogPrice) || 0;
                       newItems[index].salePrice = Number(product.salePrice) || 0;
                       newItems[index].name = product.name;
-                      // Mantém flags atuais e atualiza preço efetivo
-                      setSelectedItems(newItems.map(it => it.id === item.id ? updateItemPrice(it) : it));
+                      newItems[index].price = calculateEffectivePrice(newItems[index]);
+                      setSelectedItems(newItems);
                     }
                   }} value={item.productId}>
                     <SelectTrigger className="h-14 sm:h-16 text-sm sm:text-xl font-black rounded-xl sm:rounded-2xl bg-background border-2 border-border shadow-sm group-hover:border-primary/20 transition-all text-primary">
@@ -368,33 +357,69 @@ export default function NovaVendaPage() {
                       </div>
                     </div>
 
-                    {/* Controles Individuais de Preço */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t-2 border-border/20 pt-4">
-                      <div className="flex items-center justify-between bg-background/50 p-4 rounded-2xl border-2 border-border/10">
-                        <div className="flex flex-col">
-                          <Label className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                            <BookOpen className="size-3 text-amber-500" /> Preço de Revista
-                          </Label>
-                          <span className="text-[8px] font-bold opacity-40 uppercase tracking-tighter">Cobrar valor de catálogo</span>
-                        </div>
-                        <Switch 
-                          checked={item.useCatalogPrice}
-                          onCheckedChange={(checked) => toggleItemCatalog(index, checked)}
-                          className="data-[state=checked]:bg-amber-500"
-                        />
-                      </div>
-                      <div className="flex items-center justify-between bg-background/50 p-4 rounded-2xl border-2 border-border/10">
-                        <div className="flex flex-col">
-                          <Label className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                            <DollarSign className="size-3 text-green-500" /> Vender pelo Custo
-                          </Label>
-                          <span className="text-[8px] font-bold opacity-40 uppercase tracking-tighter">Sem margem de lucro</span>
-                        </div>
-                        <Switch 
-                          checked={item.useCostPrice}
-                          onCheckedChange={(checked) => toggleItemCost(index, checked)}
-                          className="data-[state=checked]:bg-green-500"
-                        />
+                    {/* Controles Individuais de Preço - Tríade Elite */}
+                    <div className="space-y-3 border-t-2 border-border/20 pt-4">
+                      <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-2 block">Estratégia de Preço para este Item</Label>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        {/* Opção Revendedora */}
+                        <button
+                          type="button"
+                          onClick={() => updateItemStrategy(index, 'sale')}
+                          className={cn(
+                            "flex items-center justify-between p-4 rounded-2xl border-2 transition-all group/btn",
+                            item.priceStrategy === 'sale' 
+                              ? "bg-primary text-white border-primary shadow-lg scale-[1.02]" 
+                              : "bg-background border-muted/30 text-muted-foreground hover:border-primary/40"
+                          )}
+                        >
+                          <div className="flex flex-col items-start text-left">
+                            <span className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                              <ShoppingBag className="size-3" /> Revendedora
+                            </span>
+                            <span className="text-[8px] font-bold opacity-60 uppercase tracking-tighter">Preço Promocional</span>
+                          </div>
+                          {item.priceStrategy === 'sale' && <CheckCircle2 className="size-4 animate-in zoom-in" />}
+                        </button>
+
+                        {/* Opção Revista */}
+                        <button
+                          type="button"
+                          onClick={() => updateItemStrategy(index, 'catalog')}
+                          className={cn(
+                            "flex items-center justify-between p-4 rounded-2xl border-2 transition-all group/btn",
+                            item.priceStrategy === 'catalog' 
+                              ? "bg-amber-500 text-white border-amber-500 shadow-lg scale-[1.02]" 
+                              : "bg-background border-muted/30 text-muted-foreground hover:border-amber-500/40"
+                          )}
+                        >
+                          <div className="flex flex-col items-start text-left">
+                            <span className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                              <BookOpen className="size-3" /> Revista
+                            </span>
+                            <span className="text-[8px] font-bold opacity-60 uppercase tracking-tighter">Valor de Catálogo</span>
+                          </div>
+                          {item.priceStrategy === 'catalog' && <CheckCircle2 className="size-4 animate-in zoom-in" />}
+                        </button>
+
+                        {/* Opção Custo */}
+                        <button
+                          type="button"
+                          onClick={() => updateItemStrategy(index, 'cost')}
+                          className={cn(
+                            "flex items-center justify-between p-4 rounded-2xl border-2 transition-all group/btn",
+                            item.priceStrategy === 'cost' 
+                              ? "bg-green-600 text-white border-green-600 shadow-lg scale-[1.02]" 
+                              : "bg-background border-muted/30 text-muted-foreground hover:border-green-600/40"
+                          )}
+                        >
+                          <div className="flex flex-col items-start text-left">
+                            <span className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                              <DollarSign className="size-3" /> Custo
+                            </span>
+                            <span className="text-[8px] font-bold opacity-60 uppercase tracking-tighter">Sem Lucro (Repasse)</span>
+                          </div>
+                          {item.priceStrategy === 'cost' && <CheckCircle2 className="size-4 animate-in zoom-in" />}
+                        </button>
                       </div>
                     </div>
                   </div>
