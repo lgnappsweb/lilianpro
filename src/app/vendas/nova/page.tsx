@@ -69,7 +69,7 @@ export default function NovaVendaPage() {
   }, [clients, selectedClientId]);
 
   const addItem = () => {
-    setSelectedItems([...selectedItems, { id: `temp-${Date.now()}`, productId: "", quantity: 1, price: 0, name: "" }]);
+    setSelectedItems([...selectedItems, { id: `temp-${Date.now()}-${Math.random()}`, productId: "", quantity: 1, price: 0, name: "" }]);
   };
 
   const subtotal = useMemo(() => {
@@ -167,15 +167,11 @@ export default function NovaVendaPage() {
         </Card>
 
         <Card className="border-none shadow-xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="flex flex-row items-center justify-between bg-muted/30 p-6 sm:p-8 gap-4">
+          <CardHeader className="bg-muted/30 p-6 sm:p-8">
             <CardTitle className="flex flex-row items-center gap-3 text-xl sm:text-2xl md:text-3xl font-black text-left">
               <Package className="size-6 sm:size-8 text-primary" />
               2. Produtos
             </CardTitle>
-            <Button type="button" variant="outline" size="lg" className="h-12 sm:h-14 px-4 sm:px-8 text-sm sm:text-lg font-black border-4 border-primary/20 text-primary rounded-xl sm:rounded-2xl hover:bg-primary/5 transition-all" onClick={addItem}>
-              <Plus className="size-5 sm:size-6 mr-2" />
-              Adicionar Item
-            </Button>
           </CardHeader>
           <CardContent className="p-4 sm:p-8 space-y-4 sm:space-y-8">
             {selectedItems.map((item, index) => (
@@ -229,6 +225,13 @@ export default function NovaVendaPage() {
                 )}
               </div>
             ))}
+
+            <div className="pt-4">
+              <Button type="button" variant="outline" size="lg" className="w-full h-12 sm:h-16 text-sm sm:text-lg font-black border-4 border-primary/20 text-primary rounded-xl sm:rounded-2xl hover:bg-primary/5 transition-all" onClick={addItem}>
+                <Plus className="size-5 sm:size-6 mr-2" />
+                Adicionar Item
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
