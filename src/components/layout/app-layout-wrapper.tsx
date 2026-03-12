@@ -3,7 +3,8 @@
 
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./app-sidebar";
-import { Search, Bell, User, LogOut } from "lucide-react";
+import { MobileNav } from "./mobile-nav";
+import { Search, Bell, LogOut } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useUser, useAuth } from "@/firebase";
@@ -43,18 +44,23 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
   if (!user) return null;
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={true}>
       <AppSidebar />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center justify-between px-6 border-b bg-background/50 backdrop-blur-sm sticky top-0 z-10">
           <div className="flex items-center gap-4">
-            <SidebarTrigger />
-            <div className="relative w-64 md:w-96 hidden sm:block">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <Input
-                placeholder="Pesquisar clientes, produtos..."
-                className="pl-10 h-9 bg-muted/50 border-none focus-visible:ring-1"
-              />
+            <div className="md:hidden">
+              <span className="font-headline font-bold text-lg text-primary">GlamGestão</span>
+            </div>
+            <div className="hidden md:flex items-center gap-4">
+              <SidebarTrigger />
+              <div className="relative w-64 md:w-96">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <Input
+                  placeholder="Pesquisar..."
+                  className="pl-10 h-9 bg-muted/50 border-none focus-visible:ring-1"
+                />
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -79,11 +85,12 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         </header>
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-4 pb-24 md:p-6 md:pb-6">
           <div className="max-w-7xl mx-auto space-y-6">
             {children}
           </div>
         </main>
+        <MobileNav />
       </SidebarInset>
     </SidebarProvider>
   );
