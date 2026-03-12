@@ -68,9 +68,9 @@ export default function FinanceiroPage() {
     <div className="space-y-10 animate-in fade-in duration-500">
       <div className="flex flex-col items-center text-center gap-6 px-2 mb-10">
         <div className="w-full">
-          <div className="flex flex-col items-center justify-center gap-4">
-            <Wallet className="size-10 sm:size-16 text-primary" />
-            <h1 className="text-6xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm whitespace-nowrap">FINANCEIRO</h1>
+          <div className="flex flex-col items-center justify-center gap-6">
+            <Wallet className="size-16 sm:size-24 text-primary" />
+            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap">FINANCEIRO</h1>
           </div>
           <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest">Controle real de entradas e contas a receber.</p>
         </div>
