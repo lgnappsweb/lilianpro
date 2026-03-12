@@ -27,6 +27,7 @@ import {
   Info,
   DollarSign,
   Tag,
+  MessageCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -53,6 +54,43 @@ export default function DetalhesPedidoPage() {
 
   const { data: items, isLoading: itemsLoading } = useCollection(itemsQuery);
 
+  const getStatusInfo = (status: string) => {
+    switch (status) {
+      case "Pago": return { icon: CheckCircle2, color: "text-green-600", bg: "bg-green-100", label: "PAGAMENTO CONFIRMADO" };
+      case "Pendente": return { icon: Clock, color: "text-orange-600", bg: "bg-orange-100", label: "AGUARDANDO PAGAMENTO" };
+      case "Atrasado": return { icon: AlertCircle, color: "text-red-600", bg: "bg-red-100", label: "PAGAMENTO EM ATRASO" };
+      default: return { icon: Info, color: "text-muted-foreground", bg: "bg-muted", label: status?.toUpperCase() };
+    }
+  };
+
+  const shareOnWhatsApp = () => {
+    if (!order) return;
+
+    const statusInfo = getStatusInfo(order.paymentStatus);
+    let itemsList = "";
+    items?.forEach((item) => {
+      itemsList += `• ${item.quantity}x ${item.productName} - R$ ${Number(item.subtotal).toFixed(2)}\n`;
+    });
+
+    const message = `✨ *RESUMO DA VENDA - GlamGestão* ✨\n\n` +
+      `👤 *Cliente:* ${order.clientName}\n` +
+      `📄 *Protocolo:* #${order.id?.slice(-8)}\n` +
+      `📅 *Data:* ${new Date(order.orderDate).toLocaleDateString()}\n` +
+      `💳 *Pagamento:* ${order.paymentMethod?.toUpperCase()}\n` +
+      `📊 *Status:* ${statusInfo.label}\n` +
+      (order.dueDate ? `⏰ *Vencimento:* ${new Date(order.dueDate).toLocaleDateString()}\n` : "") +
+      `\n📦 *ITENS:*\n${itemsList}` +
+      `\n💰 *FINANCEIRO:*\n` +
+      `Subtotal: R$ ${Number(order.totalAmount).toFixed(2)}\n` +
+      `Descontos: - R$ ${Number(order.discountAmount).toFixed(2)}\n` +
+      `Taxas: + R$ ${Number(order.additionalFeeAmount).toFixed(2)}\n` +
+      `*TOTAL FINAL: R$ ${Number(order.finalAmount).toFixed(2)}*\n` +
+      (order.notes ? `\n📝 *NOTAS:* ${order.notes}` : "");
+
+    const encodedMessage = encodeURIComponent(message);
+    window.open(`https://wa.me/?text=${encodedMessage}`, "_blank");
+  };
+
   if (orderLoading || itemsLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 text-muted-foreground">
@@ -76,15 +114,6 @@ export default function DetalhesPedidoPage() {
       </div>
     );
   }
-
-  const getStatusInfo = (status: string) => {
-    switch (status) {
-      case "Pago": return { icon: CheckCircle2, color: "text-green-600", bg: "bg-green-100", label: "PAGAMENTO CONFIRMADO" };
-      case "Pendente": return { icon: Clock, color: "text-orange-600", bg: "bg-orange-100", label: "AGUARDANDO PAGAMENTO" };
-      case "Atrasado": return { icon: AlertCircle, color: "text-red-600", bg: "bg-red-100", label: "PAGAMENTO EM ATRASO" };
-      default: return { icon: Info, color: "text-muted-foreground", bg: "bg-muted", label: status?.toUpperCase() };
-    }
-  };
 
   const status = getStatusInfo(order.paymentStatus);
 
@@ -260,11 +289,19 @@ export default function DetalhesPedidoPage() {
       </div>
 
       {/* Rodapé de Ações */}
-      <div className="flex flex-col sm:flex-row gap-6">
+      <div className="flex flex-col gap-6">
+        <Button
+          onClick={shareOnWhatsApp}
+          className="w-full h-24 sm:h-32 text-2xl sm:text-4xl font-black rounded-[1.5rem] sm:rounded-[3rem] bg-green-600 text-white hover:bg-green-700 shadow-2xl transition-all active:scale-95 uppercase tracking-widest gap-6"
+        >
+          <MessageCircle className="size-10 sm:size-14" />
+          COMPARTILHAR VENDA
+        </Button>
+
         <Button
           asChild
           variant="outline"
-          className="h-20 px-10 text-xl font-black rounded-3xl border-4 border-muted hover:bg-muted/50 transition-all flex-1 shadow-lg"
+          className="w-full h-20 px-10 text-xl font-black rounded-3xl border-4 border-muted hover:bg-muted/50 transition-all shadow-lg"
         >
           <Link href="/pedidos">
             <ArrowLeft className="mr-3 size-6" />
