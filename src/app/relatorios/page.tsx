@@ -56,8 +56,14 @@ export default function RelatoriosPage() {
     return collection(db, "users", user.uid, "clients");
   }, [db, user]);
 
+  const productsQuery = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return collection(db, "users", user.uid, "products");
+  }, [db, user]);
+
   const { data: orders, isLoading: ordersLoading } = useCollection(ordersQuery);
   const { data: clients, isLoading: clientsLoading } = useCollection(clientsQuery);
+  const { data: products, isLoading: productsLoading } = useCollection(productsQuery);
 
   // 1. Processamento: Evolução de Vendas (Últimos 6 meses)
   const salesHistory = useMemo(() => {
@@ -106,12 +112,35 @@ export default function RelatoriosPage() {
       .slice(0, 10);
   }, [orders, clients]);
 
-  // 3. Processamento: Mix de Marcas Elite
-  const brandStats = [
-    { name: "VERDE (N)", value: 45 },
-    { name: "ROSA (A)", value: 35 },
-    { name: "MARROM (C&E)", value: 20 },
-  ];
+  // 3. Processamento: Mix de Marcas Real (Baseado no Catálogo)
+  const brandStats = useMemo(() => {
+    if (!products || products.length === 0) {
+      return [
+        { name: "VERDE (N)", value: 0 },
+        { name: "ROSA (A)", value: 0 },
+        { name: "MARROM (C&E)", value: 0 },
+      ];
+    }
+
+    const counts = {
+      "VERDE (N)": 0,
+      "ROSA (A)": 0,
+      "MARROM (C&E)": 0,
+    };
+
+    products.forEach(p => {
+      const brand = p.brand as keyof typeof counts;
+      if (counts.hasOwnProperty(brand)) {
+        counts[brand]++;
+      }
+    });
+
+    const total = products.length;
+    return Object.entries(counts).map(([name, count]) => ({
+      name,
+      value: total > 0 ? Math.round((count / total) * 100) : 0
+    }));
+  }, [products]);
 
   const handleGeneratePDF = () => {
     if (!orders || !clients) return;
@@ -149,6 +178,7 @@ export default function RelatoriosPage() {
         ['Total de Vendas Realizadas', `${orders.length} pedidos`],
         ['Ticket Médio por Venda', `R$ ${avgTicket.toFixed(2)}`],
         ['Base de Clientes Ativos', `${clients.length} contatos`],
+        ['Total de Itens no Catálogo', `${products?.length || 0} itens`],
       ],
       theme: 'grid',
       headStyles: { fillColor: [194, 24, 91] },
@@ -202,17 +232,19 @@ export default function RelatoriosPage() {
       doc.text(`Página ${i} de ${pageCount}`, 180, 285);
     }
 
-    doc.save(`Relatorio_Elite_GlamGestao_${format(now, "yyyy-MM-dd")}.pdf`);
+    doc.save(`Relatorio_Elite_GlamGestao_${now.toISOString().split('T')[0]}.pdf`);
   };
 
-  if (ordersLoading || clientsLoading) {
+  if (ordersLoading || clientsLoading || productsLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-32 gap-6 text-muted-foreground">
         <Loader2 className="size-16 animate-spin text-primary" />
-        <p className="text-2xl font-black animate-pulse uppercase tracking-widest text-center">Analizando performance...</p>
+        <p className="text-2xl font-black animate-pulse uppercase tracking-widest text-center">Analisando performance...</p>
       </div>
     );
   }
+
+  const isMixEmpty = brandStats.every(s => s.value === 0);
 
   return (
     <div className="space-y-10 animate-in fade-in duration-500 w-full overflow-x-hidden">
@@ -269,28 +301,35 @@ export default function RelatoriosPage() {
               <Award className="size-7 text-primary" />
               Mix de Marcas
             </CardTitle>
-            <CardDescription className="text-base font-bold uppercase tracking-widest opacity-60">Distribuição estimada de vendas</CardDescription>
+            <CardDescription className="text-base font-bold uppercase tracking-widest opacity-60">Distribuição real do seu catálogo</CardDescription>
           </CardHeader>
           <CardContent className="p-8">
-            <div className="h-[280px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={brandStats}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={70}
-                    outerRadius={100}
-                    paddingAngle={8}
-                    dataKey="value"
-                  >
-                    {brandStats.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip contentStyle={{ borderRadius: "1rem" }} />
-                </PieChart>
-              </ResponsiveContainer>
+            <div className="h-[280px] w-full relative">
+              {isMixEmpty ? (
+                <div className="flex flex-col items-center justify-center h-full gap-4 opacity-20">
+                  <Package className="size-16" />
+                  <p className="font-black text-center uppercase tracking-tighter">Sem produtos cadastrados</p>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={brandStats}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={70}
+                      outerRadius={100}
+                      paddingAngle={8}
+                      dataKey="value"
+                    >
+                      {brandStats.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ borderRadius: "1rem", border: "none", boxShadow: "0 10px 25px rgba(0,0,0,0.1)" }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
             </div>
             <div className="flex flex-col gap-4 mt-6">
               {brandStats.map((item, i) => (
