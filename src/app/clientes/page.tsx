@@ -116,9 +116,6 @@ export default function ClientesPage() {
                   <h3 className="font-black text-2xl sm:text-4xl break-words leading-tight uppercase tracking-tighter text-primary italic text-left">
                     {cliente.fullName}
                   </h3>
-                  <p className="text-sm font-bold text-muted-foreground mt-1 uppercase tracking-widest text-left opacity-60">
-                    {cliente.city} {cliente.neighborhood ? `• ${cliente.neighborhood}` : ""}
-                  </p>
                 </div>
 
                 <div className="space-y-4">
