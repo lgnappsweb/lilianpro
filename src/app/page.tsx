@@ -25,14 +25,12 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { generateMonthlySalesSummary } from "@/ai/flows/generate-monthly-sales-summary";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection } from "firebase/firestore";
 
 export default function DashboardPage() {
   const { user } = useUser();
   const db = useFirestore();
-  const [aiSummaryText, setAiSummaryText] = useState("Analisando seus dados reais...");
 
   const ordersQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -102,37 +100,6 @@ export default function DashboardPage() {
     return [...orders].sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()).slice(0, 5);
   }, [orders]);
 
-  useEffect(() => {
-    async function getAISummary() {
-      if (!orders || orders.length === 0) {
-        setAiSummaryText("Cadastre suas primeiras vendas para que eu possa gerar uma análise inteligente do seu negócio!");
-        return;
-      }
-
-      try {
-        const input = {
-          month: new Date().toLocaleString('pt-BR', { month: 'long' }),
-          year: new Date().getFullYear(),
-          totalSalesMonth: orders.reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0),
-          totalReceivedMonth: orders.filter(o => o.paymentStatus === "Pago").reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0),
-          totalPendingMonth: orders.filter(o => o.paymentStatus !== "Pago").reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0),
-          numberOfClients: clients?.length || 0,
-          numberOfOrders: orders.length,
-          topSellingProducts: [],
-          totalProductsRegistered: products?.length || 0,
-        };
-        const result = await generateMonthlySalesSummary(input);
-        setAiSummaryText(result.summary);
-      } catch (error) {
-        setAiSummaryText("O resumo inteligente está temporariamente indisponível.");
-      }
-    }
-
-    if (orders && clients && products) {
-      getAISummary();
-    }
-  }, [orders, clients, products]);
-
   if (ordersLoading || clientsLoading || productsLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[40vh] gap-3">
@@ -182,25 +149,8 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <div className="grid gap-8 md:grid-cols-7">
-        <Card className="md:col-span-4 border-none shadow-xl overflow-hidden bg-gradient-to-br from-white to-pink-50 dark:from-slate-950 dark:to-pink-950/20 rounded-[2.5rem]">
-          <CardHeader className="p-8 pb-4">
-            <div className="flex flex-col items-center gap-3 text-primary">
-              <Sparkles className="size-8" />
-              <CardTitle className="text-2xl md:text-3xl font-black px-2">Resumo Inteligente</CardTitle>
-            </div>
-            <CardDescription className="text-base font-bold mt-1">Insights automáticos para seu crescimento</CardDescription>
-          </CardHeader>
-          <CardContent className="p-8 pt-0">
-            <div className="bg-white/80 dark:bg-black/60 backdrop-blur-md p-8 rounded-[2rem] border-2 border-primary/10 shadow-inner">
-              <p className="leading-relaxed text-lg md:text-xl text-foreground font-semibold italic opacity-80">
-                {aiSummaryText}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="md:col-span-3 border-none shadow-xl rounded-[2.5rem] overflow-hidden">
+      <div className="w-full">
+        <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden">
           <CardHeader className="p-8 pb-4 bg-muted/20">
             <CardTitle className="text-2xl md:text-3xl font-black flex flex-col items-center gap-3 px-2">
               <ShoppingBag className="size-8 text-primary" />
