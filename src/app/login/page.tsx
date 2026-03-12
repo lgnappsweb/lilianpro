@@ -71,7 +71,7 @@ export default function LoginPage() {
           </Alert>
         )}
 
-        <Card className="border-none shadow-lg overflow-hidden">
+        <Card className="border-0 dark:border-4 border-primary shadow-lg overflow-hidden">
           <CardHeader className="text-center space-y-1">
             <div className="flex justify-center mb-4">
               <div className="bg-primary p-3 rounded-2xl text-primary-foreground shadow-sm">
