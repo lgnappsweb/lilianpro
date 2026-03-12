@@ -1,6 +1,7 @@
+
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -22,25 +23,52 @@ import {
 import {
   Trash2,
   Plus,
-  ArrowRight,
   ReceiptText,
   User,
   Package,
   CreditCard,
   Calendar as CalendarIcon,
+  Loader2,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { collection, doc } from "firebase/firestore";
+import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
+import { useRouter } from "next/navigation";
 
 export default function NovaVendaPage() {
+  const { user } = useUser();
+  const db = useFirestore();
+  const router = useRouter();
   const { toast } = useToast();
+
+  const [selectedClientId, setSelectedClientId] = useState("");
   const [selectedItems, setSelectedItems] = useState([
-    { id: "temp-1", productId: "", quantity: 1, price: 0 }
+    { id: `temp-${Date.now()}`, productId: "", quantity: 1, price: 0, name: "" }
   ]);
+  const [paymentMethod, setPaymentMethod] = useState("pix");
+  const [dueDate, setDueDate] = useState("");
+  const [notes, setNotes] = useState("");
   const [discount, setDiscount] = useState(0);
+  const [additionalFee, setAdditionalFee] = useState(0);
+
+  // Consultas memoizadas
+  const clientsQuery = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return collection(db, "users", user.uid, "clients");
+  }, [db, user]);
+
+  const productsQuery = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return collection(db, "users", user.uid, "products");
+  }, [db, user]);
+
+  const { data: clients } = useCollection(clientsQuery);
+  const { data: products } = useCollection(productsQuery);
 
   const addItem = () => {
-    setSelectedItems([...selectedItems, { id: `temp-${Date.now()}`, productId: "", quantity: 1, price: 0 }]);
+    setSelectedItems([...selectedItems, { id: `temp-${Date.now()}`, productId: "", quantity: 1, price: 0, name: "" }]);
   };
 
   const removeItem = (id: string) => {
@@ -49,19 +77,65 @@ export default function NovaVendaPage() {
     }
   };
 
-  const calculateSubtotal = () => {
+  const subtotal = useMemo(() => {
     return selectedItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-  };
+  }, [selectedItems]);
 
-  const subtotal = calculateSubtotal();
-  const finalTotal = Math.max(0, subtotal - discount);
+  const finalTotal = Math.max(0, subtotal - discount + additionalFee);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user || !db || !selectedClientId || selectedItems.some(i => !i.productId)) {
+      toast({
+        variant: "destructive",
+        title: "Dados incompletos",
+        description: "Por favor, selecione a cliente e pelo menos um produto.",
+      });
+      return;
+    }
+
+    const orderId = `ord-${Date.now()}`;
+    const orderData = {
+      id: orderId,
+      adminId: user.uid,
+      clientId: selectedClientId,
+      orderDate: new Date().toISOString(),
+      totalAmount: subtotal,
+      discountAmount: discount,
+      additionalFeeAmount: additionalFee,
+      finalAmount: finalTotal,
+      paymentMethod,
+      paymentStatus: paymentMethod === "fiado" ? "Pendente" : "Pago",
+      dueDate: dueDate || null,
+      notes,
+    };
+
+    // PADRÃO ELITE: Operação Non-blocking (salva em background)
+    const orderRef = doc(db, "users", user.uid, "orders", orderId);
+    addDocumentNonBlocking(collection(db, "users", user.uid, "orders"), orderData);
+
+    // Salvar itens da ordem
+    selectedItems.forEach((item) => {
+      const itemId = `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const itemData = {
+        id: itemId,
+        adminId: user.uid,
+        orderId: orderId,
+        productId: item.productId,
+        productName: item.name,
+        quantity: item.quantity,
+        unitPrice: item.price,
+        subtotal: item.price * item.quantity,
+      };
+      addDocumentNonBlocking(collection(db, "users", user.uid, "orders", orderId, "orderItems"), itemData);
+    });
+
+    // PADRÃO ELITE: Feedback instantâneo e navegação sem esperar o await
     toast({
       title: "Venda registrada!",
-      description: "A venda foi salva com sucesso e o estoque atualizado.",
+      description: "A venda foi salva com sucesso e o estoque está sendo atualizado.",
     });
+    router.push("/pedidos");
   };
 
   return (
@@ -72,7 +146,6 @@ export default function NovaVendaPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="grid gap-6 md:grid-cols-3">
-        {/* Left Column: Form Details */}
         <div className="md:col-span-2 space-y-6">
           <Card className="border-none shadow-sm">
             <CardHeader>
@@ -82,20 +155,19 @@ export default function NovaVendaPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="cliente">Selecionar Cliente</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Busque uma cliente..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">Maria Oliveira</SelectItem>
-                      <SelectItem value="3">Juliana Ferreira</SelectItem>
-                      <SelectItem value="new">+ Cadastrar Nova Cliente</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="grid gap-2">
+                <Label htmlFor="cliente">Selecionar Cliente</Label>
+                <Select onValueChange={setSelectedClientId} value={selectedClientId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Busque uma cliente..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clients?.map(c => (
+                      <SelectItem key={c.id} value={c.id}>{c.fullName}</SelectItem>
+                    ))}
+                    <SelectItem value="new">+ Cadastrar Nova Cliente</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </CardContent>
           </Card>
@@ -117,17 +189,22 @@ export default function NovaVendaPage() {
                   <div className="flex-1 space-y-2">
                     {index === 0 && <Label>Produto</Label>}
                     <Select onValueChange={(val) => {
-                      const newItems = [...selectedItems];
-                      newItems[index].productId = val;
-                      newItems[index].price = val === "perfume" ? 219.90 : 29.90;
-                      setSelectedItems(newItems);
+                      const product = products?.find(p => p.id === val);
+                      if (product) {
+                        const newItems = [...selectedItems];
+                        newItems[index].productId = val;
+                        newItems[index].price = product.salePrice;
+                        newItems[index].name = product.name;
+                        setSelectedItems(newItems);
+                      }
                     }}>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione o produto..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="perfume">Perfume Essencial Oud (Natura) - R$ 219,90</SelectItem>
-                        <SelectItem value="batom">Batom Ultra Color (Avon) - R$ 29,90</SelectItem>
+                        {products?.map(p => (
+                          <SelectItem key={p.id} value={p.id}>{p.name} ({p.brand}) - R$ {Number(p.salePrice).toFixed(2)}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -175,7 +252,7 @@ export default function NovaVendaPage() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label>Forma de Pagamento</Label>
-                  <Select defaultValue="pix">
+                  <Select value={paymentMethod} onValueChange={setPaymentMethod}>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione..." />
                     </SelectTrigger>
@@ -191,19 +268,23 @@ export default function NovaVendaPage() {
                   <Label>Data de Vencimento</Label>
                   <div className="relative">
                     <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                    <Input type="date" className="pl-10" />
+                    <Input type="date" className="pl-10" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
                   </div>
                 </div>
                 <div className="sm:col-span-2 space-y-2">
                   <Label>Observações</Label>
-                  <textarea className="w-full min-h-[80px] rounded-md border border-input bg-transparent px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" placeholder="Algum detalhe importante?" />
+                  <textarea 
+                    className="w-full min-h-[80px] rounded-md border border-input bg-transparent px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" 
+                    placeholder="Algum detalhe importante?"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                  />
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Right Column: Summary Card */}
         <div className="space-y-6">
           <Card className="border-none shadow-sm sticky top-24 bg-primary text-primary-foreground">
             <CardHeader>
@@ -219,9 +300,18 @@ export default function NovaVendaPage() {
                 <Label className="text-xs text-primary-foreground/80">Aplicar Desconto (R$)</Label>
                 <Input
                   type="number"
-                  className="h-8 bg-white/10 border-white/20 text-white placeholder:text-white/40"
+                  className="h-8 bg-white/10 border-white/20 text-white"
                   value={discount}
                   onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs text-primary-foreground/80">Taxa Adicional (R$)</Label>
+                <Input
+                  type="number"
+                  className="h-8 bg-white/10 border-white/20 text-white"
+                  value={additionalFee}
+                  onChange={(e) => setAdditionalFee(parseFloat(e.target.value) || 0)}
                 />
               </div>
               <Separator className="bg-white/20" />
