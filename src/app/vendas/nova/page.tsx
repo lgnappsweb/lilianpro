@@ -168,7 +168,7 @@ export default function NovaVendaPage() {
             <ShoppingBag className="size-10 sm:size-16 text-primary" />
             <h1 className="text-4xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm">NOVA VENDA</h1>
           </div>
-          <p className="text-sm sm:text-xl text-muted-foreground mt-3 font-bold opacity-60 uppercase tracking-widest">Cadastre uma venda rapidamente no seu sistema.</p>
+          <p className="text-xs sm:text-xl text-muted-foreground mt-3 font-bold opacity-60 uppercase tracking-widest">Cadastre uma venda rapidamente no seu sistema.</p>
         </div>
       </div>
 
