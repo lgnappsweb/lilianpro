@@ -46,12 +46,26 @@ import {
   Circle,
   ShoppingBag,
   BookOpen,
+  DollarSign,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from "@/firebase";
 import { collection, doc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+
+interface SaleItem {
+  id: string;
+  productId: string;
+  quantity: number;
+  price: number;
+  costPrice: number;
+  catalogPrice: number;
+  salePrice: number;
+  name: string;
+  useCatalogPrice: boolean;
+  useCostPrice: boolean;
+}
 
 export default function NovaVendaPage() {
   const { user } = useUser();
@@ -60,16 +74,25 @@ export default function NovaVendaPage() {
   const { toast } = useToast();
 
   const [selectedClientId, setSelectedClientId] = useState("");
-  const [selectedItems, setSelectedItems] = useState([
-    { id: `temp-${Date.now()}`, productId: "", quantity: 1, price: 0, costPrice: 0, name: "" }
+  const [selectedItems, setSelectedItems] = useState<SaleItem[]>([
+    { 
+      id: `temp-${Date.now()}`, 
+      productId: "", 
+      quantity: 1, 
+      price: 0, 
+      costPrice: 0, 
+      catalogPrice: 0,
+      salePrice: 0,
+      name: "", 
+      useCatalogPrice: false, 
+      useCostPrice: false 
+    }
   ]);
   const [paymentMethod, setPaymentMethod] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [notes, setNotes] = useState("");
   const [discount, setDiscount] = useState(0);
   const [additionalFee, setAdditionalFee] = useState(0);
-  const [applyMarginDiscount, setApplyMarginDiscount] = useState(false);
-  const [useCatalogPrice, setUseCatalogPrice] = useState(false);
   const [itemToDeleteId, setItemToDeleteId] = useState<string | null>(null);
 
   const clientsQuery = useMemoFirebase(() => {
@@ -90,7 +113,18 @@ export default function NovaVendaPage() {
   }, [clients, selectedClientId]);
 
   const addItem = () => {
-    setSelectedItems([{ id: `temp-${Date.now()}-${Math.random()}`, productId: "", quantity: 1, price: 0, costPrice: 0, name: "" }, ...selectedItems]);
+    setSelectedItems([{ 
+      id: `temp-${Date.now()}-${Math.random()}`, 
+      productId: "", 
+      quantity: 1, 
+      price: 0, 
+      costPrice: 0, 
+      catalogPrice: 0,
+      salePrice: 0,
+      name: "", 
+      useCatalogPrice: false, 
+      useCostPrice: false 
+    }, ...selectedItems]);
   };
 
   const removeItem = () => {
@@ -100,36 +134,35 @@ export default function NovaVendaPage() {
     }
   };
 
-  const handleToggleCatalogPrice = (checked: boolean) => {
-    setUseCatalogPrice(checked);
-    // Atualiza os preços dos itens já selecionados
-    setSelectedItems(prev => prev.map(item => {
-      if (!item.productId) return item;
-      const product = products?.find(p => p.id === item.productId);
-      if (!product) return item;
-      return {
-        ...item,
-        price: checked ? (Number(product.catalogPrice) || 0) : (Number(product.salePrice) || 0)
-      };
-    }));
-    
-    toast({
-      title: checked ? "Preço de Revista Ativado" : "Preço de Revendedora Ativado",
-      description: checked ? "Os valores foram ajustados para o preço cheio da revista." : "Os valores retornaram ao seu preço personalizado.",
-    });
+  const updateItemPrice = (item: SaleItem) => {
+    let effectivePrice = item.salePrice;
+    if (item.useCostPrice) {
+      effectivePrice = item.costPrice;
+    } else if (item.useCatalogPrice) {
+      effectivePrice = item.catalogPrice;
+    }
+    return { ...item, price: effectivePrice };
+  };
+
+  const toggleItemCatalog = (index: number, checked: boolean) => {
+    const newItems = [...selectedItems];
+    newItems[index].useCatalogPrice = checked;
+    if (checked) newItems[index].useCostPrice = false; // Mutualmente exclusivo para facilitar
+    setSelectedItems(newItems.map(it => updateItemPrice(it)));
+  };
+
+  const toggleItemCost = (index: number, checked: boolean) => {
+    const newItems = [...selectedItems];
+    newItems[index].useCostPrice = checked;
+    if (checked) newItems[index].useCatalogPrice = false; // Mutualmente exclusivo para facilitar
+    setSelectedItems(newItems.map(it => updateItemPrice(it)));
   };
 
   const subtotal = useMemo(() => {
     return selectedItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   }, [selectedItems]);
 
-  const totalCost = useMemo(() => {
-    return selectedItems.reduce((acc, item) => acc + ((item.costPrice || 0) * item.quantity), 0);
-  }, [selectedItems]);
-
-  const margin = Math.max(0, subtotal - totalCost);
-
-  const finalTotal = Math.max(0, subtotal - (applyMarginDiscount ? margin : 0) - discount + additionalFee);
+  const finalTotal = Math.max(0, subtotal - discount + additionalFee);
 
   const isReady = useMemo(() => {
     return !!selectedClientId && selectedItems.some(item => !!item.productId) && !!paymentMethod;
@@ -147,7 +180,6 @@ export default function NovaVendaPage() {
     }
 
     const orderId = `ord-${Date.now()}`;
-    const totalDiscount = (applyMarginDiscount ? margin : 0) + discount;
     
     const orderData = {
       id: orderId,
@@ -156,7 +188,7 @@ export default function NovaVendaPage() {
       clientName: selectedClient?.fullName || "Cliente",
       orderDate: new Date().toISOString(),
       totalAmount: subtotal,
-      discountAmount: totalDiscount,
+      discountAmount: discount,
       additionalFeeAmount: additionalFee,
       finalAmount: finalTotal,
       paymentMethod,
@@ -165,10 +197,8 @@ export default function NovaVendaPage() {
       notes,
     };
 
-    // Salva o pedido principal
     setDocumentNonBlocking(doc(db, "users", user.uid, "orders", orderId), orderData, { merge: true });
 
-    // Salva cada item do pedido na subcoleção para histórico permanente
     selectedItems.forEach((item) => {
       if (!item.productId) return;
       const itemId = `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -262,7 +292,7 @@ export default function NovaVendaPage() {
             </Button>
 
             {selectedItems.map((item, index) => (
-              <div key={item.id} className="flex flex-col gap-4 animate-in slide-in-from-left-4 duration-500 bg-muted/10 p-5 sm:p-10 rounded-[1.5rem] sm:rounded-[3rem] border-4 border-border/30 relative group">
+              <div key={item.id} className="flex flex-col gap-6 animate-in slide-in-from-left-4 duration-500 bg-muted/10 p-5 sm:p-10 rounded-[1.5rem] sm:rounded-[3rem] border-4 border-border/30 relative group">
                 <Button 
                   type="button" 
                   variant="ghost" 
@@ -280,10 +310,12 @@ export default function NovaVendaPage() {
                     if (product) {
                       const newItems = [...selectedItems];
                       newItems[index].productId = val;
-                      newItems[index].price = useCatalogPrice ? (Number(product.catalogPrice) || 0) : (Number(product.salePrice) || 0);
                       newItems[index].costPrice = Number(product.costPrice) || 0;
+                      newItems[index].catalogPrice = Number(product.catalogPrice) || 0;
+                      newItems[index].salePrice = Number(product.salePrice) || 0;
                       newItems[index].name = product.name;
-                      setSelectedItems(newItems);
+                      // Mantém flags atuais e atualiza preço efetivo
+                      setSelectedItems(newItems.map(it => it.id === item.id ? updateItemPrice(it) : it));
                     }
                   }} value={item.productId}>
                     <SelectTrigger className="h-14 sm:h-16 text-sm sm:text-xl font-black rounded-xl sm:rounded-2xl bg-background border-2 border-border shadow-sm group-hover:border-primary/20 transition-all text-primary">
@@ -300,37 +332,69 @@ export default function NovaVendaPage() {
                 </div>
                 
                 {item.productId && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
-                    <div className="space-y-2 text-left">
-                      <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Quantidade</Label>
-                      <div className="flex items-center gap-3">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          className="h-14 sm:h-16 w-14 sm:w-16 rounded-xl sm:rounded-2xl border-2 border-border bg-background hover:bg-primary/5 text-primary shadow-sm"
-                          onClick={() => decrementQuantity(index)}
-                        >
-                          <Minus className="size-6 sm:size-8" />
-                        </Button>
-                        <div className="flex-1 h-14 sm:h-16 flex items-center justify-center text-xl sm:text-2xl font-black rounded-xl sm:rounded-2xl border-2 border-border bg-background shadow-inner min-w-[60px]">
-                          {item.quantity}
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
+                      <div className="space-y-2 text-left">
+                        <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Quantidade</Label>
+                        <div className="flex items-center gap-3">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="h-14 sm:h-16 w-14 sm:w-16 rounded-xl sm:rounded-2xl border-2 border-border bg-background hover:bg-primary/5 text-primary shadow-sm"
+                            onClick={() => decrementQuantity(index)}
+                          >
+                            <Minus className="size-6 sm:size-8" />
+                          </Button>
+                          <div className="flex-1 h-14 sm:h-16 flex items-center justify-center text-xl sm:text-2xl font-black rounded-xl sm:rounded-2xl border-2 border-border bg-background shadow-inner min-w-[60px]">
+                            {item.quantity}
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="h-14 sm:h-16 w-14 sm:w-16 rounded-xl sm:rounded-2xl border-2 border-border bg-background hover:bg-primary/5 text-primary shadow-sm"
+                            onClick={() => incrementQuantity(index)}
+                          >
+                            <Plus className="size-6 sm:size-8" />
+                          </Button>
                         </div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          className="h-14 sm:h-16 w-14 sm:w-16 rounded-xl sm:rounded-2xl border-2 border-border bg-background hover:bg-primary/5 text-primary shadow-sm"
-                          onClick={() => incrementQuantity(index)}
-                        >
-                          <Plus className="size-6 sm:size-8" />
-                        </Button>
+                      </div>
+                      <div className="space-y-2 text-left">
+                        <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Subtotal</Label>
+                        <div className="h-14 sm:h-16 flex items-center justify-center bg-primary/10 rounded-xl sm:rounded-2xl text-xl sm:text-2xl font-black text-primary border-2 border-primary/20 shadow-inner px-2">
+                          R$ {(item.price * item.quantity).toFixed(2)}
+                        </div>
                       </div>
                     </div>
-                    <div className="space-y-2 text-left">
-                      <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Subtotal</Label>
-                      <div className="h-14 sm:h-16 flex items-center justify-center bg-primary/10 rounded-xl sm:rounded-2xl text-xl sm:text-2xl font-black text-primary border-2 border-primary/20 shadow-inner px-2">
-                        R$ {(item.price * item.quantity).toFixed(2)}
+
+                    {/* Controles Individuais de Preço */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t-2 border-border/20 pt-4">
+                      <div className="flex items-center justify-between bg-background/50 p-4 rounded-2xl border-2 border-border/10">
+                        <div className="flex flex-col">
+                          <Label className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                            <BookOpen className="size-3 text-amber-500" /> Preço de Revista
+                          </Label>
+                          <span className="text-[8px] font-bold opacity-40 uppercase tracking-tighter">Cobrar valor de catálogo</span>
+                        </div>
+                        <Switch 
+                          checked={item.useCatalogPrice}
+                          onCheckedChange={(checked) => toggleItemCatalog(index, checked)}
+                          className="data-[state=checked]:bg-amber-500"
+                        />
+                      </div>
+                      <div className="flex items-center justify-between bg-background/50 p-4 rounded-2xl border-2 border-border/10">
+                        <div className="flex flex-col">
+                          <Label className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                            <DollarSign className="size-3 text-green-500" /> Vender pelo Custo
+                          </Label>
+                          <span className="text-[8px] font-bold opacity-40 uppercase tracking-tighter">Sem margem de lucro</span>
+                        </div>
+                        <Switch 
+                          checked={item.useCostPrice}
+                          onCheckedChange={(checked) => toggleItemCost(index, checked)}
+                          className="data-[state=checked]:bg-green-500"
+                        />
                       </div>
                     </div>
                   </div>
@@ -468,51 +532,14 @@ export default function NovaVendaPage() {
                   {/* Resumo de Valores Elite */}
                   <div className="space-y-4">
                     <div className="flex justify-between items-center border-b border-white/10 pb-2">
-                      <span className="text-xs sm:text-sm font-black uppercase tracking-widest opacity-60">Subtotal (Venda)</span>
+                      <span className="text-xs sm:text-sm font-black uppercase tracking-widest opacity-60">Subtotal (Itens)</span>
                       <span className="text-xl sm:text-2xl font-black">R$ {subtotal.toFixed(2)}</span>
-                    </div>
-                    
-                    <div className="flex justify-between items-center border-b border-white/10 pb-2">
-                      <div className="flex flex-col">
-                        <span className="text-xs sm:text-sm font-black uppercase tracking-widest opacity-60">Margem Estimada</span>
-                        <span className="text-[10px] font-bold opacity-40 italic">Diferença entre custo e venda</span>
-                      </div>
-                      <span className="text-xl sm:text-2xl font-black text-green-300">R$ {margin.toFixed(2)}</span>
-                    </div>
-
-                    {/* Novo Controle: Preço de Revista */}
-                    <div className="flex justify-between items-center pt-2 border-b border-white/10 pb-4">
-                      <div className="flex flex-col">
-                        <Label htmlFor="catalog-toggle" className="text-xs sm:text-sm font-black uppercase tracking-widest cursor-pointer flex items-center gap-2">
-                          <BookOpen className="size-4" /> Usar Preço de Revista?
-                        </Label>
-                        <span className="text-[10px] font-bold opacity-40">Ignorar preço de revendedora</span>
-                      </div>
-                      <Switch 
-                        id="catalog-toggle"
-                        checked={useCatalogPrice}
-                        onCheckedChange={handleToggleCatalogPrice}
-                        className="data-[state=checked]:bg-amber-400"
-                      />
-                    </div>
-
-                    <div className="flex justify-between items-center pt-2">
-                      <div className="flex flex-col">
-                        <Label htmlFor="profit-toggle" className="text-xs sm:text-sm font-black uppercase tracking-widest cursor-pointer">Descontar Lucro?</Label>
-                        <span className="text-[10px] font-bold opacity-40">Vender pelo preço de custo</span>
-                      </div>
-                      <Switch 
-                        id="profit-toggle"
-                        checked={applyMarginDiscount}
-                        onCheckedChange={setApplyMarginDiscount}
-                        className="data-[state=checked]:bg-green-500"
-                      />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-3 text-left">
-                      <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] opacity-60 block">Outros Desc. (R$)</Label>
+                      <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] opacity-60 block">Descontos Extras (R$)</Label>
                       <Input
                         type="number"
                         className="h-14 sm:h-16 text-center text-lg sm:text-2xl font-black rounded-xl border-4 bg-white/10 border-white/20 text-white shadow-lg"
