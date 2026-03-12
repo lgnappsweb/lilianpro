@@ -400,16 +400,16 @@ export default function FinanceiroPage() {
             </CardTitle>
             <CardDescription className="text-sm font-bold uppercase tracking-widest opacity-60">Vendas "A PRAZO" com vencimento no período</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4 p-8">
+          <CardContent className="space-y-4 p-4 sm:p-8">
             {proximosRecebimentos.map((p, i) => (
-              <div key={i} className="flex items-center justify-between p-6 rounded-[1.5rem] border-4 border-muted bg-background shadow-sm hover:shadow-xl hover:border-primary/10 transition-all group">
-                <div>
-                  <p className="font-black text-xl px-2 uppercase italic text-primary">{p.clientName}</p>
+              <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-6 rounded-[1.5rem] border-4 border-muted bg-background shadow-sm hover:shadow-xl hover:border-primary/10 transition-all group gap-4">
+                <div className="min-w-0">
+                  <p className="font-black text-xl px-2 uppercase italic text-primary truncate">{p.clientName}</p>
                   <p className="text-xs text-muted-foreground font-black flex items-center gap-2 mt-2 uppercase tracking-widest">
                     <CalendarIcon className="size-4 text-primary" /> Vence em: {new Date(p.dueDate).toLocaleDateString()}
                   </p>
                 </div>
-                <div className="text-right">
+                <div className="sm:text-right text-left shrink-0">
                   <p className="text-2xl font-black text-green-600 px-2 italic">R$ {Number(p.finalAmount).toFixed(2)}</p>
                   <Badge variant="outline" className="text-orange-600 border-orange-200 bg-orange-50 font-black px-3 py-1 mt-3 rounded-lg text-[10px] uppercase tracking-widest">
                     Aguardando
@@ -433,22 +433,22 @@ export default function FinanceiroPage() {
             </CardTitle>
             <CardDescription className="text-sm font-bold uppercase tracking-widest text-green-600/60">Últimos pagamentos liquidados com sucesso</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4 p-8">
+          <CardContent className="space-y-4 p-4 sm:p-8">
             {entradasConfirmadas.map((p, i) => (
-              <div key={i} className="flex items-center justify-between p-6 rounded-[1.5rem] bg-green-50/40 border-4 border-green-100 shadow-sm hover:shadow-xl hover:bg-green-100/50 transition-all group">
-                <div className="flex items-center gap-5">
-                  <div className="size-16 rounded-[1.2rem] bg-green-100 flex items-center justify-center text-green-700 shadow-inner group-hover:scale-110 transition-transform">
-                    <ArrowDownCircle className="size-8" />
+              <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-6 rounded-[1.5rem] bg-green-50/40 border-4 border-green-100 shadow-sm hover:shadow-xl hover:bg-green-100/50 transition-all group gap-4">
+                <div className="flex items-center gap-5 min-w-0">
+                  <div className="size-12 sm:size-16 rounded-[1.2rem] bg-green-100 flex items-center justify-center text-green-700 shadow-inner group-hover:scale-110 transition-transform shrink-0">
+                    <ArrowDownCircle className="size-6 sm:size-8" />
                   </div>
-                  <div>
-                    <p className="font-black text-xl px-2 uppercase italic text-green-800">{p.clientName}</p>
+                  <div className="min-w-0">
+                    <p className="font-black text-xl px-2 uppercase italic text-green-800 truncate">{p.clientName}</p>
                     <p className="text-xs text-green-600/60 font-black flex items-center gap-2 mt-2 uppercase tracking-widest">
                       <CalendarIcon className="size-4" /> {new Date(p.orderDate).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-3xl font-black text-green-700 px-2 italic tracking-tighter">+ R$ {Number(p.finalAmount).toFixed(2)}</p>
+                <div className="sm:text-right text-left shrink-0">
+                  <p className="text-2xl sm:text-3xl font-black text-green-700 px-2 italic tracking-tighter">+ R$ {Number(p.finalAmount).toFixed(2)}</p>
                 </div>
               </div>
             ))}
