@@ -21,7 +21,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Package,
   Save,
   Loader2,
   Tag,
@@ -81,7 +80,7 @@ export default function EditarProdutoPage() {
     });
   };
 
-  const unmaskCurrency = (value: string) => {
+  const unmaskCurrency = (value: string | number) => {
     if (typeof value === 'number') return value;
     if (!value) return 0;
     return parseFloat(value.replace(/\./g, "").replace(",", ".")) || 0;

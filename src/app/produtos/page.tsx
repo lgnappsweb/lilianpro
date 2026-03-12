@@ -17,11 +17,9 @@ import {
   Plus, 
   Package, 
   ShoppingBag, 
-  Edit3, 
   Trash2, 
   Loader2,
-  MoreVertical,
-  Edit
+  Edit,
 } from "lucide-react";
 import Image from "next/image";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
@@ -29,12 +27,6 @@ import { collection, doc } from "firebase/firestore";
 import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -160,31 +152,6 @@ export default function ProdutosPage() {
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 w-full">
           {filteredProducts.map((product) => (
             <Card key={product.id} className="border-none shadow-md group hover:shadow-2xl transition-all rounded-[2rem] overflow-hidden border-b-8 border-b-primary/10 relative">
-              <div className="absolute top-4 right-4 z-10">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="secondary" size="icon" className="size-10 sm:size-12 rounded-2xl shadow-xl bg-white/80 backdrop-blur-sm hover:bg-white transition-all">
-                      <MoreVertical className="size-6 text-primary" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl shadow-2xl border-2">
-                    <DropdownMenuItem asChild className="p-3 rounded-xl text-sm font-black cursor-pointer hover:bg-primary/5">
-                      <Link href={`/produtos/${product.id}/editar`}>
-                        <Edit className="mr-3 size-4" />
-                        EDITAR PRODUTO
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      className="p-3 rounded-xl text-sm font-black cursor-pointer text-destructive hover:bg-destructive/5" 
-                      onSelect={() => setProductToDelete(product)}
-                    >
-                      <Trash2 className="mr-3 size-4" />
-                      EXCLUIR PRODUTO
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-
               <div className="relative aspect-square overflow-hidden bg-muted">
                 <Image
                   src={product.imageUrl || `https://picsum.photos/seed/${product.id}/500/500`}
@@ -216,6 +183,23 @@ export default function ProdutosPage() {
                     <Package className="size-3" />
                     <span>COD: {product.productCode}</span>
                   </div>
+                </div>
+
+                <div className="flex flex-row items-center justify-center gap-2 w-full pt-2">
+                  <Button variant="outline" asChild className="h-10 font-black text-[10px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2 flex-1">
+                    <Link href={`/produtos/${product.id}/editar`}>
+                      <Edit className="mr-1 size-3" />
+                      Editar
+                    </Link>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="h-10 font-black text-[10px] uppercase tracking-tighter rounded-xl border-2 text-destructive border-destructive/20 hover:bg-destructive/5 hover:border-destructive px-2 flex-1"
+                    onClick={() => setProductToDelete(product)}
+                  >
+                    <Trash2 className="mr-1 size-3" />
+                    Excluir
+                  </Button>
                 </div>
               </CardContent>
             </Card>
