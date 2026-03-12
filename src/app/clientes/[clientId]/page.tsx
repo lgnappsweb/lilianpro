@@ -75,7 +75,7 @@ export default function DetalhesClientePage() {
         <div className="w-full">
           <div className="flex flex-col items-center justify-center gap-6">
             <ClipboardCheck className="size-16 sm:size-24 text-primary" />
-            <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap">
+            <h1 className="text-6xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap">
               CADASTRO
             </h1>
           </div>
