@@ -23,11 +23,15 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [appName, setAppName] = useState("GlamGestão");
 
-  // Busca configurações globais para o nome do app no login
-  // Como no login não temos o UID do usuário nas regras, usamos um fallback ou buscamos de um adminId fixo se necessário.
-  // Por simplicidade e segurança, usaremos o fallback "GlamGestão" se não estiver logado.
-  const appName = "GlamGestão";
+  // Recupera o nome personalizado do cache local para consistência visual imediata
+  useEffect(() => {
+    const savedName = localStorage.getItem('glam_app_name');
+    if (savedName) {
+      setAppName(savedName);
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,13 +79,13 @@ export default function LoginPage() {
                 <Sparkles className="size-8" />
               </div>
             </div>
-            <CardTitle className="text-2xl font-headline font-bold text-primary italic uppercase tracking-tighter">{appName}</CardTitle>
-            <CardDescription>Acesso administrativo exclusivo</CardDescription>
+            <CardTitle className="text-3xl font-headline font-black text-primary italic uppercase tracking-tighter">{appName}</CardTitle>
+            <CardDescription className="uppercase text-[10px] font-bold tracking-widest opacity-60">Acesso administrativo exclusivo</CardDescription>
           </CardHeader>
           <form onSubmit={handleLogin}>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">E-mail</Label>
+                <Label htmlFor="email" className="text-xs font-black uppercase tracking-wider opacity-70">E-mail de Acesso</Label>
                 <Input
                   id="email"
                   type="email"
@@ -89,18 +93,19 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={isLoading}
+                  className="h-12 border-2 focus:border-primary font-bold"
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Senha</Label>
+                <Label htmlFor="password" className="text-xs font-black uppercase tracking-wider opacity-70">Senha Elite</Label>
                 <div className="relative">
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pr-10"
+                    className="pr-10 h-12 border-2 focus:border-primary font-bold"
                     disabled={isLoading}
                     required
                   />
@@ -110,18 +115,18 @@ export default function LoginPage() {
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
                     disabled={isLoading}
                   >
-                    {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    {showPassword ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
                   </button>
                 </div>
               </div>
             </CardContent>
             <CardFooter className="flex flex-col space-y-4">
-              <Button type="submit" className="w-full h-11 text-lg font-semibold" disabled={isLoading}>
+              <Button type="submit" className="w-full h-14 text-lg font-black uppercase tracking-widest shadow-xl" disabled={isLoading}>
                 {isLoading ? <><Loader2 className="mr-2 size-5 animate-spin" /> Validando...</> : <><LogIn className="mr-2 size-5" /> Entrar no Sistema</>}
               </Button>
               <div className="text-center">
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Administradora Cadastrada</p>
-                <p className="text-xs text-primary font-medium">litencarv@icloud.com</p>
+                <p className="text-xs text-primary font-black italic">{email}</p>
               </div>
             </CardFooter>
           </form>

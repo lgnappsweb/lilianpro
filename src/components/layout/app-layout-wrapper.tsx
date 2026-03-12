@@ -17,6 +17,8 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
   const db = useFirestore();
   const pathname = usePathname();
   const router = useRouter();
+  
+  const [cachedAppName, setCachedAppName] = useState("GlamGestão");
 
   const settingsRef = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -24,6 +26,23 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
   }, [db, user]);
 
   const { data: settings } = useDoc(settingsRef);
+
+  // Recupera o nome do app do localStorage no carregamento inicial
+  useEffect(() => {
+    const savedName = localStorage.getItem('glam_app_name');
+    if (savedName) {
+      setCachedAppName(savedName);
+    }
+  }, []);
+
+  // Sincroniza o nome do app e metadados quando as configurações mudam
+  useEffect(() => {
+    if (settings?.appName) {
+      localStorage.setItem('glam_app_name', settings.appName);
+      setCachedAppName(settings.appName);
+      document.title = `${settings.appName} - Controle de Vendas`;
+    }
+  }, [settings?.appName]);
 
   useEffect(() => {
     if (!isUserLoading && !user && pathname !== '/login') {
@@ -75,8 +94,12 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-pulse flex flex-col items-center gap-4">
-          <div className="size-12 rounded-full bg-primary/20"></div>
-          <p className="text-xs text-muted-foreground font-black uppercase tracking-widest">Sincronizando GlamGestão...</p>
+          <div className="size-16 rounded-full bg-primary/20 flex items-center justify-center">
+            <Sparkles className="size-8 text-primary" />
+          </div>
+          <p className="text-sm text-muted-foreground font-black uppercase tracking-[0.3em] animate-pulse">
+            Sincronizando {cachedAppName}...
+          </p>
         </div>
       </div>
     );
@@ -89,7 +112,7 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
   if (!user) return null;
 
   const isDashboard = pathname === '/';
-  const appName = settings?.appName || "GlamGestão";
+  const appName = settings?.appName || cachedAppName;
 
   // Lógica dinâmica para o botão de voltar
   let backHref = "/";
