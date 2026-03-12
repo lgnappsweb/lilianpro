@@ -25,6 +25,7 @@ import {
   Loader2,
   Sparkles,
   CheckCircle2,
+  Pipette,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore, useDoc, useMemoFirebase, setDocumentNonBlocking } from "@/firebase";
@@ -151,32 +152,64 @@ export default function ConfiguracoesPage() {
               <CardDescription className="text-sm font-bold opacity-60 uppercase tracking-widest px-2">A cor principal que define sua marca</CardDescription>
             </CardHeader>
             <CardContent className="p-8 space-y-8">
-              <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
-                {ELITE_COLORS.map((color) => (
-                  <button
-                    key={color.hex}
-                    onClick={() => setFormData(prev => ({ ...prev, primaryColor: color.hex }))}
-                    className={cn(
-                      "size-14 sm:size-16 rounded-2xl border-4 transition-all relative flex items-center justify-center",
-                      formData.primaryColor === color.hex ? "border-primary scale-110 shadow-xl" : "border-transparent hover:scale-105"
-                    )}
-                    style={{ backgroundColor: color.hex }}
-                  >
-                    {formData.primaryColor === color.hex && <CheckCircle2 className="size-6 text-white drop-shadow-md" />}
-                  </button>
-                ))}
+              <div className="space-y-4">
+                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block">Cores Sugeridas</Label>
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
+                  {ELITE_COLORS.map((color) => (
+                    <button
+                      key={color.hex}
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, primaryColor: color.hex }))}
+                      className={cn(
+                        "size-14 sm:size-16 rounded-2xl border-4 transition-all relative flex items-center justify-center",
+                        formData.primaryColor === color.hex ? "border-primary scale-110 shadow-xl" : "border-transparent hover:scale-105"
+                      )}
+                      style={{ backgroundColor: color.hex }}
+                    >
+                      {formData.primaryColor === color.hex && <CheckCircle2 className="size-6 text-white drop-shadow-md" />}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="space-y-4 pt-4 border-t-2">
-                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block">Cor Personalizada (Hex)</Label>
-                <div className="flex gap-4">
-                  <div className="size-16 rounded-2xl border-4 border-muted shrink-0" style={{ backgroundColor: formData.primaryColor }} />
-                  <Input
-                    type="text"
-                    className="h-16 text-xl font-black rounded-xl border-4 border-muted uppercase"
-                    value={formData.primaryColor}
-                    onChange={(e) => setFormData(prev => ({ ...prev, primaryColor: e.target.value }))}
-                    placeholder="#HEX"
-                  />
+
+              {/* Seletor Visual de Qualquer Cor */}
+              <div className="space-y-4 pt-8 border-t-2">
+                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block">Personalizar Qualquer Cor</Label>
+                <div className="flex items-center gap-6">
+                  {/* Visual Color Picker Container */}
+                  <div className="relative group cursor-pointer">
+                    <input
+                      type="color"
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      value={formData.primaryColor}
+                      onChange={(e) => setFormData(prev => ({ ...prev, primaryColor: e.target.value.toUpperCase() }))}
+                    />
+                    <div 
+                      className="size-20 sm:size-24 rounded-3xl border-8 border-muted shadow-2xl transition-transform group-hover:scale-110 flex items-center justify-center overflow-hidden"
+                      style={{ backgroundColor: formData.primaryColor }}
+                    >
+                      <div className="bg-white/20 backdrop-blur-sm p-3 rounded-full">
+                        <Pipette className="size-8 text-white drop-shadow-md" />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1 space-y-2">
+                    <div className="relative w-full">
+                      <span className="absolute left-5 top-1/2 -translate-y-1/2 text-muted-foreground font-black text-2xl">#</span>
+                      <Input
+                        type="text"
+                        className="h-16 sm:h-20 pl-12 text-2xl sm:text-3xl font-black rounded-2xl border-4 border-muted uppercase focus:border-primary transition-all placeholder:text-muted-foreground/30"
+                        value={formData.primaryColor.replace('#', '')}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/[^0-9A-Fa-f]/g, '').slice(0, 6);
+                          setFormData(prev => ({ ...prev, primaryColor: `#${val.toUpperCase()}` }));
+                        }}
+                        placeholder="FFFFFF"
+                      />
+                    </div>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-2 opacity-60">Toque no quadrado para o seletor visual ou digite o código HEX.</p>
+                  </div>
                 </div>
               </div>
             </CardContent>
