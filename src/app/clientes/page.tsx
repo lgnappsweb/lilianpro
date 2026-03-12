@@ -106,14 +106,14 @@ export default function ClientesPage() {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-32 gap-6 text-muted-foreground">
             <Loader2 className="size-16 animate-spin text-primary" />
-            <p className="text-2xl font-black animate-pulse uppercase tracking-widest">Sincronizando clientes...</p>
+            <p className="text-2xl font-black animate-pulse uppercase tracking-widest text-center">Sincronizando clientes...</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6 w-full">
             {filteredClientes.map((cliente) => (
               <Card key={cliente.id} className="bg-background border-4 border-muted rounded-2xl p-6 sm:p-8 shadow-xl hover:border-primary/20 transition-all flex flex-col justify-between w-full min-h-[220px]">
                 <div className="mb-4">
-                  <h3 className="font-black text-2xl sm:text-4xl break-words leading-tight uppercase tracking-tighter text-primary italic">
+                  <h3 className="font-black text-2xl sm:text-4xl break-words leading-tight uppercase tracking-tighter text-primary italic text-left">
                     {cliente.fullName}
                   </h3>
                 </div>
@@ -121,7 +121,7 @@ export default function ClientesPage() {
                 <div className="space-y-4">
                   <div className="grid grid-cols-3 gap-2">
                     <Button variant="outline" asChild className="h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2">
-                      <Link href={`/clientes/${cliente.id}`}>
+                      <Link href={`/clientes/${cliente.id}`} target="_blank">
                         <FileText className="mr-1 size-4" />
                         Detalhes
                       </Link>
@@ -168,8 +168,8 @@ export default function ClientesPage() {
       <AlertDialog open={!!clientToDelete} onOpenChange={(open) => !open && setClientToDelete(null)}>
         <AlertDialogContent className="rounded-[2.5rem] p-8 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-3xl sm:text-5xl font-black tracking-tighter text-primary uppercase leading-none">Deseja excluir permanentemente?</AlertDialogTitle>
-            <AlertDialogDescription className="text-xl sm:text-2xl font-bold mt-6 leading-relaxed text-muted-foreground">
+            <AlertDialogTitle className="text-3xl sm:text-5xl font-black tracking-tighter text-primary uppercase leading-none text-left">Deseja excluir permanentemente?</AlertDialogTitle>
+            <AlertDialogDescription className="text-xl sm:text-2xl font-bold mt-6 leading-relaxed text-muted-foreground text-left">
               Os dados da cliente <strong className="text-foreground border-b-4 border-primary px-1">{clientToDelete?.fullName}</strong> e todo o seu histórico serão removidos definitivamente.
             </AlertDialogDescription>
           </AlertDialogHeader>
