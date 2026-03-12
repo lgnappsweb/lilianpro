@@ -145,70 +145,70 @@ export default function ProdutosPage() {
           <p className="text-2xl font-black animate-pulse uppercase tracking-widest text-center">Carregando catálogo...</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-10 w-full pb-10">
+        <div className="grid grid-cols-1 gap-6 w-full pb-10">
           {filteredProducts.map((product) => (
             <Card 
               key={product.id} 
-              className="bg-background border-4 border-primary/5 rounded-[2rem] p-5 sm:p-8 shadow-xl hover:shadow-[0_30px_60px_rgba(0,0,0,0.15)] hover:-translate-y-3 hover:border-primary/20 transition-all duration-500 flex flex-col justify-between w-full relative overflow-hidden group transform-gpu"
+              className="bg-background border-4 border-primary/5 rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-5 shadow-xl hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)] hover:-translate-y-2 hover:border-primary/20 transition-all duration-500 flex flex-col justify-between w-full relative overflow-hidden group transform-gpu"
             >
               
               {/* LINHA SUPERIOR: MARCA E CATEGORIA */}
-              <div className="flex items-center justify-between w-full mb-6">
-                <Badge className={`text-[10px] sm:text-xs font-black px-3 py-1 rounded-lg border-none text-white shadow-md ${getBrandBadgeColor(product.brand)}`}>
+              <div className="flex items-center justify-between w-full mb-3 sm:mb-4">
+                <Badge className={`text-[10px] sm:text-xs font-black px-2 py-0.5 rounded-lg border-none text-white shadow-md ${getBrandBadgeColor(product.brand)}`}>
                   {product.brand}
                 </Badge>
-                <Badge variant="outline" className="text-[10px] sm:text-xs font-black border-2 border-primary/30 text-primary uppercase px-3 py-1 rounded-lg bg-background/50 backdrop-blur-sm shadow-sm">
+                <Badge variant="outline" className="text-[10px] sm:text-xs font-black border-2 border-primary/30 text-primary uppercase px-2 py-0.5 rounded-lg bg-background/50 backdrop-blur-sm shadow-sm">
                   {product.category}
                 </Badge>
               </div>
 
               {/* CONTEÚDO CENTRAL: NOME E CÓDIGO */}
-              <div className="flex flex-col gap-1 mb-8 text-left">
-                <h3 className="font-black text-2xl sm:text-4xl text-primary uppercase tracking-tighter italic leading-tight px-1 line-clamp-2 drop-shadow-sm">
+              <div className="flex flex-col gap-0.5 mb-4 sm:mb-5 text-left">
+                <h3 className="font-black text-xl sm:text-3xl text-primary uppercase tracking-tighter italic leading-tight px-1 line-clamp-1 drop-shadow-sm">
                   {product.name}
                 </h3>
-                <p className="text-[10px] sm:text-sm text-muted-foreground font-black opacity-40 uppercase tracking-[0.2em] px-1">
+                <p className="text-[9px] sm:text-[11px] text-muted-foreground font-black opacity-40 uppercase tracking-[0.2em] px-1">
                   REF: {product.productCode}
                 </p>
               </div>
               
-              {/* LINHA DE VALOR E ÍCONE GIGANTE 3D */}
-              <div className="flex items-end justify-between w-full mb-8 px-1">
-                {/* ÍCONE AMPLIADO COM EFEITO */}
-                <div className="size-16 sm:size-24 rounded-2xl sm:rounded-3xl bg-primary/5 flex items-center justify-center text-primary shadow-inner border-4 border-primary/5 group-hover:scale-110 group-hover:bg-primary/10 transition-all duration-500">
-                  <Package className="size-8 sm:size-12 drop-shadow-lg" />
+              {/* LINHA DE VALOR E ÍCONE */}
+              <div className="flex items-center justify-between w-full mb-4 sm:mb-5 px-1">
+                {/* ÍCONE COMPACTO */}
+                <div className="size-12 sm:size-16 rounded-xl bg-primary/5 flex items-center justify-center text-primary shadow-inner border-2 border-primary/5 group-hover:scale-110 group-hover:bg-primary/10 transition-all duration-500">
+                  <Package className="size-6 sm:size-8 drop-shadow-md" />
                 </div>
 
                 <div className="flex flex-col items-end">
-                  <p className="text-3xl sm:text-5xl font-black text-primary tracking-tighter leading-none italic">
+                  <p className="text-2xl sm:text-4xl font-black text-primary tracking-tighter leading-none italic">
                     R$ {Number(product.salePrice).toFixed(2)}
                   </p>
-                  <p className="text-[9px] sm:text-[11px] font-black text-muted-foreground uppercase tracking-[0.3em] opacity-40 mt-2">
+                  <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] opacity-40 mt-1">
                     Valor de Venda
                   </p>
                 </div>
               </div>
 
               {/* BOTÕES DE AÇÃO ELITE */}
-              <div className="flex flex-row items-center justify-center gap-2 w-full pt-6 border-t-2 border-muted/30">
-                <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-widest rounded-xl sm:rounded-2xl border-2 hover:bg-primary/5 px-2 flex-1 shadow-sm transition-all active:scale-95">
+              <div className="flex flex-row items-center justify-center gap-2 w-full pt-4 border-t-2 border-muted/30">
+                <Button variant="outline" asChild className="h-9 sm:h-10 font-black text-[9px] sm:text-[10px] uppercase tracking-widest rounded-xl border-2 hover:bg-primary/5 px-2 flex-1 shadow-sm transition-all active:scale-95">
                   <Link href={`/produtos/${product.id}`}>
-                    <FileText className="mr-1 size-3 sm:size-4" />
+                    <FileText className="mr-1 size-3" />
                     Ficha
                   </Link>
                 </Button>
-                <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-widest rounded-xl sm:rounded-2xl border-2 hover:bg-primary/5 px-2 flex-1 shadow-sm transition-all active:scale-95">
+                <Button variant="outline" asChild className="h-9 sm:h-10 font-black text-[9px] sm:text-[10px] uppercase tracking-widest rounded-xl border-2 hover:bg-primary/5 px-2 flex-1 shadow-sm transition-all active:scale-95">
                   <Link href={`/produtos/${product.id}/editar`}>
-                    <Edit className="mr-1 size-3 sm:size-4" />
+                    <Edit className="mr-1 size-3" />
                     Editar
                   </Link>
                 </Button>
                 <Button 
                   variant="outline" 
-                  className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-widest rounded-xl sm:rounded-2xl border-2 text-destructive border-destructive/20 hover:bg-destructive/5 hover:border-destructive px-2 flex-1 shadow-sm transition-all active:scale-95"
+                  className="h-9 sm:h-10 font-black text-[9px] sm:text-[10px] uppercase tracking-widest rounded-xl border-2 text-destructive border-destructive/20 hover:bg-destructive/5 hover:border-destructive px-2 flex-1 shadow-sm transition-all active:scale-95"
                   onClick={() => setProductToDelete(product)}
                 >
-                  <Trash2 className="mr-1 size-3 sm:size-4" />
+                  <Trash2 className="mr-1 size-3" />
                   Apagar
                 </Button>
               </div>
