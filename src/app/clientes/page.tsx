@@ -52,9 +52,7 @@ export default function ClientesPage() {
   const filteredClientes = useMemo(() => {
     if (!clients) return [];
     return clients.filter(c =>
-      c.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.neighborhood?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.city?.toLowerCase().includes(searchTerm.toLowerCase())
+      c.fullName?.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [clients, searchTerm]);
 
@@ -96,7 +94,7 @@ export default function ClientesPage() {
         <div className="relative">
           <Search className="absolute left-6 top-1/2 -translate-y-1/2 size-6 sm:size-8 text-muted-foreground" />
           <Input
-            placeholder="Pesquisar por nome, bairro ou cidade..."
+            placeholder="Pesquisar por nome da cliente..."
             className="pl-14 sm:pl-20 h-14 sm:h-24 text-lg sm:text-3xl bg-background rounded-xl sm:rounded-[2rem] border-4 border-muted shadow-inner font-black"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -129,9 +127,11 @@ export default function ClientesPage() {
                         Detalhes
                       </Link>
                     </Button>
-                    <Button variant="outline" className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2 flex-1">
-                      <Edit className="mr-1 size-3 sm:size-4" />
-                      Editar
+                    <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2 flex-1">
+                      <Link href={`/clientes/${cliente.id}/editar`}>
+                        <Edit className="mr-1 size-3 sm:size-4" />
+                        Editar
+                      </Link>
                     </Button>
                     <Button 
                       variant="outline" 
