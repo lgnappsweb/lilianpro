@@ -3,89 +3,32 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * GLAMGESTÃO SECURITY RULES - ELITE EDITION
-     *
-     * Core Philosophy: 
-     * This ruleset implements a "Single-Administrator Ownership" model. All data is logically
-     * and physically partitioned by the Administrator's UID (adminId). 
-     *
-     * Key Security Decisions:
-     * 1. Ownership Enforcement: Access is strictly gated by the authenticated user's UID.
-     * 2. Path-Data Consistency: Rules enforce that the 'id' field within documents matches 
-     *    the Firestore document ID.
-     * 3. Privacy: Users can only see and modify data in THEIR specific /users/{uid} path.
+     * GLAMGESTÃO - REGRAS DE SEGURANÇA ELITE
+     * 
+     * Modelo: Propriedade Total do Usuário (Single-Tenant Path)
+     * Descrição: Qualquer usuário autenticado tem controle absoluto sobre 
+     * os dados localizados no seu próprio caminho /users/{uid}/...
      */
 
-    // --- HELPER FUNCTIONS ---
-
-    /** @description Checks if the user is authenticated. */
+    // Verifica se o usuário está logado
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /** @description Checks if the authenticated user's UID matches the provided adminId. */
+    // Verifica se o UID do usuário corresponde ao caminho solicitado
     function isOwner(adminId) {
       return isSignedIn() && request.auth.uid == adminId;
     }
 
-    /** @description Primary authorization: Ensure the user owns the path they are accessing. */
-    function isAuthorized(adminId) {
-      return isOwner(adminId);
+    // Regra Recursiva: Cobre clientes, produtos, pedidos e subcoleções
+    match /users/{adminId}/{document=**} {
+      allow read, write: if isOwner(adminId);
     }
 
-    /** @description Ensures a document exists before allowing modifications. */
-    function documentExists() {
-      return resource != null;
-    }
-
-    // --- COLLECTION RULES ---
-
-    /**
-     * @description Registry for authorized administrators (Optional for DBAC expansion).
-     */
+    // Registro de administradores (DBAC - Mantido para compatibilidade)
     match /admins/{adminId} {
       allow get: if isOwner(adminId);
       allow list, write: if false;
-    }
-
-    /**
-     * @description Customer records owned by a specific administrator.
-     */
-    match /users/{adminId}/clients/{clientId} {
-      allow get, list: if isAuthorized(adminId);
-      allow create: if isAuthorized(adminId) && request.resource.data.id == clientId;
-      allow update: if isAuthorized(adminId) && documentExists() && request.resource.data.id == resource.data.id;
-      allow delete: if isAuthorized(adminId) && documentExists();
-    }
-
-    /**
-     * @description Product catalog entries owned by a specific administrator.
-     */
-    match /users/{adminId}/products/{productId} {
-      allow get, list: if isAuthorized(adminId);
-      allow create: if isAuthorized(adminId) && request.resource.data.id == productId;
-      allow update: if isAuthorized(adminId) && documentExists() && request.resource.data.id == resource.data.id;
-      allow delete: if isAuthorized(adminId) && documentExists();
-    }
-
-    /**
-     * @description Sales transaction records.
-     */
-    match /users/{adminId}/orders/{orderId} {
-      allow get, list: if isAuthorized(adminId);
-      allow create: if isAuthorized(adminId) && request.resource.data.id == orderId;
-      allow update: if isAuthorized(adminId) && documentExists() && request.resource.data.id == resource.data.id;
-      allow delete: if isAuthorized(adminId) && documentExists();
-
-      /**
-       * @description Individual items within a specific order.
-       */
-      match /orderItems/{orderItemId} {
-        allow get, list: if isAuthorized(adminId);
-        allow create: if isAuthorized(adminId) && request.resource.data.orderId == orderId && request.resource.data.id == orderItemId;
-        allow update: if isAuthorized(adminId) && documentExists() && request.resource.data.orderId == resource.data.orderId && request.resource.data.id == resource.data.id;
-        allow delete: if isAuthorized(adminId) && documentExists();
-      }
     }
   }
 }
