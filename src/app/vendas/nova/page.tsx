@@ -61,7 +61,7 @@ export default function NovaVendaPage() {
   const [selectedItems, setSelectedItems] = useState([
     { id: `temp-${Date.now()}`, productId: "", quantity: 1, price: 0, name: "" }
   ]);
-  const [paymentMethod, setPaymentMethod] = useState(""); // Começa vazio conforme solicitado
+  const [paymentMethod, setPaymentMethod] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [notes, setNotes] = useState("");
   const [discount, setDiscount] = useState(0);
@@ -161,7 +161,7 @@ export default function NovaVendaPage() {
   const hasItems = selectedItems.some(item => !!item.productId);
 
   return (
-    <div className="space-y-6 sm:space-y-10 max-w-5xl mx-auto w-full animate-in fade-in duration-500 pb-32 px-4">
+    <div className="space-y-6 sm:space-y-10 w-full animate-in fade-in duration-500 pb-32">
       <div className="text-center">
         <h1 className="text-3xl sm:text-6xl font-black tracking-tighter text-primary font-headline uppercase leading-none">Nova Venda</h1>
         <p className="text-sm sm:text-xl text-muted-foreground mt-3 font-bold opacity-80 uppercase tracking-widest">Cadastre uma venda rapidamente no seu sistema.</p>
