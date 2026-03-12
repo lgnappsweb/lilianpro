@@ -143,7 +143,8 @@ export default function NovaVendaPage() {
 
       <form onSubmit={handleSubmit} className="grid gap-8 md:grid-cols-3">
         <div className="md:col-span-2 space-y-8">
-          <Card className="border-none shadow-lg rounded-3xl overflow-hidden">
+          {/* Sessão Cliente */}
+          <Card className="border-none shadow-lg rounded-[2rem] overflow-hidden">
             <CardHeader className="p-6 pb-2 bg-muted/20">
               <CardTitle className="flex items-center gap-3 text-xl font-black">
                 <User className="size-6 text-primary" />
@@ -152,7 +153,7 @@ export default function NovaVendaPage() {
             </CardHeader>
             <CardContent className="p-6">
               <div className="grid gap-3">
-                <Label className="text-sm font-black uppercase tracking-widest text-muted-foreground">Selecionar Cliente</Label>
+                <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Selecionar Cliente</Label>
                 <Select onValueChange={setSelectedClientId} value={selectedClientId}>
                   <SelectTrigger className="h-14 text-lg font-bold rounded-2xl bg-background border-muted shadow-inner">
                     <SelectValue placeholder="Busque pelo nome da cliente..." />
@@ -167,7 +168,8 @@ export default function NovaVendaPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-lg rounded-3xl overflow-hidden">
+          {/* Sessão Produtos */}
+          <Card className="border-none shadow-lg rounded-[2rem] overflow-hidden">
             <CardHeader className="flex flex-row items-center justify-between p-6 pb-2 bg-muted/20">
               <CardTitle className="flex items-center gap-3 text-xl font-black">
                 <Package className="size-6 text-primary" />
@@ -180,8 +182,10 @@ export default function NovaVendaPage() {
             </CardHeader>
             <CardContent className="p-6 space-y-6">
               {selectedItems.map((item, index) => (
-                <div key={item.id} className="grid grid-cols-12 gap-4 items-end animate-in slide-in-from-left-4 duration-500 bg-muted/10 p-4 rounded-2xl border border-border/30">
-                  <div className={cn("space-y-2 transition-all duration-300", item.productId ? "col-span-12 sm:col-span-6" : "col-span-10 sm:col-span-11")}>
+                <div key={item.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end animate-in slide-in-from-left-4 duration-500 bg-muted/5 p-6 rounded-3xl border border-border/30 shadow-sm relative group">
+                  
+                  {/* Seletor de Produto */}
+                  <div className={cn("space-y-2 col-span-1", item.productId ? "md:col-span-6" : "md:col-span-11")}>
                     <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Produto</Label>
                     <Select onValueChange={(val) => {
                       const product = products?.find(p => p.id === val);
@@ -204,9 +208,10 @@ export default function NovaVendaPage() {
                     </Select>
                   </div>
                   
-                  {item.productId ? (
+                  {/* Campos condicionais: Qtd e Total */}
+                  {item.productId && (
                     <>
-                      <div className="col-span-4 sm:col-span-2 space-y-2 animate-in fade-in zoom-in-95 duration-300">
+                      <div className="col-span-1 md:col-span-2 space-y-2 animate-in fade-in zoom-in-95 duration-300">
                         <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground text-center block">Qtd</Label>
                         <Input
                           type="number"
@@ -220,21 +225,22 @@ export default function NovaVendaPage() {
                           }}
                         />
                       </div>
-                      <div className="col-span-6 sm:col-span-3 space-y-2 animate-in fade-in zoom-in-95 duration-300">
+                      <div className="col-span-1 md:col-span-3 space-y-2 animate-in fade-in zoom-in-95 duration-300">
                         <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Total Item</Label>
                         <div className="h-12 flex items-center px-4 bg-primary/10 rounded-xl text-lg font-black text-primary border border-primary/10">
                           R$ {(item.price * item.quantity).toFixed(2)}
                         </div>
                       </div>
                     </>
-                  ) : null}
+                  )}
 
-                  <div className={cn("flex justify-end", item.productId ? "col-span-2 sm:col-span-1" : "col-span-2 sm:col-span-1")}>
+                  {/* Botão de Remover */}
+                  <div className="col-span-1 md:col-span-1 flex justify-end">
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="size-12 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      className="size-12 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                       onClick={() => removeItem(item.id)}
                     >
                       <Trash2 className="size-6" />
@@ -245,7 +251,8 @@ export default function NovaVendaPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-lg rounded-3xl overflow-hidden">
+          {/* Sessão Pagamento */}
+          <Card className="border-none shadow-lg rounded-[2rem] overflow-hidden">
             <CardHeader className="p-6 pb-2 bg-muted/20">
               <CardTitle className="flex items-center gap-3 text-xl font-black">
                 <CreditCard className="size-6 text-primary" />
@@ -269,17 +276,17 @@ export default function NovaVendaPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Data de Vencimento</Label>
+                  <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Vencimento</Label>
                   <div className="relative">
                     <CalendarIcon className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-primary/60" />
                     <Input type="date" className="h-14 pl-12 text-lg font-bold rounded-2xl bg-background shadow-inner" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
                   </div>
                 </div>
                 <div className="sm:col-span-2 space-y-2">
-                  <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Observações do Pedido</Label>
+                  <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Observações</Label>
                   <textarea 
                     className="w-full min-h-[100px] rounded-2xl border border-input bg-background px-4 py-3 text-lg font-medium shadow-inner focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" 
-                    placeholder="Ex: Entrega agendada para sábado, presente para aniversário..."
+                    placeholder="Notas adicionais sobre a venda..."
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                   />
@@ -289,18 +296,19 @@ export default function NovaVendaPage() {
           </Card>
         </div>
 
+        {/* Resumo Lateral (Sticky) */}
         <div className="space-y-8">
-          <Card className="border-none shadow-2xl md:sticky md:top-24 bg-primary text-primary-foreground rounded-[2rem] overflow-hidden">
-            <CardHeader className="p-8 pb-4">
-              <CardTitle className="text-2xl font-black uppercase tracking-widest">Resumo da Venda</CardTitle>
+          <Card className="border-none shadow-2xl md:sticky md:top-24 bg-primary text-primary-foreground rounded-[2.5rem] overflow-hidden">
+            <CardHeader className="p-8 pb-4 text-center">
+              <CardTitle className="text-2xl font-black uppercase tracking-widest">Resumo</CardTitle>
             </CardHeader>
             <CardContent className="p-8 pt-0 space-y-6">
               <div className="flex justify-between text-lg font-bold opacity-90">
-                <span>Subtotal Itens</span>
+                <span>Itens</span>
                 <span>R$ {subtotal.toFixed(2)}</span>
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-black uppercase tracking-widest text-primary-foreground/70">Desconto Aplicado (R$)</Label>
+                <Label className="text-xs font-black uppercase tracking-widest text-primary-foreground/70">Desconto (R$)</Label>
                 <Input
                   type="number"
                   className="h-12 bg-white/20 border-white/30 text-white text-xl font-black rounded-xl shadow-inner placeholder:text-white/40"
@@ -309,7 +317,7 @@ export default function NovaVendaPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs font-black uppercase tracking-widest text-primary-foreground/70">Taxas Adicionais (R$)</Label>
+                <Label className="text-xs font-black uppercase tracking-widest text-primary-foreground/70">Taxas (R$)</Label>
                 <Input
                   type="number"
                   className="h-12 bg-white/20 border-white/30 text-white text-xl font-black rounded-xl shadow-inner placeholder:text-white/40"
@@ -318,15 +326,15 @@ export default function NovaVendaPage() {
                 />
               </div>
               <Separator className="bg-white/20" />
-              <div className="flex justify-between items-center py-4">
-                <span className="font-bold text-xl uppercase tracking-widest">Total Final</span>
-                <span className="text-4xl font-black drop-shadow-md">R$ {finalTotal.toFixed(2)}</span>
+              <div className="text-center py-4">
+                <p className="font-bold text-sm uppercase tracking-[0.2em] mb-1 opacity-70">Total Final</p>
+                <p className="text-5xl font-black drop-shadow-lg">R$ {finalTotal.toFixed(2)}</p>
               </div>
             </CardContent>
             <CardFooter className="p-8 pt-0">
               <Button type="submit" className="w-full bg-white text-primary hover:bg-pink-50 font-black h-16 text-xl rounded-2xl shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]">
                 <ReceiptText className="mr-3 size-7" />
-                FINALIZAR VENDA
+                CONCLUIR
               </Button>
             </CardFooter>
           </Card>
@@ -335,3 +343,4 @@ export default function NovaVendaPage() {
     </div>
   );
 }
+
