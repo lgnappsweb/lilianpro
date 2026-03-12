@@ -59,7 +59,7 @@ export function AppSidebar({ appName }: { appName?: string }) {
             <Sparkles className="size-8" />
           </div>
           <span className="font-headline font-black text-2xl tracking-tighter text-primary group-data-[collapsible=icon]:hidden italic">
-            {appName || "GlamGestão"}
+            {appName || "LilianPro"}
           </span>
         </div>
       </SidebarHeader>

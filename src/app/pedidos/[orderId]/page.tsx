@@ -52,7 +52,7 @@ export default function DetalhesPedidoPage() {
     return doc(db, "users", user.uid, "config", "settings");
   }, [db, user]);
   const { data: settings } = useDoc(settingsRef);
-  const appName = settings?.appName || "GlamGestão";
+  const appName = settings?.appName || "LilianPro";
 
   // Busca os itens do pedido
   const itemsQuery = useMemoFirebase(() => {

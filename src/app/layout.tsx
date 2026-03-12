@@ -6,7 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 export const metadata: Metadata = {
-  title: 'GlamGestão - Controle de Vendas',
+  title: 'LilianPro - Controle de Vendas',
   description: 'Aplicativo profissional para revendedoras Avon e Natura',
 };
 

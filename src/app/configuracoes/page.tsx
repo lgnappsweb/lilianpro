@@ -50,7 +50,7 @@ export default function ConfiguracoesPage() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    appName: "GlamGestão",
+    appName: "LilianPro",
     primaryColor: "#C2185B",
     themeMode: "light" as "light" | "dark",
   });
@@ -65,7 +65,7 @@ export default function ConfiguracoesPage() {
   useEffect(() => {
     if (settings) {
       setFormData({
-        appName: settings.appName || "GlamGestão",
+        appName: settings.appName || "LilianPro",
         primaryColor: settings.primaryColor || "#C2185B",
         themeMode: (settings.themeMode as "light" | "dark") || "light",
       });

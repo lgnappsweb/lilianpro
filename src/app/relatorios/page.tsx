@@ -84,7 +84,7 @@ export default function RelatoriosPage() {
   const { data: products, isLoading: productsLoading } = useCollection(productsQuery);
   const { data: settings } = useDoc(settingsRef);
 
-  const appName = settings?.appName || "GlamGestão";
+  const appName = settings?.appName || "LilianPro";
 
   // Filtra as ordens para o período dos últimos 6 meses
   const ordersInPeriod = useMemo(() => {
@@ -195,7 +195,7 @@ export default function RelatoriosPage() {
     doc.setFontSize(18);
     doc.text("Resumo do Período", 14, 55);
     
-    const totalRevenue = ordersInPeriod.reduce((acc, o) => acc + (Number(order.finalAmount) || 0), 0);
+    const totalRevenue = ordersInPeriod.reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0);
     const avgTicket = ordersInPeriod.length > 0 ? totalRevenue / ordersInPeriod.length : 0;
     const activeClientsCount = topClients.length;
 

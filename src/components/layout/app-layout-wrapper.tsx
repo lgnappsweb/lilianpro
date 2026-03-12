@@ -18,7 +18,7 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   
-  const [cachedAppName, setCachedAppName] = useState("GlamGestão");
+  const [cachedAppName, setCachedAppName] = useState("LilianPro");
 
   const settingsRef = useMemoFirebase(() => {
     if (!db || !user) return null;

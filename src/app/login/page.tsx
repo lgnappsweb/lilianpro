@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -22,7 +23,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  const [appName, setAppName] = useState("GlamGestão");
+  const [appName, setAppName] = useState("LilianPro");
 
   // Recupera o nome personalizado do cache local para consistência visual imediata
   useEffect(() => {

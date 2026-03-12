@@ -80,7 +80,7 @@ export default function FinanceiroPage() {
     return doc(db, "users", user.uid, "config", "settings");
   }, [db, user]);
   const { data: settings } = useDoc(settingsRef);
-  const appName = settings?.appName || "GlamGestão";
+  const appName = settings?.appName || "LilianPro";
 
   const ordersQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
