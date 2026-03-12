@@ -38,6 +38,9 @@ import {
   ClipboardCheck,
   Plus,
   Trash2,
+  Smartphone,
+  Banknote,
+  HandCoins,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
@@ -160,9 +163,9 @@ export default function NovaVendaPage() {
 
   return (
     <div className="space-y-6 sm:space-y-10 max-w-5xl mx-auto w-full animate-in fade-in duration-500 pb-32">
-      <div className="px-2 text-left sm:text-center">
-        <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tighter text-primary font-headline uppercase leading-none text-left sm:text-center">Nova Venda</h1>
-        <p className="text-sm sm:text-xl text-muted-foreground mt-3 font-bold opacity-80 uppercase tracking-widest text-left sm:text-center">Cadastre uma venda rapidamente no seu sistema.</p>
+      <div className="px-2 text-center">
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tighter text-primary font-headline uppercase leading-none">Nova Venda</h1>
+        <p className="text-sm sm:text-xl text-muted-foreground mt-3 font-bold opacity-80 uppercase tracking-widest">Cadastre uma venda rapidamente no seu sistema.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6 sm:gap-10">
@@ -178,7 +181,7 @@ export default function NovaVendaPage() {
             <div className="space-y-4">
               <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block text-left">Quem está comprando?</Label>
               <Select onValueChange={setSelectedClientId} value={selectedClientId}>
-                <SelectTrigger className="h-14 sm:h-20 text-lg sm:text-2xl font-black rounded-xl sm:rounded-3xl bg-background border-4 border-muted shadow-inner focus:border-primary/30 transition-all">
+                <SelectTrigger className="h-14 sm:h-20 text-lg sm:text-2xl font-black rounded-xl sm:rounded-3xl border-4 border-muted bg-background">
                   <SelectValue placeholder="Busque pelo nome..." />
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl shadow-2xl border-2">
@@ -209,7 +212,6 @@ export default function NovaVendaPage() {
 
             {selectedItems.map((item, index) => (
               <div key={item.id} className="flex flex-col gap-4 animate-in slide-in-from-left-4 duration-500 bg-muted/10 p-5 sm:p-10 rounded-[1.5rem] sm:rounded-[3rem] border-4 border-border/30 relative group">
-                {/* Botão para apagar o card inteiro da escolha do produto */}
                 <Button 
                   type="button" 
                   variant="ghost" 
@@ -282,22 +284,34 @@ export default function NovaVendaPage() {
           </CardHeader>
           <CardContent className="p-6 sm:p-10">
             <div className="grid gap-6 sm:gap-10 sm:grid-cols-2">
-              <div className="space-y-4">
+              <div className="space-y-4 sm:col-span-2">
                 <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block text-left">Forma de Pagamento</Label>
-                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <SelectTrigger className="h-14 sm:h-20 text-base sm:text-2xl font-black rounded-xl sm:rounded-3xl border-4 border-muted bg-background">
-                    <SelectValue placeholder="Selecione..." />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-2xl">
-                    <SelectItem value="pix" className="text-base sm:text-xl font-bold p-3 sm:p-4">Pix</SelectItem>
-                    <SelectItem value="dinheiro" className="text-base sm:text-xl font-bold p-3 sm:p-4">Dinheiro</SelectItem>
-                    <SelectItem value="cartao" className="text-base sm:text-xl font-bold p-3 sm:p-4">Cartão</SelectItem>
-                    <SelectItem value="fiado" className="text-base sm:text-xl font-bold p-3 sm:p-4">Fiado / Prazo</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  {[
+                    { id: 'pix', label: 'Pix', icon: Smartphone },
+                    { id: 'dinheiro', label: 'Dinheiro', icon: Banknote },
+                    { id: 'cartao', label: 'Cartão', icon: CreditCard },
+                    { id: 'fiado', label: 'Fiado', icon: HandCoins },
+                  ].map((option) => (
+                    <button
+                      key={option.id}
+                      type="button"
+                      onClick={() => setPaymentMethod(option.id)}
+                      className={cn(
+                        "flex flex-col items-center justify-center p-4 sm:p-8 rounded-[1.5rem] sm:rounded-[2.5rem] border-4 transition-all gap-4",
+                        paymentMethod === option.id
+                          ? "bg-primary text-primary-foreground border-primary shadow-xl scale-105"
+                          : "bg-background text-muted-foreground border-muted hover:border-primary/20"
+                      )}
+                    >
+                      <option.icon className={cn("size-8 sm:size-12", paymentMethod === option.id ? "text-white" : "text-primary")} />
+                      <span className="text-xs sm:text-2xl font-black uppercase tracking-tight">{option.label}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
               <div className="space-y-4">
-                <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block text-left">Vencimento</Label>
+                <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block text-left">Vencimento (Fiado)</Label>
                 <div className="relative">
                   <CalendarIcon className="absolute left-5 top-1/2 -translate-y-1/2 size-6 text-muted-foreground hidden sm:block" />
                   <Input type="date" className="h-14 sm:h-20 sm:pl-16 text-base sm:text-2xl font-black rounded-xl sm:rounded-3xl border-4 border-muted bg-background" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
