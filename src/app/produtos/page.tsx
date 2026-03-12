@@ -55,6 +55,13 @@ export default function ProdutosPage() {
     }
   };
 
+  const getBrandBadgeColor = (brand: string) => {
+    if (brand === "VERDE (N)") return "bg-green-600 hover:bg-green-700";
+    if (brand === "ROSA (A)") return "bg-primary hover:bg-primary/90";
+    if (brand === "MARROM (C&E)") return "bg-amber-900 hover:bg-amber-950";
+    return "bg-muted text-muted-foreground";
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col items-center text-center gap-6 px-2 mb-10">
@@ -76,7 +83,7 @@ export default function ProdutosPage() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-6 text-muted-foreground" />
           <Input
             placeholder="Pesquisar por nome do produto..."
-            className="pl-12 h-14 text-lg bg-background rounded-2xl shadow-inner border-muted focus-visible:ring-primary"
+            className="pl-12 h-14 text-lg bg-background rounded-2xl shadow-inner border-muted focus-visible:ring-primary font-bold"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -85,23 +92,30 @@ export default function ProdutosPage() {
           <Button
             variant={activeBrand === null ? "default" : "outline"}
             onClick={() => setActiveBrand(null)}
-            className={`h-14 px-6 text-base font-bold rounded-2xl ${activeBrand === null ? "shadow-lg" : "border-muted"}`}
+            className={`h-14 px-6 text-base font-bold rounded-2xl shrink-0 ${activeBrand === null ? "shadow-lg" : "border-muted"}`}
           >
             Todos
           </Button>
           <Button
-            variant={activeBrand === "Natura" ? "default" : "outline"}
-            onClick={() => setActiveBrand("Natura")}
-            className={`h-14 px-6 text-base font-bold rounded-2xl ${activeBrand === "Natura" ? "bg-orange-600 hover:bg-orange-700 shadow-lg border-none" : "border-muted"}`}
+            variant={activeBrand === "VERDE (N)" ? "default" : "outline"}
+            onClick={() => setActiveBrand("VERDE (N)")}
+            className={`h-14 px-6 text-base font-bold rounded-2xl shrink-0 ${activeBrand === "VERDE (N)" ? "bg-green-600 hover:bg-green-700 shadow-lg border-none text-white" : "border-muted"}`}
           >
-            Natura
+            Verde (N)
           </Button>
           <Button
-            variant={activeBrand === "Avon" ? "default" : "outline"}
-            onClick={() => setActiveBrand("Avon")}
-            className={`h-14 px-6 text-base font-bold rounded-2xl ${activeBrand === "Avon" ? "bg-blue-800 hover:bg-blue-900 shadow-lg border-none" : "border-muted"}`}
+            variant={activeBrand === "ROSA (A)" ? "default" : "outline"}
+            onClick={() => setActiveBrand("ROSA (A)")}
+            className={`h-14 px-6 text-base font-bold rounded-2xl shrink-0 ${activeBrand === "ROSA (A)" ? "bg-primary hover:bg-primary/90 shadow-lg border-none text-white" : "border-muted"}`}
           >
-            Avon
+            Rosa (A)
+          </Button>
+          <Button
+            variant={activeBrand === "MARROM (C&E)" ? "default" : "outline"}
+            onClick={() => setActiveBrand("MARROM (C&E)")}
+            className={`h-14 px-6 text-base font-bold rounded-2xl shrink-0 ${activeBrand === "MARROM (C&E)" ? "bg-amber-900 hover:bg-amber-950 shadow-lg border-none text-white" : "border-muted"}`}
+          >
+            Marrom (C&E)
           </Button>
         </div>
       </div>
@@ -124,7 +138,7 @@ export default function ProdutosPage() {
                   data-ai-hint="beauty product"
                 />
                 <div className="absolute top-4 left-4 flex gap-2">
-                  <Badge className={`text-xs font-black px-4 py-1.5 rounded-xl shadow-lg border-none ${product.brand === "Natura" ? "bg-orange-500 hover:bg-orange-600" : "bg-blue-800 hover:bg-blue-900"}`}>
+                  <Badge className={`text-xs font-black px-4 py-1.5 rounded-xl shadow-lg border-none text-white ${getBrandBadgeColor(product.brand)}`}>
                     {product.brand}
                   </Badge>
                 </div>
