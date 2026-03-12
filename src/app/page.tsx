@@ -138,121 +138,120 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 w-full overflow-hidden">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-12 animate-in fade-in duration-500 w-full overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 px-2">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-primary font-headline">Olá, {user?.displayName || 'Administradora'}!</h1>
-          <p className="text-muted-foreground mt-1">Veja como está o seu negócio hoje.</p>
+          <h1 className="text-4xl md:text-5xl font-black tracking-tight text-primary font-headline">Olá, {user?.displayName || 'Administradora'}!</h1>
+          <p className="text-lg md:text-xl text-muted-foreground mt-2 font-bold">Veja como está o seu negócio hoje.</p>
         </div>
-        <Button asChild className="h-12 px-6 font-bold shadow-md rounded-xl">
+        <Button asChild className="h-16 px-10 text-xl font-black shadow-xl rounded-2xl bg-primary hover:bg-primary/90 transition-all hover:scale-105">
           <Link href="/vendas/nova">
-            <PlusCircle className="mr-2 h-5 w-5" />
+            <PlusCircle className="mr-3 size-7" />
             Nova Venda
           </Link>
         </Button>
       </div>
 
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 grid-cols-2 lg:grid-cols-4">
         {stats.map((stat, i) => (
-          <Card key={i} className="border-none shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 px-4 pt-4">
-              <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{stat.title}</CardTitle>
-              <div className={`${stat.bg} ${stat.color} p-2 rounded-lg hidden sm:block`}>
-                <stat.icon className="h-4 w-4" />
+          <Card key={i} className="border-none shadow-lg hover:shadow-2xl transition-all rounded-[2rem] overflow-hidden group">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 px-6 pt-6">
+              <CardTitle className="text-sm font-black text-muted-foreground uppercase tracking-widest">{stat.title}</CardTitle>
+              <div className={`${stat.bg} ${stat.color} p-3 rounded-2xl group-hover:scale-110 transition-transform`}>
+                <stat.icon className="h-6 w-6" />
               </div>
             </CardHeader>
-            <CardContent className="px-4 pb-4">
-              <div className="text-xl font-bold truncate">{stat.value}</div>
-              <p className="text-[10px] font-medium text-muted-foreground mt-1">{stat.description}</p>
+            <CardContent className="px-6 pb-8">
+              <div className="text-3xl md:text-4xl font-black truncate">{stat.value}</div>
+              <p className="text-xs font-black text-muted-foreground mt-2 uppercase tracking-wider opacity-60">{stat.description}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <div className="grid gap-6 md:grid-cols-7">
-        <Card className="md:col-span-4 border-none shadow-md overflow-hidden bg-gradient-to-br from-white to-pink-50 dark:from-slate-950 dark:to-pink-950/20">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2 text-primary">
-              <Sparkles className="size-5" />
-              <CardTitle className="text-lg font-bold">Resumo Inteligente</CardTitle>
+      <div className="grid gap-8 md:grid-cols-7">
+        <Card className="md:col-span-4 border-none shadow-xl overflow-hidden bg-gradient-to-br from-white to-pink-50 dark:from-slate-950 dark:to-pink-950/20 rounded-[2.5rem]">
+          <CardHeader className="p-8 pb-4">
+            <div className="flex items-center gap-3 text-primary">
+              <Sparkles className="size-8" />
+              <CardTitle className="text-2xl md:text-3xl font-black">Resumo Inteligente</CardTitle>
             </div>
-            <CardDescription className="text-xs">Insights automáticos baseados nos seus dados</CardDescription>
+            <CardDescription className="text-base font-bold mt-1">Insights automáticos para seu crescimento</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="bg-white/60 dark:bg-black/40 backdrop-blur-sm p-4 rounded-xl border border-primary/10">
-              <p className="leading-relaxed text-sm text-foreground/80 font-medium">
+          <CardContent className="p-8 pt-0">
+            <div className="bg-white/80 dark:bg-black/60 backdrop-blur-md p-8 rounded-[2rem] border-2 border-primary/10 shadow-inner">
+              <p className="leading-relaxed text-lg md:text-xl text-foreground font-semibold">
                 {aiSummaryText}
               </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="md:col-span-3 border-none shadow-md">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-bold flex items-center gap-2">
-              <ShoppingBag className="size-5 text-primary" />
+        <Card className="md:col-span-3 border-none shadow-xl rounded-[2.5rem] overflow-hidden">
+          <CardHeader className="p-8 pb-4 bg-muted/20">
+            <CardTitle className="text-2xl md:text-3xl font-black flex items-center gap-3">
+              <ShoppingBag className="size-8 text-primary" />
               Catálogo
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50 border border-border/50">
-              <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                <Package className="size-6" />
+          <CardContent className="p-8 space-y-6">
+            <div className="flex items-center gap-5 p-5 rounded-[1.5rem] bg-background border-2 border-muted shadow-sm hover:border-primary/20 transition-colors">
+              <div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                <Package className="size-8" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold truncate">Produtos</p>
-                <p className="text-xs text-muted-foreground">{products?.length || 0} itens</p>
+                <p className="text-xl font-black truncate">Produtos</p>
+                <p className="text-sm text-muted-foreground font-bold">{products?.length || 0} itens cadastrados</p>
               </div>
-              <Badge variant="secondary" className="text-[10px] font-bold">{products?.filter(p => p.brand === "Natura").length} Nat.</Badge>
+              <Badge variant="secondary" className="text-xs font-black px-3 py-1 bg-primary/5 text-primary border-none">{products?.filter(p => p.brand === "Natura").length} Nat.</Badge>
             </div>
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50 border border-border/50">
-              <div className="size-10 rounded-lg bg-accent/10 flex items-center justify-center text-accent">
-                <Users className="size-6" />
+            <div className="flex items-center gap-5 p-5 rounded-[1.5rem] bg-background border-2 border-muted shadow-sm hover:border-accent/20 transition-colors">
+              <div className="size-14 rounded-2xl bg-accent/10 flex items-center justify-center text-accent shadow-inner">
+                <Users className="size-8" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold truncate">Clientes</p>
-                <p className="text-xs text-muted-foreground">{clients?.length || 0} contatos</p>
+                <p className="text-xl font-black truncate">Clientes</p>
+                <p className="text-sm text-muted-foreground font-bold">{clients?.length || 0} contatos ativos</p>
               </div>
-              <Badge variant="secondary" className="text-[10px] font-bold">{clients?.length || 0} total</Badge>
             </div>
-            <Button variant="outline" className="w-full text-xs font-bold text-primary h-10 mt-2 rounded-xl" asChild>
-              <Link href="/produtos">Acessar Catálogo Completo <ChevronRight className="ml-1 size-3" /></Link>
+            <Button variant="outline" className="w-full text-sm font-black text-primary h-14 mt-4 rounded-2xl border-2 border-primary/20 hover:bg-primary/5" asChild>
+              <Link href="/produtos">Acessar Catálogo Completo <ChevronRight className="ml-2 size-5" /></Link>
             </Button>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="border-none shadow-md overflow-hidden">
-        <CardHeader className="flex flex-row items-center justify-between px-6 py-4 bg-muted/20">
-          <CardTitle className="text-lg font-bold">Vendas Recentes</CardTitle>
-          <Button variant="outline" size="sm" className="h-8 text-xs font-bold rounded-lg border-primary/20 text-primary" asChild>
-            <Link href="/pedidos">Ver Todos</Link>
+      <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden">
+        <CardHeader className="flex flex-row items-center justify-between px-10 py-8 bg-muted/30">
+          <CardTitle className="text-2xl md:text-3xl font-black">Vendas Recentes</CardTitle>
+          <Button variant="ghost" size="lg" className="text-base font-black text-primary hover:bg-primary/10 rounded-xl" asChild>
+            <Link href="/pedidos">Ver Histórico Completo</Link>
           </Button>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="w-full overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="w-full overflow-x-auto scrollbar-hide">
+            <table className="w-full text-lg">
               <thead>
-                <tr className="border-b text-muted-foreground text-[10px] uppercase tracking-widest font-bold">
-                  <th className="h-10 px-6 text-left">Data</th>
-                  <th className="h-10 px-6 text-left">Total</th>
-                  <th className="h-10 px-6 text-left">Status</th>
-                  <th className="h-10 px-6 text-right">Ações</th>
+                <tr className="border-b text-muted-foreground text-xs uppercase tracking-[0.2em] font-black bg-muted/10">
+                  <th className="h-14 px-10 text-left">Data</th>
+                  <th className="h-14 px-10 text-left">Total</th>
+                  <th className="h-14 px-10 text-left">Status</th>
+                  <th className="h-14 px-10 text-right">Ações</th>
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody className="divide-y-2">
                 {recentOrders.map((order) => (
-                  <tr key={order.id} className="hover:bg-muted/50 transition-colors">
-                    <td className="px-6 py-4 text-muted-foreground font-medium">{new Date(order.orderDate).toLocaleDateString()}</td>
-                    <td className="px-6 py-4 font-bold">R$ {Number(order.finalAmount).toFixed(2)}</td>
-                    <td className="px-6 py-4">
-                      <Badge variant={order.paymentStatus === "Pago" ? "default" : "secondary"} className={`text-[10px] font-bold px-2 py-0.5 ${order.paymentStatus === "Pago" ? "bg-green-600" : ""}`}>
+                  <tr key={order.id} className="hover:bg-muted/50 transition-colors group">
+                    <td className="px-10 py-6 text-foreground font-bold">{new Date(order.orderDate).toLocaleDateString()}</td>
+                    <td className="px-10 py-6 font-black text-primary text-xl">R$ {Number(order.finalAmount).toFixed(2)}</td>
+                    <td className="px-10 py-6">
+                      <Badge variant={order.paymentStatus === "Pago" ? "default" : "secondary"} className={`text-xs font-black px-4 py-1.5 rounded-xl shadow-sm ${order.paymentStatus === "Pago" ? "bg-green-600" : "bg-orange-500 text-white"}`}>
                         {order.paymentStatus}
                       </Badge>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <Button variant="ghost" size="sm" className="h-8 text-xs font-bold text-primary" asChild>
-                        <Link href={`/pedidos/${order.id}`}>Ver</Link>
+                    <td className="px-10 py-6 text-right">
+                      <Button variant="outline" size="sm" className="h-10 text-xs font-black text-primary border-primary/20 rounded-xl" asChild>
+                        <Link href={`/pedidos/${order.id}`}>DETALHES</Link>
                       </Button>
                     </td>
                   </tr>
@@ -260,7 +259,7 @@ export default function DashboardPage() {
               </tbody>
             </table>
             {recentOrders.length === 0 && (
-              <div className="text-center py-10 text-muted-foreground text-sm font-medium italic">
+              <div className="text-center py-20 text-muted-foreground text-xl font-black italic opacity-30">
                 Nenhuma venda registrada ainda.
               </div>
             )}
