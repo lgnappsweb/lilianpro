@@ -356,13 +356,15 @@ export default function RelatoriosPage() {
           </CardHeader>
           <CardContent className="p-4 sm:p-8 space-y-6">
             {topClients.map((client, i) => (
-              <div key={i} className="flex flex-col sm:flex-row items-center justify-between p-6 rounded-[2rem] border-4 border-muted bg-background hover:border-primary/20 transition-all group gap-4">
+              <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-6 rounded-[2rem] border-4 border-muted bg-background hover:border-primary/20 transition-all group gap-4">
                 <div className="flex items-center gap-5 w-full sm:w-auto">
                   <div className="size-14 sm:size-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black text-2xl shadow-inner shrink-0 group-hover:scale-110 transition-transform">
                     {i + 1}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-xl sm:text-3xl font-black text-foreground leading-tight px-2 uppercase italic truncate">{client.name}</p>
+                    <p className="text-xl sm:text-3xl font-black text-foreground leading-tight px-2 uppercase italic">
+                      {client.name}
+                    </p>
                     <p className="text-[10px] sm:text-xs font-black text-muted-foreground mt-1 uppercase tracking-widest px-2">{client.count} pedidos realizados</p>
                   </div>
                 </div>
