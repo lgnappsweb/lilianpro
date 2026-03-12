@@ -4,7 +4,6 @@
 import React, { useState, useMemo } from "react";
 import {
   Card,
-  CardContent,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,14 +13,8 @@ import {
   Tag,
   Trash2,
   Loader2,
-  MoreVertical,
+  Edit,
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -109,8 +102,8 @@ export default function CategoriasPage() {
         ) : (
           <div className="grid grid-cols-1 gap-6 w-full">
             {filteredCategories.map((categoria) => (
-              <Card key={categoria.id} className="bg-background border-4 border-muted rounded-2xl p-6 shadow-xl hover:border-primary/20 transition-all flex items-center justify-between w-full">
-                <div className="flex items-center gap-6">
+              <Card key={categoria.id} className="bg-background border-4 border-muted rounded-2xl p-6 shadow-xl hover:border-primary/20 transition-all flex flex-col justify-between w-full">
+                <div className="flex items-center gap-6 mb-6">
                   <div className="size-14 sm:size-20 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner shrink-0">
                     <Tag className="size-8 sm:size-10" />
                   </div>
@@ -124,22 +117,22 @@ export default function CategoriasPage() {
                   </div>
                 </div>
 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="size-12 sm:size-16 rounded-2xl hover:bg-muted">
-                      <MoreVertical className="size-6 sm:size-8" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl shadow-2xl border-2">
-                    <DropdownMenuItem 
-                      className="p-3 rounded-xl text-sm font-black cursor-pointer text-destructive hover:bg-destructive/5" 
-                      onSelect={() => setCategoryToDelete(categoria)}
-                    >
-                      <Trash2 className="mr-3 size-4" />
-                      EXCLUIR CATEGORIA
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="flex flex-row items-center justify-center gap-2 w-full pt-4 border-t-2">
+                  <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2 flex-1">
+                    <Link href={`/categorias/${categoria.id}/editar`}>
+                      <Edit className="mr-1 size-3 sm:size-4" />
+                      Editar
+                    </Link>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 text-destructive border-destructive/20 hover:bg-destructive/5 hover:border-destructive px-2 flex-1"
+                    onClick={() => setCategoryToDelete(categoria)}
+                  >
+                    <Trash2 className="mr-1 size-3 sm:size-4" />
+                    Excluir
+                  </Button>
+                </div>
               </Card>
             ))}
           </div>
