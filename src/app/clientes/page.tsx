@@ -122,62 +122,56 @@ export default function ClientesPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredClientes.map((cliente) => (
-              <Card key={cliente.id} className="bg-background border-4 border-muted rounded-[2rem] p-6 sm:p-8 space-y-6 shadow-xl hover:border-primary/20 transition-all group relative overflow-hidden flex flex-col justify-between h-full min-h-[280px]">
-                <div className="space-y-4">
+              <Card key={cliente.id} className="bg-background border-4 border-muted rounded-[1.5rem] sm:rounded-[2.5rem] p-6 sm:p-10 space-y-6 shadow-xl hover:border-primary/20 transition-all group relative overflow-hidden flex flex-col justify-between h-full min-h-[300px]">
+                <div className="space-y-6">
                   <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-center gap-4 min-w-0 flex-1">
-                      <div className="size-14 sm:size-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black text-xl sm:text-2xl border-4 border-primary/20 shrink-0 group-hover:scale-110 transition-transform">
-                        {cliente.fullName?.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-black text-xl sm:text-2xl break-words leading-tight uppercase tracking-tight text-primary">
-                          {cliente.fullName}
-                        </h3>
+                    <div className="flex flex-col gap-1 min-w-0 flex-1">
+                      <h3 className="font-black text-2xl sm:text-4xl break-words leading-tight uppercase tracking-tighter text-primary italic">
+                        {cliente.fullName}
+                      </h3>
+                      <div className="flex flex-col gap-1 mt-2">
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <MapPin className="size-5 text-primary/40 shrink-0" />
+                          <span className="text-sm sm:text-xl font-black uppercase tracking-widest opacity-80 break-words leading-tight">
+                            {cliente.city} {cliente.neighborhood ? `• ${cliente.neighborhood}` : ""}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Phone className="size-5 text-primary/40 shrink-0" />
+                          <span className="text-sm sm:text-xl font-black uppercase tracking-widest opacity-80">{cliente.phone}</span>
+                        </div>
                       </div>
                     </div>
 
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="size-10 sm:size-12 rounded-2xl border-2 border-transparent hover:border-muted-foreground/10 shrink-0">
-                          <MoreHorizontal className="size-6 sm:size-8" />
-                        </Button>
+                        <button className="size-12 sm:size-16 rounded-2xl border-4 border-muted hover:border-primary/20 flex items-center justify-center transition-all bg-background shrink-0 shadow-sm active:scale-95">
+                          <MoreHorizontal className="size-8 sm:size-10 text-primary" />
+                        </button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-64 p-2 rounded-2xl shadow-2xl border-4">
+                      <DropdownMenuContent align="end" className="w-72 p-3 rounded-[1.5rem] shadow-2xl border-4">
                         <DropdownMenuLabel className="font-black text-[10px] px-4 py-2 uppercase tracking-[0.2em] opacity-40">Opções da Cliente</DropdownMenuLabel>
                         <DropdownMenuSeparator className="my-2 h-1 bg-muted" />
-                        <DropdownMenuItem asChild className="p-4 font-black text-lg cursor-pointer rounded-xl focus:bg-primary/5">
+                        <DropdownMenuItem asChild className="p-4 font-black text-xl cursor-pointer rounded-xl focus:bg-primary/5">
                           <Link href={`/clientes/${cliente.id}`}>
-                            <FileText className="mr-3 size-6 text-primary" />
+                            <FileText className="mr-3 size-7 text-primary" />
                             Ver Detalhes
                           </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="p-4 font-black text-lg cursor-pointer rounded-xl focus:bg-primary/5">
-                          <Edit className="mr-3 size-6 text-primary" />
+                        <DropdownMenuItem className="p-4 font-black text-xl cursor-pointer rounded-xl focus:bg-primary/5">
+                          <Edit className="mr-3 size-7 text-primary" />
                           Editar Cadastro
                         </DropdownMenuItem>
                         <DropdownMenuSeparator className="my-2 h-1 bg-muted" />
                         <DropdownMenuItem 
-                          className="p-4 font-black text-lg text-destructive cursor-pointer rounded-xl focus:bg-destructive/10" 
+                          className="p-4 font-black text-xl text-destructive cursor-pointer rounded-xl focus:bg-destructive/10" 
                           onSelect={() => setClientToDelete(cliente)}
                         >
-                          <Trash2 className="mr-3 size-6" />
+                          <Trash2 className="mr-3 size-7" />
                           Excluir Cliente
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  </div>
-
-                  <div className="flex flex-col gap-2 mt-2">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <MapPin className="size-5 text-primary/40 shrink-0" />
-                      <span className="text-sm sm:text-base font-black uppercase tracking-widest opacity-80 break-words leading-tight">
-                        {cliente.city} {cliente.neighborhood ? `• ${cliente.neighborhood}` : ""}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Phone className="size-5 text-primary/40 shrink-0" />
-                      <span className="text-sm sm:text-base font-black uppercase tracking-widest opacity-80">{cliente.phone}</span>
-                    </div>
                   </div>
                 </div>
 
@@ -185,10 +179,10 @@ export default function ClientesPage() {
                   <Button
                     variant="default"
                     size="lg"
-                    className="w-full bg-green-600 hover:bg-green-700 h-14 sm:h-16 rounded-2xl font-black text-base sm:text-lg gap-3 shadow-lg transition-all active:scale-95 uppercase"
+                    className="w-full bg-green-600 hover:bg-green-700 h-16 sm:h-24 rounded-2xl sm:rounded-3xl font-black text-lg sm:text-3xl gap-4 shadow-xl transition-all active:scale-95 uppercase tracking-widest"
                     onClick={() => openWhatsApp(cliente.phone)}
                   >
-                    <MessageCircle className="size-6 sm:size-7" />
+                    <MessageCircle className="size-8 sm:size-12" />
                     Chamar no WhatsApp
                   </Button>
                 </div>
