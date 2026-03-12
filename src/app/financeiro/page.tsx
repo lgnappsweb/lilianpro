@@ -45,8 +45,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { DateRange } from "react-day-picker";
-import jsPDF from "jspdf";
+import type { DateRange } from "react-day-picker";
+import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
 const DAYS = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
