@@ -88,6 +88,10 @@ export default function DetalhesPedidoPage() {
 
   const status = getStatusInfo(order.paymentStatus);
 
+  // Lógica para verificar quantidade de nomes
+  const nameParts = order.clientName?.trim().split(/\s+/) || [];
+  const isShortName = nameParts.length <= 2;
+
   return (
     <div className="space-y-12 animate-in fade-in duration-500 w-full pb-20">
       {/* CABEÇALHO ELITE MONUMENTAL */}
@@ -105,7 +109,10 @@ export default function DetalhesPedidoPage() {
 
       {/* CLIENTE E STATUS EM DESTAQUE */}
       <div className="flex flex-col items-center text-center mb-10 px-4">
-        <h2 className="text-4xl md:text-7xl font-black tracking-tighter text-foreground font-headline uppercase leading-tight italic drop-shadow-sm max-w-5xl px-2">
+        <h2 className={cn(
+          "text-4xl md:text-7xl font-black tracking-tighter text-foreground font-headline uppercase leading-tight italic drop-shadow-sm max-w-5xl px-2",
+          isShortName && "whitespace-nowrap"
+        )}>
           {order.clientName}
         </h2>
         <div className={cn("mt-6 flex items-center gap-3 px-8 py-3 rounded-full border-4 shadow-lg", status.bg, "border-white/50")}>
