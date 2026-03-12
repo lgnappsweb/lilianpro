@@ -15,7 +15,6 @@ import {
   Settings,
   Sparkles,
   Tag,
-  Plus,
 } from "lucide-react";
 
 import {
@@ -29,20 +28,11 @@ import {
   SidebarGroupLabel,
   SidebarGroupContent,
 } from "@/components/ui/sidebar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
-const primaryItems = [
+const navItems = [
   { name: "Nova Venda", icon: PlusCircle, href: "/vendas/nova" },
   { name: "Painel", icon: LayoutDashboard, href: "/" },
   { name: "Clientes", icon: Users, href: "/clientes" },
-];
-
-const moreItems = [
   { name: "Categorias", icon: Tag, href: "/categorias" },
   { name: "Produtos", icon: Package, href: "/produtos" },
   { name: "Pedidos", icon: ClipboardList, href: "/pedidos" },
@@ -71,7 +61,7 @@ export function AppSidebar() {
           <SidebarGroupLabel className="group-data-[collapsible=icon]:hidden">Navegação</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {primaryItems.map((item) => (
+              {navItems.map((item) => (
                 <SidebarMenuItem key={item.name}>
                   <SidebarMenuButton
                     asChild
@@ -85,28 +75,6 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-
-              {/* Botão de Mais no Desktop */}
-              <SidebarMenuItem>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <SidebarMenuButton tooltip="Mais Opções">
-                      <Plus className="size-5" />
-                      <span className="font-medium">Mais Opções</span>
-                    </SidebarMenuButton>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent side="right" align="start" className="w-56">
-                    {moreItems.map((item) => (
-                      <DropdownMenuItem key={item.name} asChild>
-                        <Link href={item.href} className="flex items-center gap-2 cursor-pointer">
-                          <item.icon className="size-4" />
-                          <span>{item.name}</span>
-                        </Link>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
