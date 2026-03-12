@@ -1,3 +1,28 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "beauty-hero",
+      "description": "Elegant beauty products collection",
+      "imageUrl": "https://picsum.photos/seed/glam1/1200/400",
+      "imageHint": "beauty cosmetics"
+    },
+    {
+      "id": "product-perfume",
+      "description": "Luxury perfume bottle",
+      "imageUrl": "https://picsum.photos/seed/perfume/400/400",
+      "imageHint": "perfume bottle"
+    },
+    {
+      "id": "product-makeup",
+      "description": "Assorted makeup products",
+      "imageUrl": "https://picsum.photos/seed/makeup/400/400",
+      "imageHint": "makeup kit"
+    },
+    {
+      "id": "product-skincare",
+      "description": "Skincare cream jar",
+      "imageUrl": "https://picsum.photos/seed/cream/400/400",
+      "imageHint": "skincare cream"
+    }
+  ]
 }
