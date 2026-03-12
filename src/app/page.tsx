@@ -52,23 +52,15 @@ export default function DashboardPage() {
   const { data: products, isLoading: productsLoading } = useCollection(productsQuery);
 
   const stats = useMemo(() => {
-    if (!orders) return [
-      { title: "Total Vendido", value: "R$ 0,00", description: "Carregando...", icon: TrendingUp, color: "text-primary", bg: "bg-primary/10" },
-      { title: "Total Recebido", value: "R$ 0,00", description: "0%", icon: Wallet, color: "text-green-600", bg: "bg-green-100" },
-      { title: "Total Pendente", value: "R$ 0,00", description: "0 abertos", icon: Clock, color: "text-orange-600", bg: "bg-orange-100" },
-      { title: "Total Clientes", value: "0", description: "Cadastrados", icon: Users, color: "text-accent", bg: "bg-accent/10" },
-    ];
-
-    const totalVendido = orders.reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0);
-    const totalRecebido = orders.filter(o => o.paymentStatus === "Pago").reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0);
-    const totalPendente = orders.filter(o => o.paymentStatus === "Pendente" || o.paymentStatus === "Atrasado").reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0);
-    const pendentesCount = orders.filter(o => o.paymentStatus !== "Pago").length;
+    const totalVendido = orders?.reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0) || 0;
+    const totalRecebido = orders?.filter(o => o.paymentStatus === "Pago").reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0) || 0;
+    const totalPendente = orders?.filter(o => o.paymentStatus !== "Pago").reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0) || 0;
 
     return [
       {
         title: "Total Vendido",
         value: `R$ ${totalVendido.toFixed(2)}`,
-        description: "Histórico total",
+        description: "Faturamento total",
         icon: TrendingUp,
         color: "text-primary",
         bg: "bg-primary/10",
@@ -76,7 +68,7 @@ export default function DashboardPage() {
       {
         title: "Total Recebido",
         value: `R$ ${totalRecebido.toFixed(2)}`,
-        description: `${totalVendido > 0 ? ((totalRecebido / totalVendido) * 100).toFixed(0) : 0}%`,
+        description: "Dinheiro em caixa",
         icon: Wallet,
         color: "text-green-600",
         bg: "bg-green-100",
@@ -84,7 +76,7 @@ export default function DashboardPage() {
       {
         title: "Total Pendente",
         value: `R$ ${totalPendente.toFixed(2)}`,
-        description: `${pendentesCount} abertos`,
+        description: "Contas a receber",
         icon: Clock,
         color: "text-orange-600",
         bg: "bg-orange-100",
@@ -92,7 +84,7 @@ export default function DashboardPage() {
       {
         title: "Total Clientes",
         value: (clients?.length || 0).toString(),
-        description: "Na base",
+        description: "Contatos ativos",
         icon: Users,
         color: "text-accent",
         bg: "bg-accent/10",
@@ -102,7 +94,7 @@ export default function DashboardPage() {
 
   const recentOrders = useMemo(() => {
     if (!orders) return [];
-    return [...orders].sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()).slice(0, 4);
+    return [...orders].sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()).slice(0, 5);
   }, [orders]);
 
   useEffect(() => {
@@ -138,131 +130,129 @@ export default function DashboardPage() {
 
   if (ordersLoading || clientsLoading || productsLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <Loader2 className="size-12 animate-spin text-primary" />
-        <p className="text-xl text-muted-foreground animate-pulse font-medium">Sincronizando seus dados...</p>
+      <div className="flex flex-col items-center justify-center min-h-[40vh] gap-3">
+        <Loader2 className="size-10 animate-spin text-primary" />
+        <p className="text-muted-foreground animate-pulse font-medium">Sincronizando dados...</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500 w-full overflow-hidden">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-primary font-headline">Olá, {user?.displayName || 'Administradora'}!</h1>
-          <p className="text-lg text-muted-foreground mt-2 font-medium">Seu resumo de hoje.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-primary font-headline">Olá, {user?.displayName || 'Administradora'}!</h1>
+          <p className="text-muted-foreground mt-1">Veja como está o seu negócio hoje.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button asChild className="flex-1 sm:flex-none h-14 px-8 bg-primary hover:bg-primary/90 text-lg font-bold shadow-lg">
-            <Link href="/vendas/nova">
-              <PlusCircle className="mr-2 h-6 w-6" />
-              Nova Venda
-            </Link>
-          </Button>
-        </div>
+        <Button asChild className="h-12 px-6 font-bold shadow-md rounded-xl">
+          <Link href="/vendas/nova">
+            <PlusCircle className="mr-2 h-5 w-5" />
+            Nova Venda
+          </Link>
+        </Button>
       </div>
 
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {stats.map((stat, i) => (
-          <Card key={i} className="border-none shadow-md hover:shadow-lg transition-all border-l-4 border-l-primary/30">
-            <CardHeader className="flex flex-row items-center justify-between pb-1 space-y-0 px-4 pt-4 sm:px-6 sm:pt-6">
-              <CardTitle className="text-xs sm:text-base font-bold text-muted-foreground uppercase tracking-widest">{stat.title}</CardTitle>
-              <div className={`${stat.bg} ${stat.color} p-2 rounded-xl hidden sm:block shadow-inner`}>
-                <stat.icon className="h-5 w-5" />
+          <Card key={i} className="border-none shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 px-4 pt-4">
+              <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{stat.title}</CardTitle>
+              <div className={`${stat.bg} ${stat.color} p-2 rounded-lg hidden sm:block`}>
+                <stat.icon className="h-4 w-4" />
               </div>
             </CardHeader>
-            <CardContent className="px-4 pb-4 sm:px-6 sm:pb-6">
-              <div className="text-xl sm:text-3xl font-black truncate text-foreground">{stat.value}</div>
-              <p className="text-xs sm:text-sm font-bold text-muted-foreground/80 mt-1 truncate">{stat.description}</p>
+            <CardContent className="px-4 pb-4">
+              <div className="text-xl font-bold truncate">{stat.value}</div>
+              <p className="text-[10px] font-medium text-muted-foreground mt-1">{stat.description}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <div className="grid gap-8 md:grid-cols-7">
-        <Card className="md:col-span-4 border-none shadow-lg overflow-hidden bg-gradient-to-br from-white to-pink-50 dark:from-slate-950 dark:to-pink-950/20">
-          <CardHeader className="pb-4">
-            <div className="flex items-center gap-3 text-primary">
-              <Sparkles className="size-7" />
-              <CardTitle className="text-2xl sm:text-3xl font-black font-headline tracking-tight">Resumo de IA</CardTitle>
+      <div className="grid gap-6 md:grid-cols-7">
+        <Card className="md:col-span-4 border-none shadow-md overflow-hidden bg-gradient-to-br from-white to-pink-50 dark:from-slate-950 dark:to-pink-950/20">
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-2 text-primary">
+              <Sparkles className="size-5" />
+              <CardTitle className="text-lg font-bold">Resumo Inteligente</CardTitle>
             </div>
-            <CardDescription className="text-sm font-medium">Baseado em {orders?.length} vendas realizadas</CardDescription>
+            <CardDescription className="text-xs">Insights automáticos baseados nos seus dados</CardDescription>
           </CardHeader>
-          <CardContent className="pt-2">
-            <div className="bg-white/70 dark:bg-black/40 backdrop-blur-md p-6 rounded-2xl border border-primary/20 shadow-sm">
-              <p className="leading-relaxed whitespace-pre-line text-sm sm:text-lg text-foreground/90 font-medium">
+          <CardContent>
+            <div className="bg-white/60 dark:bg-black/40 backdrop-blur-sm p-4 rounded-xl border border-primary/10">
+              <p className="leading-relaxed text-sm text-foreground/80 font-medium">
                 {aiSummaryText}
               </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="md:col-span-3 border-none shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-2xl sm:text-3xl font-black font-headline flex items-center gap-3">
-              <ShoppingBag className="size-7 text-primary" />
+        <Card className="md:col-span-3 border-none shadow-md">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <ShoppingBag className="size-5 text-primary" />
               Catálogo
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-center gap-4 p-4 rounded-2xl bg-muted/50 border border-border/50">
-              <div className="size-14 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shadow-sm">
-                <Package className="size-8" />
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50 border border-border/50">
+              <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                <Package className="size-6" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-lg font-black truncate">Produtos</p>
-                <p className="text-sm text-muted-foreground font-bold">{products?.length || 0} itens cadastrados</p>
+                <p className="text-sm font-bold truncate">Produtos</p>
+                <p className="text-xs text-muted-foreground">{products?.length || 0} itens</p>
               </div>
-              <Badge variant="secondary" className="text-xs font-bold px-3 py-1">{products?.filter(p => p.brand === "Natura").length} Nat.</Badge>
+              <Badge variant="secondary" className="text-[10px] font-bold">{products?.filter(p => p.brand === "Natura").length} Nat.</Badge>
             </div>
-            <div className="flex items-center gap-4 p-4 rounded-2xl bg-muted/50 border border-border/50">
-              <div className="size-14 rounded-xl bg-accent/10 flex items-center justify-center text-accent border border-accent/20 shadow-sm">
-                <Users className="size-8" />
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50 border border-border/50">
+              <div className="size-10 rounded-lg bg-accent/10 flex items-center justify-center text-accent">
+                <Users className="size-6" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-lg font-black truncate">Clientes</p>
-                <p className="text-sm text-muted-foreground font-bold">{clients?.length || 0} perfis ativos</p>
+                <p className="text-sm font-bold truncate">Clientes</p>
+                <p className="text-xs text-muted-foreground">{clients?.length || 0} contatos</p>
               </div>
-              <Badge variant="secondary" className="text-xs font-bold px-3 py-1">{clients?.length || 0} cont.</Badge>
+              <Badge variant="secondary" className="text-[10px] font-bold">{clients?.length || 0} total</Badge>
             </div>
-            <Button variant="outline" className="w-full text-base font-bold text-primary hover:text-primary/80 hover:bg-primary/5 h-12 mt-4 rounded-xl border-primary/20" asChild>
-              <Link href="/produtos">Acessar Catálogo Completo <ChevronRight className="ml-2 size-4" /></Link>
+            <Button variant="outline" className="w-full text-xs font-bold text-primary h-10 mt-2 rounded-xl" asChild>
+              <Link href="/produtos">Acessar Catálogo Completo <ChevronRight className="ml-1 size-3" /></Link>
             </Button>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="border-none shadow-lg overflow-hidden">
-        <CardHeader className="flex flex-row items-center justify-between px-6 py-6 bg-muted/30">
-          <CardTitle className="text-2xl sm:text-3xl font-black font-headline">Vendas Recentes</CardTitle>
-          <Button variant="outline" size="sm" className="h-10 text-sm font-bold px-4 rounded-xl border-primary/20 text-primary" asChild>
-            <Link href="/pedidos">Ver Histórico</Link>
+      <Card className="border-none shadow-md overflow-hidden">
+        <CardHeader className="flex flex-row items-center justify-between px-6 py-4 bg-muted/20">
+          <CardTitle className="text-lg font-bold">Vendas Recentes</CardTitle>
+          <Button variant="outline" size="sm" className="h-8 text-xs font-bold rounded-lg border-primary/20 text-primary" asChild>
+            <Link href="/pedidos">Ver Todos</Link>
           </Button>
         </CardHeader>
-        <CardContent className="px-0 sm:px-6">
+        <CardContent className="p-0">
           <div className="w-full overflow-x-auto">
-            <table className="w-full text-base min-w-[600px] sm:min-w-0">
+            <table className="w-full text-sm">
               <thead>
-                <tr className="border-b text-muted-foreground text-sm uppercase tracking-widest font-black">
-                  <th className="h-14 px-6 text-left font-black">Data</th>
-                  <th className="h-14 px-6 text-left font-black">Total</th>
-                  <th className="h-14 px-6 text-left font-black">Status</th>
-                  <th className="h-14 px-6 text-right font-black">Ações</th>
+                <tr className="border-b text-muted-foreground text-[10px] uppercase tracking-widest font-bold">
+                  <th className="h-10 px-6 text-left">Data</th>
+                  <th className="h-10 px-6 text-left">Total</th>
+                  <th className="h-10 px-6 text-left">Status</th>
+                  <th className="h-10 px-6 text-right">Ações</th>
                 </tr>
               </thead>
-              <tbody className="divide-y text-base">
+              <tbody className="divide-y">
                 {recentOrders.map((order) => (
                   <tr key={order.id} className="hover:bg-muted/50 transition-colors">
-                    <td className="px-6 py-5 text-muted-foreground font-medium">{new Date(order.orderDate).toLocaleDateString()}</td>
-                    <td className="px-6 py-5 font-black text-lg">R$ {Number(order.finalAmount).toFixed(2)}</td>
-                    <td className="px-6 py-5">
-                      <Badge variant={order.paymentStatus === "Pago" ? "default" : order.paymentStatus === "Atrasado" ? "destructive" : "secondary"} className={`text-xs font-black px-3 py-1 ${order.paymentStatus === "Pago" ? "bg-green-600 hover:bg-green-700" : ""}`}>
+                    <td className="px-6 py-4 text-muted-foreground font-medium">{new Date(order.orderDate).toLocaleDateString()}</td>
+                    <td className="px-6 py-4 font-bold">R$ {Number(order.finalAmount).toFixed(2)}</td>
+                    <td className="px-6 py-4">
+                      <Badge variant={order.paymentStatus === "Pago" ? "default" : "secondary"} className={`text-[10px] font-bold px-2 py-0.5 ${order.paymentStatus === "Pago" ? "bg-green-600" : ""}`}>
                         {order.paymentStatus}
                       </Badge>
                     </td>
-                    <td className="px-6 py-5 text-right">
-                      <Button variant="ghost" size="sm" className="h-10 text-sm font-bold text-primary hover:bg-primary/10" asChild>
-                        <Link href={`/pedidos/${order.id}`}>Detalhes</Link>
+                    <td className="px-6 py-4 text-right">
+                      <Button variant="ghost" size="sm" className="h-8 text-xs font-bold text-primary" asChild>
+                        <Link href={`/pedidos/${order.id}`}>Ver</Link>
                       </Button>
                     </td>
                   </tr>
@@ -270,8 +260,8 @@ export default function DashboardPage() {
               </tbody>
             </table>
             {recentOrders.length === 0 && (
-              <div className="text-center py-16 text-muted-foreground text-lg font-medium italic">
-                Ainda não há pedidos registrados.
+              <div className="text-center py-10 text-muted-foreground text-sm font-medium italic">
+                Nenhuma venda registrada ainda.
               </div>
             )}
           </div>

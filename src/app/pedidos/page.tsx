@@ -47,18 +47,18 @@ export default function PedidosPage() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case "Pago": return <CheckCircle className="size-4" />;
-      case "Pendente": return <Clock className="size-4" />;
-      case "Atrasado": return <AlertCircle className="size-4" />;
+      case "Pago": return <CheckCircle className="size-3" />;
+      case "Pendente": return <Clock className="size-3" />;
+      case "Atrasado": return <AlertCircle className="size-3" />;
       default: return null;
     }
   };
 
   const getStatusClass = (status: string) => {
     switch (status) {
-      case "Pago": return "bg-green-100 text-green-700 border-none shadow-sm";
-      case "Pendente": return "bg-orange-100 text-orange-700 border-none shadow-sm";
-      case "Atrasado": return "bg-red-100 text-red-700 border-none shadow-sm";
+      case "Pago": return "bg-green-100 text-green-700";
+      case "Pendente": return "bg-orange-100 text-orange-700";
+      case "Atrasado": return "bg-red-100 text-red-700";
       default: return "";
     }
   };
@@ -66,7 +66,7 @@ export default function PedidosPage() {
   const filteredOrders = useMemo(() => {
     if (!orders) return [];
     return orders.filter(o => {
-      const matchesSearch = o.id?.toLowerCase().includes(searchTerm.toLowerCase()) || o.clientId?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = o.id?.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesFilter = activeFilter === "todos" || o.paymentStatus?.toLowerCase() === activeFilter;
       return matchesSearch && matchesFilter;
     }).sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
@@ -84,26 +84,23 @@ export default function PedidosPage() {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+    <div className="space-y-6 animate-in fade-in duration-500">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-black tracking-tight text-primary font-headline">Histórico de Pedidos</h1>
-          <p className="text-lg text-muted-foreground mt-2 font-medium">Acompanhe todas as vendas realizadas e status de pagamento.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-primary font-headline">Histórico de Pedidos</h1>
+          <p className="text-muted-foreground mt-1">Controle de faturamento e recebimentos.</p>
         </div>
-        <div className="flex gap-3">
-          <Button variant="outline" className="h-14 px-8 text-base font-bold rounded-2xl border-muted">Exportar</Button>
-          <Button asChild className="h-14 px-8 bg-primary hover:bg-primary/90 text-lg font-bold shadow-lg rounded-2xl">
-            <Link href="/vendas/nova">Nova Venda</Link>
-          </Button>
-        </div>
+        <Button asChild className="h-11 px-6 font-bold rounded-xl shadow-md">
+          <Link href="/vendas/nova">Nova Venda</Link>
+        </Button>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-6 items-center">
+      <div className="flex flex-col md:flex-row gap-4 items-center">
         <div className="relative flex-1 w-full">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-6 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
           <Input 
-            placeholder="Buscar por ID do pedido..." 
-            className="pl-12 h-14 text-lg bg-background rounded-2xl shadow-inner border-muted focus-visible:ring-primary" 
+            placeholder="Buscar ID do pedido..." 
+            className="pl-10 h-11 bg-background rounded-xl border-muted shadow-sm" 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -113,8 +110,9 @@ export default function PedidosPage() {
             <Button
               key={filter}
               variant={activeFilter === filter ? "default" : "outline"}
+              size="sm"
               onClick={() => setActiveFilter(filter)}
-              className={`capitalize h-12 px-6 text-base font-black rounded-xl ${activeFilter === filter ? "shadow-md" : "border-muted"}`}
+              className={`capitalize h-10 px-5 font-bold rounded-xl ${activeFilter === filter ? "shadow-md" : "border-muted"}`}
             >
               {filter}
             </Button>
@@ -122,59 +120,56 @@ export default function PedidosPage() {
         </div>
       </div>
 
-      <Card className="border-none shadow-lg rounded-3xl overflow-hidden">
+      <Card className="border-none shadow-md rounded-2xl overflow-hidden">
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-32 gap-4 text-muted-foreground">
-              <Loader2 className="size-16 animate-spin text-primary" />
-              <p className="text-xl font-medium animate-pulse">Carregando pedidos...</p>
+            <div className="flex flex-col items-center justify-center py-24 gap-3 text-muted-foreground">
+              <Loader2 className="size-12 animate-spin text-primary" />
+              <p className="font-medium animate-pulse">Carregando pedidos...</p>
             </div>
           ) : (
             <div className="relative w-full overflow-auto">
-              <table className="w-full text-lg">
+              <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b text-muted-foreground bg-muted/20 uppercase text-xs tracking-widest font-black">
-                    <th className="h-16 px-8 text-left">Pedido</th>
-                    <th className="h-16 px-8 text-left">Data</th>
-                    <th className="h-16 px-8 text-left">Total</th>
-                    <th className="h-16 px-8 text-left">Pagamento</th>
-                    <th className="h-16 px-8 text-left">Status</th>
-                    <th className="h-16 px-8 text-right">Ações</th>
+                  <tr className="border-b text-muted-foreground bg-muted/10 uppercase text-[10px] tracking-widest font-bold">
+                    <th className="h-12 px-6 text-left">Pedido</th>
+                    <th className="h-12 px-6 text-left">Data</th>
+                    <th className="h-12 px-6 text-left">Total</th>
+                    <th className="h-12 px-6 text-left">Status</th>
+                    <th className="h-12 px-6 text-right">Ações</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y text-lg">
+                <tbody className="divide-y">
                   {filteredOrders.map((order) => (
                     <tr key={order.id} className="hover:bg-muted/30 transition-colors">
-                      <td className="px-8 py-6 font-mono text-base font-bold text-primary/80">#{order.id?.slice(-6)}</td>
-                      <td className="px-8 py-6">
-                        <div className="flex items-center gap-3 text-muted-foreground font-medium">
-                          <Calendar className="size-5 text-primary/40" />
+                      <td className="px-6 py-4 font-mono text-xs font-bold text-primary/80">#{order.id?.slice(-6)}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2 text-muted-foreground font-medium">
+                          <Calendar className="size-4 opacity-40" />
                           {new Date(order.orderDate).toLocaleDateString()}
                         </div>
                       </td>
-                      <td className="px-8 py-6 font-black text-2xl text-foreground">R$ {Number(order.finalAmount).toFixed(2)}</td>
-                      <td className="px-8 py-6 text-muted-foreground font-bold capitalize">{order.paymentMethod}</td>
-                      <td className="px-8 py-6">
-                        <Badge className={`flex items-center gap-2 w-fit px-4 py-1.5 text-xs font-black rounded-xl ${getStatusClass(order.paymentStatus)}`}>
+                      <td className="px-6 py-4 font-bold">R$ {Number(order.finalAmount).toFixed(2)}</td>
+                      <td className="px-6 py-4">
+                        <Badge className={`flex items-center gap-1 w-fit px-2 py-0.5 text-[10px] font-bold rounded-lg border-none shadow-sm ${getStatusClass(order.paymentStatus)}`}>
                           {getStatusIcon(order.paymentStatus)}
                           {order.paymentStatus}
                         </Badge>
                       </td>
-                      <td className="px-8 py-6 text-right">
-                        <div className="flex items-center justify-end gap-3">
-                          <Button variant="ghost" size="icon" className="size-12 rounded-2xl text-primary hover:bg-primary/10 border border-border/50 shadow-sm" asChild>
-                            <Link href={`/pedidos/${order.id}`}><Eye className="size-6" /></Link>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button variant="ghost" size="icon" className="size-9 rounded-lg" asChild>
+                            <Link href={`/pedidos/${order.id}`}><Eye className="size-4" /></Link>
                           </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="size-12 rounded-2xl border border-border/50 shadow-sm">
-                                <MoreVertical className="size-6" />
+                              <Button variant="ghost" size="icon" className="size-9 rounded-lg">
+                                <MoreVertical className="size-4" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl shadow-xl">
-                              <DropdownMenuItem className="p-3 rounded-xl font-bold cursor-pointer">Marcar como Pago</DropdownMenuItem>
-                              <DropdownMenuItem className="p-3 rounded-xl font-bold cursor-pointer">Gerar Recibo</DropdownMenuItem>
-                              <DropdownMenuItem className="p-3 rounded-xl font-bold text-destructive cursor-pointer" onSelect={() => handleDelete(order.id)}>Excluir Registro</DropdownMenuItem>
+                            <DropdownMenuContent align="end" className="w-48 p-1 rounded-xl">
+                              <DropdownMenuItem className="p-2.5 rounded-lg text-sm font-medium cursor-pointer">Marcar como Pago</DropdownMenuItem>
+                              <DropdownMenuItem className="p-2.5 rounded-lg text-sm font-medium cursor-pointer" onSelect={() => handleDelete(order.id)}>Excluir</DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
@@ -184,8 +179,8 @@ export default function PedidosPage() {
                 </tbody>
               </table>
               {filteredOrders.length === 0 && (
-                <div className="text-center py-24 text-muted-foreground text-xl font-medium italic">
-                  Nenhum pedido registrado até o momento.
+                <div className="text-center py-20 text-muted-foreground text-sm font-medium italic">
+                  Nenhum pedido encontrado.
                 </div>
               )}
             </div>
