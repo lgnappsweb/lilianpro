@@ -150,57 +150,54 @@ export default function ProdutosPage() {
       ) : (
         <div className="grid grid-cols-1 gap-6 w-full">
           {filteredProducts.map((product) => (
-            <Card key={product.id} className="bg-background border-4 border-primary/5 rounded-2xl p-6 shadow-xl hover:border-primary/20 transition-all flex flex-col justify-between w-full relative overflow-hidden">
-              {/* Categoria no canto superior direito para Mobile, Inline para Desktop */}
-              <div className="absolute top-4 right-4 sm:static flex justify-end">
-                <Badge variant="outline" className="text-[8px] sm:text-[10px] font-black border-2 border-primary text-muted-foreground uppercase px-3 py-1 rounded-lg bg-background/50 backdrop-blur-sm shadow-sm">
+            <Card key={product.id} className="bg-background border-4 border-primary/5 rounded-2xl p-4 sm:p-6 shadow-xl hover:border-primary/20 transition-all flex flex-col justify-between w-full relative overflow-hidden group">
+              
+              {/* Categoria no canto superior direito - Design Elite */}
+              <div className="absolute top-2 right-2 sm:top-4 sm:right-4">
+                <Badge variant="outline" className="text-[7px] sm:text-[10px] font-black border-2 border-primary text-primary/60 uppercase px-2 py-0.5 sm:px-3 sm:py-1 rounded-lg bg-background/50 backdrop-blur-sm shadow-sm">
                   {product.category}
                 </Badge>
               </div>
 
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-6">
-                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 w-full">
-                  {/* Marca em cima do ícone no Mobile */}
-                  <div className="flex flex-col items-center gap-2 shrink-0 mt-4 sm:mt-0">
-                    <Badge className={`text-[8px] sm:text-[10px] font-black px-3 py-1 rounded-lg border-none text-white ${getBrandBadgeColor(product.brand)}`}>
+              <div className="flex items-center justify-between gap-4 sm:gap-6 mb-4 sm:mb-6">
+                <div className="flex items-center gap-3 sm:gap-6 flex-1 min-w-0">
+                  {/* Marca e Ícone - Lado a Lado Horizontal */}
+                  <div className="flex flex-col items-center gap-1 shrink-0">
+                    <Badge className={`text-[6px] sm:text-[9px] font-black px-1.5 py-0.5 rounded-md border-none text-white shadow-sm ${getBrandBadgeColor(product.brand)}`}>
                       {product.brand}
                     </Badge>
-                    <div className="size-14 sm:size-20 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
-                      <Package className="size-8 sm:size-10" />
+                    <div className="size-10 sm:size-16 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                      <Package className="size-5 sm:size-8" />
                     </div>
                   </div>
 
-                  <div className="text-center sm:text-left flex-1 min-w-0">
-                    <h3 className="font-black text-2xl sm:text-3xl text-primary uppercase tracking-tighter italic leading-tight px-2 line-clamp-2 sm:line-clamp-1">
+                  {/* Nome e Código - Alinhamento Horizontal Elite */}
+                  <div className="flex-1 min-w-0 text-left">
+                    <h3 className="font-black text-lg sm:text-3xl text-primary uppercase tracking-tighter italic leading-tight px-1 line-clamp-1">
                       {product.name}
                     </h3>
-                    <p className="text-[10px] sm:text-sm text-muted-foreground font-bold mt-1 opacity-60 uppercase tracking-widest px-2">
+                    <p className="text-[8px] sm:text-sm text-muted-foreground font-bold opacity-60 uppercase tracking-widest px-1">
                       COD: {product.productCode}
                     </p>
-
-                    {/* Preço em baixo no Mobile */}
-                    <div className="mt-4 sm:hidden">
-                      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Preço Venda</p>
-                      <p className="text-4xl font-black text-primary tracking-tighter px-2 leading-none">R$ {Number(product.salePrice).toFixed(2)}</p>
-                    </div>
                   </div>
                 </div>
 
-                {/* Preço no Desktop */}
-                <div className="hidden sm:block text-right border-none pt-0">
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Preço Venda</p>
-                  <p className="text-3xl sm:text-5xl font-black text-primary tracking-tighter px-2 leading-none">R$ {Number(product.salePrice).toFixed(2)}</p>
+                {/* Preço de Venda - Sempre à direita */}
+                <div className="text-right shrink-0">
+                  <p className="text-[7px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Preço Venda</p>
+                  <p className="text-xl sm:text-4xl font-black text-primary tracking-tighter px-1 leading-none">R$ {Number(product.salePrice).toFixed(2)}</p>
                 </div>
               </div>
 
-              <div className="flex flex-row items-center justify-center gap-2 w-full pt-4 border-t-2">
-                <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2 flex-1">
+              {/* Ações no Rodapé do Card */}
+              <div className="flex flex-row items-center justify-center gap-2 w-full pt-3 sm:pt-4 border-t-2">
+                <Button variant="outline" asChild className="h-8 sm:h-12 font-black text-[8px] sm:text-[11px] uppercase tracking-tighter rounded-lg sm:rounded-xl border-2 hover:bg-primary/5 px-2 flex-1">
                   <Link href={`/produtos/${product.id}`}>
                     <FileText className="mr-1 size-3 sm:size-4" />
                     Detalhes
                   </Link>
                 </Button>
-                <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2 flex-1">
+                <Button variant="outline" asChild className="h-8 sm:h-12 font-black text-[8px] sm:text-[11px] uppercase tracking-tighter rounded-lg sm:rounded-xl border-2 hover:bg-primary/5 px-2 flex-1">
                   <Link href={`/produtos/${product.id}/editar`}>
                     <Edit className="mr-1 size-3 sm:size-4" />
                     Editar
@@ -208,7 +205,7 @@ export default function ProdutosPage() {
                 </Button>
                 <Button 
                   variant="outline" 
-                  className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 text-destructive border-destructive/20 hover:bg-destructive/5 hover:border-destructive px-2 flex-1"
+                  className="h-8 sm:h-12 font-black text-[8px] sm:text-[11px] uppercase tracking-tighter rounded-lg sm:rounded-xl border-2 text-destructive border-destructive/20 hover:bg-destructive/5 hover:border-destructive px-2 flex-1"
                   onClick={() => setProductToDelete(product)}
                 >
                   <Trash2 className="mr-1 size-3 sm:size-4" />
