@@ -16,7 +16,9 @@ import {
   Clock,
   Loader2,
   Wallet,
-  ChevronDown,
+  FileDown,
+  Share2,
+  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,8 +38,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const DAYS = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
 const MONTHS = [
@@ -85,25 +95,34 @@ export default function FinanceiroPage() {
     });
   }, [orders, date]);
 
-  const stats = useMemo(() => {
-    if (!filteredOrders) return [];
+  const financialStats = useMemo(() => {
+    if (!filteredOrders) return { recebido: 0, pendente: 0, atrasado: 0 };
     const recebido = filteredOrders.filter(o => o.paymentStatus === "Pago").reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0);
     const pendente = filteredOrders.filter(o => o.paymentStatus === "Pendente").reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0);
     const atrasado = filteredOrders.filter(o => o.paymentStatus === "Atrasado").reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0);
 
+    return { recebido, pendente, atrasado };
+  }, [filteredOrders]);
+
+  const stats = useMemo(() => {
+    const { recebido, pendente, atrasado } = financialStats;
     return [
       { title: "Entradas Totais", value: `R$ ${recebido.toFixed(2)}`, icon: ArrowDownCircle, color: "text-green-600", bg: "bg-green-100" },
       { title: "Pendentes", value: `R$ ${pendente.toFixed(2)}`, icon: Clock, color: "text-orange-600", bg: "bg-orange-100" },
       { title: "Atrasados", value: `R$ ${atrasado.toFixed(2)}`, icon: AlertCircle, color: "text-red-600", bg: "bg-red-100" },
     ];
-  }, [filteredOrders]);
+  }, [financialStats]);
 
   const proximosRecebimentos = useMemo(() => {
     if (!filteredOrders) return [];
     return filteredOrders
       .filter(o => o.paymentStatus === "Pendente" && o.dueDate)
-      .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
-      .slice(0, 5);
+      .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+  }, [filteredOrders]);
+
+  const entradasConfirmadas = useMemo(() => {
+    if (!filteredOrders) return [];
+    return filteredOrders.filter(o => o.paymentStatus === "Pago").sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
   }, [filteredOrders]);
 
   const updateDatePart = (type: 'from' | 'to', part: 'day' | 'month' | 'year', value: string) => {
@@ -116,6 +135,113 @@ export default function FinanceiroPage() {
     if (part === 'year') newDate = setYear(newDate, parseInt(value));
 
     setDate({ ...date, [type]: newDate });
+  };
+
+  const handleShareText = () => {
+    if (!date?.from || !date?.to) return;
+
+    const fromStr = format(date.from, "dd/MM/yyyy");
+    const toStr = format(date.to, "dd/MM/yyyy");
+
+    let message = `📊 *RELATÓRIO FINANCEIRO ELITE - GlamGestão*\n`;
+    message += `📅 *Período:* ${fromStr} - ${toStr}\n\n`;
+    message += `💰 *RESUMO FINANCEIRO*\n`;
+    message += `✅ Entradas: R$ ${financialStats.recebido.toFixed(2)}\n`;
+    message += `⏳ Pendentes: R$ ${financialStats.pendente.toFixed(2)}\n`;
+    message += `⚠️ Atrasados: R$ ${financialStats.atrasado.toFixed(2)}\n\n`;
+
+    if (proximosRecebimentos.length > 0) {
+      message += `📌 *PAGAMENTOS A RECEBER*\n`;
+      proximosRecebimentos.slice(0, 10).forEach(p => {
+        message += `• ${p.clientName}: R$ ${Number(p.finalAmount).toFixed(2)} (Vence: ${format(new Date(p.dueDate), "dd/MM")})\n`;
+      });
+      if (proximosRecebimentos.length > 10) message += `... e mais ${proximosRecebimentos.length - 10} itens.\n`;
+      message += `\n`;
+    }
+
+    if (entradasConfirmadas.length > 0) {
+      message += `💸 *ÚLTIMAS ENTRADAS*\n`;
+      entradasConfirmadas.slice(0, 10).forEach(p => {
+        message += `• ${p.clientName}: R$ ${Number(p.finalAmount).toFixed(2)} (${format(new Date(p.orderDate), "dd/MM")})\n`;
+      });
+      if (entradasConfirmadas.length > 10) message += `... e mais ${entradasConfirmadas.length - 10} itens.\n`;
+    }
+
+    const encodedMessage = encodeURIComponent(message);
+    window.open(`https://wa.me/?text=${encodedMessage}`, "_blank");
+  };
+
+  const handleGeneratePDF = () => {
+    if (!date?.from || !date?.to) return;
+
+    const doc = new jsPDF();
+    const fromStr = format(date.from, "dd/MM/yyyy");
+    const toStr = format(date.to, "dd/MM/yyyy");
+
+    // Estilo Elite
+    doc.setFontSize(22);
+    doc.setTextColor(194, 24, 91); // Cor Primary
+    doc.text("GlamGestão - Relatório Financeiro", 14, 20);
+    
+    doc.setFontSize(12);
+    doc.setTextColor(100);
+    doc.text(`Período: ${fromStr} - ${toStr}`, 14, 30);
+    doc.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy HH:mm")}`, 14, 37);
+
+    // Resumo
+    doc.setFontSize(16);
+    doc.setTextColor(0);
+    doc.text("Resumo Financeiro", 14, 50);
+    
+    autoTable(doc, {
+      startY: 55,
+      head: [['Descrição', 'Valor']],
+      body: [
+        ['Entradas Confirmadas', `R$ ${financialStats.recebido.toFixed(2)}`],
+        ['Pagamentos Pendentes', `R$ ${financialStats.pendente.toFixed(2)}`],
+        ['Pagamentos Atrasados', `R$ ${financialStats.atrasado.toFixed(2)}`],
+        ['TOTAL DO PERÍODO', `R$ ${(financialStats.recebido + financialStats.pendente + financialStats.atrasado).toFixed(2)}`]
+      ],
+      theme: 'striped',
+      headStyles: { fillColor: [194, 24, 91] }
+    });
+
+    // Pagamentos Pendentes
+    if (proximosRecebimentos.length > 0) {
+      doc.setFontSize(16);
+      doc.text("Pagamentos a Receber", 14, (doc as any).lastAutoTable.finalY + 15);
+      
+      autoTable(doc, {
+        startY: (doc as any).lastAutoTable.finalY + 20,
+        head: [['Cliente', 'Valor', 'Vencimento']],
+        body: proximosRecebimentos.map(p => [
+          p.clientName,
+          `R$ ${Number(p.finalAmount).toFixed(2)}`,
+          format(new Date(p.dueDate), "dd/MM/yyyy")
+        ]),
+        headStyles: { fillColor: [245, 158, 11] } // Orange
+      });
+    }
+
+    // Entradas Confirmadas
+    if (entradasConfirmadas.length > 0) {
+      doc.setFontSize(16);
+      doc.text("Entradas Confirmadas", 14, (doc as any).lastAutoTable.finalY + 15);
+      
+      autoTable(doc, {
+        startY: (doc as any).lastAutoTable.finalY + 20,
+        head: [['Cliente', 'Valor', 'Data', 'Método']],
+        body: entradasConfirmadas.map(p => [
+          p.clientName,
+          `R$ ${Number(p.finalAmount).toFixed(2)}`,
+          format(new Date(p.orderDate), "dd/MM/yyyy"),
+          p.paymentMethod?.toUpperCase()
+        ]),
+        headStyles: { fillColor: [22, 163, 74] } // Green
+      });
+    }
+
+    doc.save(`Relatorio_Financeiro_${fromStr.replace(/\//g, '-')}.pdf`);
   };
 
   if (isLoading) {
@@ -138,7 +264,7 @@ export default function FinanceiroPage() {
           <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Controle real de entradas e contas a receber.</p>
         </div>
         
-        <div className="w-full sm:w-auto">
+        <div className="w-full sm:w-auto flex flex-col gap-6 items-center">
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -226,6 +352,26 @@ export default function FinanceiroPage() {
               <Button className="w-full h-14 rounded-2xl font-black uppercase tracking-widest bg-primary shadow-xl">Aplicar Período</Button>
             </PopoverContent>
           </Popover>
+
+          {/* Botão de Exportar Elite */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="default" className="w-full sm:w-[400px] h-14 sm:h-16 text-sm sm:text-xl font-black rounded-2xl bg-accent hover:bg-accent/90 shadow-xl transition-all active:scale-95 uppercase tracking-widest gap-3">
+                <FileDown className="size-6" />
+                EXPORTAR RELATÓRIO
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-[300px] sm:w-[400px] p-4 rounded-2xl border-4 border-accent/10 shadow-2xl bg-background" align="center">
+              <DropdownMenuItem onClick={handleShareText} className="h-16 rounded-xl font-black text-lg gap-4 cursor-pointer focus:bg-accent/5 focus:text-accent">
+                <Share2 className="size-6 text-accent" />
+                COMPARTILHAR TEXTO (WA)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleGeneratePDF} className="h-16 rounded-xl font-black text-lg gap-4 cursor-pointer focus:bg-primary/5 focus:text-primary">
+                <FileText className="size-6 text-primary" />
+                BAIXAR RELATÓRIO PDF
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
@@ -258,7 +404,7 @@ export default function FinanceiroPage() {
             {proximosRecebimentos.map((p, i) => (
               <div key={i} className="flex items-center justify-between p-6 rounded-[1.5rem] border-4 border-muted bg-background shadow-sm hover:shadow-xl hover:border-primary/10 transition-all group">
                 <div>
-                  <p className="font-black text-xl px-2 uppercase italic text-primary">Pedido #{p.id.slice(-6)}</p>
+                  <p className="font-black text-xl px-2 uppercase italic text-primary">{p.clientName}</p>
                   <p className="text-xs text-muted-foreground font-black flex items-center gap-2 mt-2 uppercase tracking-widest">
                     <CalendarIcon className="size-4 text-primary" /> Vence em: {new Date(p.dueDate).toLocaleDateString()}
                   </p>
@@ -288,14 +434,14 @@ export default function FinanceiroPage() {
             <CardDescription className="text-sm font-bold uppercase tracking-widest text-green-600/60">Últimos pagamentos liquidados com sucesso</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 p-8">
-            {filteredOrders?.filter(o => o.paymentStatus === "Pago").slice(0, 5).map((p, i) => (
+            {entradasConfirmadas.map((p, i) => (
               <div key={i} className="flex items-center justify-between p-6 rounded-[1.5rem] bg-green-50/40 border-4 border-green-100 shadow-sm hover:shadow-xl hover:bg-green-100/50 transition-all group">
                 <div className="flex items-center gap-5">
                   <div className="size-16 rounded-[1.2rem] bg-green-100 flex items-center justify-center text-green-700 shadow-inner group-hover:scale-110 transition-transform">
                     <ArrowDownCircle className="size-8" />
                   </div>
                   <div>
-                    <p className="font-black text-xl px-2 uppercase italic text-green-800">Via {p.paymentMethod}</p>
+                    <p className="font-black text-xl px-2 uppercase italic text-green-800">{p.clientName}</p>
                     <p className="text-xs text-green-600/60 font-black flex items-center gap-2 mt-2 uppercase tracking-widest">
                       <CalendarIcon className="size-4" /> {new Date(p.orderDate).toLocaleDateString()}
                     </p>
@@ -306,7 +452,7 @@ export default function FinanceiroPage() {
                 </div>
               </div>
             ))}
-            {filteredOrders?.filter(o => o.paymentStatus === "Pago").length === 0 && (
+            {entradasConfirmadas.length === 0 && (
               <div className="text-center py-20 bg-muted/10 rounded-[2rem] border-4 border-dashed border-muted">
                 <Wallet className="size-16 text-muted-foreground/20 mx-auto mb-4" />
                 <p className="text-muted-foreground text-lg font-black uppercase tracking-tighter opacity-40 italic">Nenhuma entrada registrada no período selecionado.</p>
