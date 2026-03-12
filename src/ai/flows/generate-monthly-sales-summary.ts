@@ -1,39 +1,40 @@
+
 'use server';
 /**
- * @fileOverview This file implements a Genkit flow to generate a monthly sales summary in natural language.
+ * @fileOverview Este arquivo implementa um fluxo Genkit para gerar um resumo de vendas mensal em linguagem natural.
  *
- * - generateMonthlySalesSummary - A function that handles the generation of the monthly sales summary.
- * - GenerateMonthlySalesSummaryInput - The input type for the generateMonthlySalesSummary function.
- * - GenerateMonthlySalesSummaryOutput - The return type for the generateMonthlySalesSummary function.
+ * - generateMonthlySalesSummary - Uma função que lida com a geração do resumo de vendas mensal.
+ * - GenerateMonthlySalesSummaryInput - O tipo de entrada para a função generateMonthlySalesSummary.
+ * - GenerateMonthlySalesSummaryOutput - O tipo de retorno para a função generateMonthlySalesSummary.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateMonthlySalesSummaryInputSchema = z.object({
-  month: z.string().describe('The name of the month (e.g., "Janeiro").'),
-  year: z.number().describe('The year for the sales summary.'),
-  totalSalesMonth: z.number().describe('Total sales amount for the month.'),
-  totalReceivedMonth: z.number().describe('Total amount received for the month.'),
-  totalPendingMonth: z.number().describe('Total outstanding amount for the month.'),
-  numberOfClients: z.number().describe('Total number of active clients.'),
-  numberOfOrders: z.number().describe('Total number of orders placed.'),
+  month: z.string().describe('O nome do mês (ex: "Janeiro").'),
+  year: z.number().describe('O ano para o resumo de vendas.'),
+  totalSalesMonth: z.number().describe('Valor total de vendas no mês.'),
+  totalReceivedMonth: z.number().describe('Valor total recebido no mês.'),
+  totalPendingMonth: z.number().describe('Valor total pendente no mês.'),
+  numberOfClients: z.number().describe('Número total de clientes ativos.'),
+  numberOfOrders: z.number().describe('Número total de pedidos realizados.'),
   topSellingProducts: z
     .array(
       z.object({
-        name: z.string().describe('Product name.'),
-        quantity: z.number().describe('Quantity sold.'),
+        name: z.string().describe('Nome do produto.'),
+        quantity: z.number().describe('Quantidade vendida.'),
       })
     )
-    .describe('A list of top-selling products with their quantities.'),
-  totalProductsRegistered: z.number().describe('Total number of products registered in the catalog.'),
+    .describe('Uma lista dos produtos mais vendidos com suas quantidades.'),
+  totalProductsRegistered: z.number().describe('Número total de produtos registrados no catálogo.'),
 });
 export type GenerateMonthlySalesSummaryInput = z.infer<
   typeof GenerateMonthlySalesSummaryInputSchema
 >;
 
 const GenerateMonthlySalesSummaryOutputSchema = z.object({
-  summary: z.string().describe('A natural language summary of monthly sales, trends, and insights.'),
+  summary: z.string().describe('Um resumo em linguagem natural das vendas mensais, tendências e insights.'),
 });
 export type GenerateMonthlySalesSummaryOutput = z.infer<
   typeof GenerateMonthlySalesSummaryOutputSchema
@@ -42,18 +43,25 @@ export type GenerateMonthlySalesSummaryOutput = z.infer<
 export async function generateMonthlySalesSummary(
   input: GenerateMonthlySalesSummaryInput
 ): Promise<GenerateMonthlySalesSummaryOutput> {
-  return generateMonthlySalesSummaryFlow(input);
+  try {
+    return await generateMonthlySalesSummaryFlow(input);
+  } catch (error) {
+    console.error("Erro ao gerar resumo mensal:", error);
+    return {
+      summary: "O resumo inteligente está temporariamente indisponível. Verifique as configurações da sua chave de API do Google Gemini."
+    };
+  }
 }
 
 const prompt = ai.definePrompt({
   name: 'generateMonthlySalesSummaryPrompt',
   input: {schema: GenerateMonthlySalesSummaryInputSchema},
   output: {schema: GenerateMonthlySalesSummaryOutputSchema},
-  prompt: `You are an AI assistant specialized in analyzing sales data for Avon and Natura resellers. Your task is to provide a comprehensive and insightful natural language summary of the monthly sales performance.
+  prompt: `Você é um assistente de IA especializado em analisar dados de vendas para revendedoras Avon e Natura. Sua tarefa é fornecer um resumo detalhado e perspicaz em linguagem natural sobre o desempenho de vendas mensal.
 
-Analyze the provided data for the month of {{{month}}} of {{{year}}} and highlight important trends, key performance indicators, and insights into the business health. Focus on what these numbers mean for the reseller and provide actionable observations.
+Analise os dados fornecidos para o mês de {{{month}}} de {{{year}}} e destaque tendências importantes, indicadores-chave de desempenho e insights sobre a saúde do negócio. Foque no que esses números significam para a revendedora e forneça observações acionáveis.
 
-Here is the sales data:
+Aqui estão os dados de vendas:
 
 - Mês: {{{month}}}
 - Ano: {{{year}}}
@@ -68,13 +76,13 @@ Here is the sales data:
 {{/each}}
 - Total de produtos cadastrados: {{{totalProductsRegistered}}}.
 
-Based on this information, provide a detailed summary. Your summary should:
-1. Start with an overall assessment of the month's performance.
-2. Discuss financial highlights: total sales, received, and pending amounts, and what they signify.
-3. Analyze customer and order trends: client growth, order volume, and their impact.
-4. Highlight product performance: which products are driving sales and any observations about product diversity.
-5. Identify any potential areas for improvement or positive trends.
-6. Keep the language natural, professional, and easy to understand for a business owner.
+Com base nessas informações, forneça um resumo detalhado. Seu resumo deve:
+1. Começar com uma avaliação geral do desempenho do mês.
+2. Discutir os destaques financeiros e o que eles significam.
+3. Analisar tendências de clientes e pedidos.
+4. Destacar o desempenho dos produtos.
+5. Identificar áreas de melhoria ou tendências positivas.
+6. Manter uma linguagem natural, profissional e fácil de entender.
 `,
 });
 

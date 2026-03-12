@@ -1,7 +1,9 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { AppLayoutWrapper } from '@/components/layout/app-layout-wrapper';
 import { Toaster } from '@/components/ui/toaster';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 export const metadata: Metadata = {
   title: 'GlamGestão - Controle de Vendas',
@@ -21,8 +23,10 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased bg-background">
-        <AppLayoutWrapper>{children}</AppLayoutWrapper>
-        <Toaster />
+        <FirebaseClientProvider>
+          <AppLayoutWrapper>{children}</AppLayoutWrapper>
+          <Toaster />
+        </FirebaseClientProvider>
       </body>
     </html>
   );

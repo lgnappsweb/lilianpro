@@ -1,12 +1,47 @@
+
 "use client";
 
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./app-sidebar";
-import { Search, Bell, User } from "lucide-react";
+import { Search, Bell, User, LogOut } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useUser, useAuth } from "@/firebase";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { signOut } from "firebase/auth";
 
 export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
+  const { user, isUserLoading } = useUser();
+  const auth = useAuth();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isUserLoading && !user && pathname !== '/login') {
+      router.push('/login');
+    } else if (!isUserLoading && user && pathname === '/login') {
+      router.push('/');
+    }
+  }, [user, isUserLoading, pathname, router]);
+
+  if (isUserLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-pulse flex flex-col items-center gap-4">
+          <div className="size-12 rounded-full bg-primary/20"></div>
+          <p className="text-muted-foreground font-medium">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user && pathname === '/login') {
+    return <>{children}</>;
+  }
+
+  if (!user) return null;
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -30,12 +65,17 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
             <div className="h-8 w-px bg-border mx-1"></div>
             <div className="flex items-center gap-2 pl-2">
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-medium leading-none">Administradora</p>
+                <p className="text-sm font-medium leading-none">{user.displayName || 'Administradora'}</p>
                 <p className="text-xs text-muted-foreground">Avon & Natura</p>
               </div>
-              <div className="size-9 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-                <User className="size-5" />
-              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => signOut(auth)}
+                className="text-muted-foreground hover:text-destructive"
+              >
+                <LogOut className="size-5" />
+              </Button>
             </div>
           </div>
         </header>
