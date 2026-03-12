@@ -4,10 +4,9 @@
 import React, { useState, useMemo } from "react";
 import {
   Card,
-  CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
+  CardContent,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -148,50 +147,53 @@ export default function ProdutosPage() {
           <p className="text-2xl font-black animate-pulse uppercase tracking-widest text-center">Carregando catálogo...</p>
         </div>
       ) : (
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 w-full">
+        <div className="grid grid-cols-1 gap-6 w-full">
           {filteredProducts.map((product) => (
-            <Card key={product.id} className="border-none shadow-md group hover:shadow-2xl transition-all rounded-[2rem] overflow-hidden border-b-8 border-b-primary/10 relative p-2">
-              <CardHeader className="pb-3 pt-6 px-6 text-left">
-                <div className="flex items-center gap-2 mb-4">
-                  <Badge className={`text-[10px] font-black px-4 py-1.5 rounded-xl shadow-sm border-none text-white ${getBrandBadgeColor(product.brand)}`}>
-                    {product.brand}
-                  </Badge>
-                </div>
-                <div className="space-y-2">
-                  <CardTitle className="text-2xl font-black leading-tight group-hover:text-primary transition-colors line-clamp-2 px-2 italic uppercase tracking-tighter">
-                    {product.name}
-                  </CardTitle>
-                  <CardDescription className="text-xs font-black uppercase tracking-widest text-primary/60 px-2">
-                    {product.category}
-                  </CardDescription>
-                </div>
-              </CardHeader>
-              <CardContent className="pb-8 px-6 space-y-6">
-                <div className="flex items-center justify-between border-t-2 pt-6">
-                  <p className="text-3xl font-black text-primary tracking-tighter px-2">R$ {Number(product.salePrice).toFixed(2)}</p>
-                  <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-xl uppercase tracking-tighter">
-                    <Package className="size-3" />
-                    <span>COD: {product.productCode}</span>
+            <Card key={product.id} className="bg-background border-4 border-primary/5 rounded-2xl p-6 shadow-xl hover:border-primary/20 transition-all flex flex-col justify-between w-full">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-6">
+                <div className="flex items-center gap-6">
+                  <div className="size-14 sm:size-20 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner shrink-0">
+                    <Package className="size-8 sm:size-10" />
+                  </div>
+                  <div className="text-left">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Badge className={`text-[8px] sm:text-[10px] font-black px-3 py-1 rounded-lg border-none text-white ${getBrandBadgeColor(product.brand)}`}>
+                        {product.brand}
+                      </Badge>
+                      <Badge variant="outline" className="text-[8px] sm:text-[10px] font-black border-2 border-muted text-muted-foreground uppercase">
+                        {product.category}
+                      </Badge>
+                    </div>
+                    <h3 className="font-black text-xl sm:text-3xl text-primary uppercase tracking-tighter italic leading-tight px-2 line-clamp-1">
+                      {product.name}
+                    </h3>
+                    <p className="text-[10px] sm:text-sm text-muted-foreground font-bold mt-1 opacity-60 uppercase tracking-widest px-2">
+                      COD: {product.productCode}
+                    </p>
                   </div>
                 </div>
-
-                <div className="flex flex-row items-center justify-center gap-2 w-full pt-2">
-                  <Button variant="outline" asChild className="h-10 font-black text-[10px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2 flex-1">
-                    <Link href={`/produtos/${product.id}/editar`}>
-                      <Edit className="mr-1 size-3" />
-                      Editar
-                    </Link>
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="h-10 font-black text-[10px] uppercase tracking-tighter rounded-xl border-2 text-destructive border-destructive/20 hover:bg-destructive/5 hover:border-destructive px-2 flex-1"
-                    onClick={() => setProductToDelete(product)}
-                  >
-                    <Trash2 className="mr-1 size-3" />
-                    Excluir
-                  </Button>
+                <div className="text-left sm:text-right border-t-2 sm:border-none pt-4 sm:pt-0">
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Preço Venda</p>
+                  <p className="text-3xl sm:text-5xl font-black text-primary tracking-tighter px-2 leading-none">R$ {Number(product.salePrice).toFixed(2)}</p>
                 </div>
-              </CardContent>
+              </div>
+
+              <div className="flex flex-row items-center justify-center gap-2 w-full pt-4 border-t-2">
+                <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2 flex-1">
+                  <Link href={`/produtos/${product.id}/editar`}>
+                    <Edit className="mr-1 size-3 sm:size-4" />
+                    Editar
+                  </Link>
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 text-destructive border-destructive/20 hover:bg-destructive/5 hover:border-destructive px-2 flex-1"
+                  onClick={() => setProductToDelete(product)}
+                >
+                  <Trash2 className="mr-1 size-3 sm:size-4" />
+                  Excluir
+                </Button>
+              </div>
             </Card>
           ))}
         </div>
