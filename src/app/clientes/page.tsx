@@ -74,30 +74,30 @@ export default function ClientesPage() {
   };
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-500 w-full">
+    <div className="space-y-8 sm:space-y-12 animate-in fade-in duration-500 w-full">
       {/* Cabeçalho Centralizado */}
       <div className="flex flex-col items-center text-center gap-6 px-2">
         <div className="w-full">
           <div className="flex items-center justify-center gap-4 mb-2">
-            <Users className="size-10 sm:size-16 text-primary" />
-            <h1 className="text-4xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm text-center">CLIENTES</h1>
+            <Users className="size-8 sm:size-16 text-primary" />
+            <h1 className="text-3xl md:text-7xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm text-center">CLIENTES</h1>
           </div>
-          <p className="text-[10px] sm:text-base text-muted-foreground mt-2 font-bold opacity-60 uppercase tracking-widest text-center">Gerencie seu catálogo de contatos e histórico.</p>
+          <p className="text-[10px] sm:text-lg text-muted-foreground mt-2 font-bold opacity-60 uppercase tracking-widest text-center">Gerencie seu catálogo de contatos e histórico.</p>
         </div>
-        <Button asChild className="w-full h-16 px-10 text-xl font-black rounded-2xl shadow-xl bg-primary hover:bg-primary/90 transition-transform hover:scale-105">
+        <Button asChild className="w-full h-14 sm:h-20 px-10 text-xl font-black rounded-2xl shadow-xl bg-primary hover:bg-primary/90 transition-transform hover:scale-105">
           <Link href="/clientes/novo">
-            <UserPlus className="mr-3 size-7" />
+            <UserPlus className="mr-3 size-6 sm:size-8" />
             Nova Cliente
           </Link>
         </Button>
       </div>
 
-      <div className="w-full space-y-6">
+      <div className="w-full space-y-6 sm:space-y-10">
         <div className="relative">
-          <Search className="absolute left-6 top-1/2 -translate-y-1/2 size-7 text-muted-foreground" />
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 size-6 sm:size-8 text-muted-foreground" />
           <Input
             placeholder="Pesquisar por nome, bairro ou cidade..."
-            className="pl-16 h-14 sm:h-20 text-lg sm:text-2xl bg-background rounded-xl sm:rounded-3xl border-4 border-muted shadow-inner font-black"
+            className="pl-14 sm:pl-20 h-14 sm:h-24 text-lg sm:text-3xl bg-background rounded-xl sm:rounded-[2rem] border-4 border-muted shadow-inner font-black"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -111,31 +111,31 @@ export default function ClientesPage() {
         ) : (
           <div className="grid grid-cols-1 gap-6 w-full">
             {filteredClientes.map((cliente) => (
-              <Card key={cliente.id} className="bg-background border-4 border-muted rounded-2xl p-6 sm:p-8 shadow-xl hover:border-primary/20 transition-all flex flex-col justify-between w-full min-h-[220px]">
-                <div className="mb-2">
-                  <h3 className="font-black text-2xl sm:text-4xl break-words leading-tight uppercase tracking-tighter text-primary italic text-left">
+              <Card key={cliente.id} className="bg-background border-4 border-muted rounded-[1.5rem] sm:rounded-[2.5rem] p-6 sm:p-10 shadow-xl hover:border-primary/20 transition-all flex flex-col w-full min-h-0">
+                <div className="mb-4">
+                  <h3 className="font-black text-2xl sm:text-6xl break-words leading-tight uppercase tracking-tighter text-primary italic text-left">
                     {cliente.fullName}
                   </h3>
                 </div>
 
                 <div className="space-y-4">
-                  <div className="grid grid-cols-3 gap-2">
-                    <Button variant="outline" asChild className="h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2">
+                  <div className="grid grid-cols-3 gap-3">
+                    <Button variant="outline" asChild className="h-12 sm:h-16 font-black text-[10px] sm:text-lg uppercase tracking-tighter rounded-xl sm:rounded-2xl border-4 hover:bg-primary/5 px-2">
                       <Link href={`/clientes/${cliente.id}`}>
-                        <FileText className="mr-1 size-4" />
+                        <FileText className="mr-1 size-4 sm:size-6" />
                         Detalhes
                       </Link>
                     </Button>
-                    <Button variant="outline" className="h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2">
-                      <Edit className="mr-1 size-4" />
+                    <Button variant="outline" className="h-12 sm:h-16 font-black text-[10px] sm:text-lg uppercase tracking-tighter rounded-xl sm:rounded-2xl border-4 hover:bg-primary/5 px-2">
+                      <Edit className="mr-1 size-4 sm:size-6" />
                       Editar
                     </Button>
                     <Button 
                       variant="outline" 
-                      className="h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 text-destructive border-destructive/20 hover:bg-destructive/5 hover:border-destructive px-2"
+                      className="h-12 sm:h-16 font-black text-[10px] sm:text-lg uppercase tracking-tighter rounded-xl sm:rounded-2xl border-4 text-destructive border-destructive/20 hover:bg-destructive/5 hover:border-destructive px-2"
                       onClick={() => setClientToDelete(cliente)}
                     >
-                      <Trash2 className="mr-1 size-4" />
+                      <Trash2 className="mr-1 size-4 sm:size-6" />
                       Excluir
                     </Button>
                   </div>
@@ -143,10 +143,10 @@ export default function ClientesPage() {
                   <Button
                     variant="default"
                     size="lg"
-                    className="w-full bg-green-600 hover:bg-green-700 h-16 sm:h-20 rounded-xl font-black text-sm sm:text-xl gap-3 shadow-xl transition-all active:scale-95 uppercase tracking-widest"
+                    className="w-full bg-green-600 hover:bg-green-700 h-16 sm:h-24 rounded-xl sm:rounded-3xl font-black text-sm sm:text-2xl gap-3 shadow-xl transition-all active:scale-95 uppercase tracking-widest"
                     onClick={() => openWhatsApp(cliente.phone)}
                   >
-                    <MessageCircle className="size-6 sm:size-8" />
+                    <MessageCircle className="size-6 sm:size-10" />
                     Chamar no WhatsApp
                   </Button>
                 </div>
