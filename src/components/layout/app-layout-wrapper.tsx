@@ -46,8 +46,8 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider defaultOpen={true}>
       <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center justify-between px-6 border-b bg-background/50 backdrop-blur-sm sticky top-0 z-10">
+      <SidebarInset className="overflow-x-hidden">
+        <header className="flex h-16 shrink-0 items-center justify-between px-4 sm:px-6 border-b bg-background/50 backdrop-blur-sm sticky top-0 z-10">
           <div className="flex items-center gap-4">
             <div className="md:hidden">
               <span className="font-headline font-bold text-lg text-primary">GlamGestão</span>
@@ -86,7 +86,7 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
           </div>
         </header>
         <main className="flex-1 p-2 sm:p-4 md:p-6 pb-24 md:pb-8 overflow-x-hidden">
-          <div className="max-w-7xl mx-auto border-2 border-primary rounded-[2rem] p-4 sm:p-6 md:p-8 bg-card/40 backdrop-blur-sm shadow-md overflow-x-hidden relative min-h-[calc(100vh-12rem)]">
+          <div className="max-w-7xl mx-auto border-2 border-primary rounded-[1.5rem] sm:rounded-[2rem] p-3 sm:p-6 md:p-8 bg-card/40 backdrop-blur-sm shadow-md overflow-x-hidden relative min-h-[calc(100vh-12rem)] w-full">
             {children}
           </div>
         </main>
