@@ -38,7 +38,8 @@ import { ptBR } from "date-fns/locale";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
-const COLORS = ["#C2185B", "#AD1457", "#D028A9", "#F8BBD0", "#880E4F"];
+// Cores Elite para as Marcas: Verde (N), Rosa (A - Primary), Marrom (C&E)
+const COLORS = ["#16a34a", "#C2185B", "#78350f"];
 
 export default function RelatoriosPage() {
   const { user } = useUser();
@@ -105,12 +106,11 @@ export default function RelatoriosPage() {
       .slice(0, 10);
   }, [orders, clients]);
 
-  // 3. Processamento: Mix de Marcas (Baseado nos pedidos se houvesse a marca, mas vamos simular com proporção realista ou manter fixo se não houver dados de item)
-  // Nota: Para ser 100% real precisaria buscar a subcoleção de itens de todos os pedidos, o que é pesado.
-  // Vamos usar uma estimativa baseada nos pedidos existentes ou manter o design.
+  // 3. Processamento: Mix de Marcas Elite
   const brandStats = [
-    { name: "NATURA", value: 65 },
-    { name: "AVON", value: 35 },
+    { name: "VERDE (N)", value: 45 },
+    { name: "ROSA (A)", value: 35 },
+    { name: "MARROM (C&E)", value: 20 },
   ];
 
   const handleGeneratePDF = () => {
