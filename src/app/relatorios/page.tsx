@@ -31,8 +31,8 @@ import {
   Package,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection } from "firebase/firestore";
+import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase";
+import { collection, doc } from "firebase/firestore";
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { jsPDF } from "jspdf";
@@ -74,9 +74,17 @@ export default function RelatoriosPage() {
     return collection(db, "users", user.uid, "products");
   }, [db, user]);
 
+  const settingsRef = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return doc(db, "users", user.uid, "config", "settings");
+  }, [db, user]);
+
   const { data: orders, isLoading: ordersLoading } = useCollection(ordersQuery);
   const { data: clients, isLoading: clientsLoading } = useCollection(clientsQuery);
   const { data: products, isLoading: productsLoading } = useCollection(productsQuery);
+  const { data: settings } = useDoc(settingsRef);
+
+  const appName = settings?.appName || "GlamGestão";
 
   // Filtra as ordens para o período dos últimos 6 meses
   const ordersInPeriod = useMemo(() => {
@@ -176,7 +184,7 @@ export default function RelatoriosPage() {
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(28);
     doc.setFont("helvetica", "bold");
-    doc.text("GLAMGESTÃO", 105, 20, { align: "center" });
+    doc.text(appName.toUpperCase(), 105, 20, { align: "center" });
     
     doc.setFontSize(12);
     doc.setFont("helvetica", "normal");
@@ -187,7 +195,7 @@ export default function RelatoriosPage() {
     doc.setFontSize(18);
     doc.text("Resumo do Período", 14, 55);
     
-    const totalRevenue = ordersInPeriod.reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0);
+    const totalRevenue = ordersInPeriod.reduce((acc, o) => acc + (Number(order.finalAmount) || 0), 0);
     const avgTicket = ordersInPeriod.length > 0 ? totalRevenue / ordersInPeriod.length : 0;
     const activeClientsCount = topClients.length;
 
@@ -249,11 +257,11 @@ export default function RelatoriosPage() {
       doc.setPage(i);
       doc.setFontSize(10);
       doc.setTextColor(150);
-      doc.text(`GlamGestão Elite - Gerado em ${timestamp}`, 14, 285);
+      doc.text(`${appName} Elite - Gerado em ${timestamp}`, 14, 285);
       doc.text(`Página ${i} de ${pageCount}`, 180, 285);
     }
 
-    doc.save(`Relatorio_Elite_GlamGestao_${now.toISOString().split('T')[0]}.pdf`);
+    doc.save(`Relatorio_Elite_${appName.replace(/\s+/g, '_')}_${now.toISOString().split('T')[0]}.pdf`);
   };
 
   if (ordersLoading || clientsLoading || productsLoading) {

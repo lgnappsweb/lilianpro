@@ -46,6 +46,14 @@ export default function DetalhesPedidoPage() {
 
   const { data: order, isLoading: orderLoading } = useDoc(orderRef);
 
+  // Busca as configurações para o nome do app
+  const settingsRef = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return doc(db, "users", user.uid, "config", "settings");
+  }, [db, user]);
+  const { data: settings } = useDoc(settingsRef);
+  const appName = settings?.appName || "GlamGestão";
+
   // Busca os itens do pedido
   const itemsQuery = useMemoFirebase(() => {
     if (!db || !user || !orderId) return null;
@@ -72,7 +80,7 @@ export default function DetalhesPedidoPage() {
       itemsList += `• ${item.quantity}x ${item.productName} - R$ ${Number(item.subtotal).toFixed(2)}\n`;
     });
 
-    const message = `✨ *RESUMO DA VENDA - GlamGestão* ✨\n\n` +
+    const message = `✨ *RESUMO DA VENDA - ${appName}* ✨\n\n` +
       `👤 *Cliente:* ${order.clientName}\n` +
       `📄 *Protocolo:* #${order.id?.slice(-8)}\n` +
       `📅 *Data:* ${new Date(order.orderDate).toLocaleDateString()}\n` +
