@@ -24,6 +24,14 @@ import {
   AlertTriangle,
   CheckCircle2,
   Activity,
+  Calendar,
+  Smartphone,
+  Banknote,
+  CreditCard,
+  HandCoins,
+  FileText,
+  AlertCircle,
+  ReceiptText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -142,6 +150,34 @@ export default function DashboardPage() {
     if (!orders) return [];
     return [...orders].sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()).slice(0, 5);
   }, [orders]);
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "Pago": return <CheckCircle2 className="size-3" />;
+      case "Pendente": return <Clock className="size-3" />;
+      case "Atrasado": return <AlertCircle className="size-3" />;
+      default: return null;
+    }
+  };
+
+  const getStatusClass = (status: string) => {
+    switch (status) {
+      case "Pago": return "bg-green-600 text-white";
+      case "Pendente": return "bg-orange-500 text-white";
+      case "Atrasado": return "bg-red-600 text-white";
+      default: return "bg-muted text-muted-foreground";
+    }
+  };
+
+  const getPaymentIcon = (method: string) => {
+    switch (method?.toLowerCase()) {
+      case "pix": return <Smartphone className="size-4" />;
+      case "dinheiro": return <Banknote className="size-4" />;
+      case "cartao": return <CreditCard className="size-4" />;
+      case "a prazo": return <HandCoins className="size-4" />;
+      default: return <CreditCard className="size-4" />;
+    }
+  };
 
   if (ordersLoading || clientsLoading || productsLoading) {
     return (
@@ -268,51 +304,83 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <Card className="border-4 border-muted shadow-xl rounded-[2.5rem] overflow-hidden">
-        <CardHeader className="flex flex-row items-center justify-between px-10 py-8 bg-muted/60">
-          <CardTitle className="text-2xl md:text-3xl font-black px-2">Vendas Recentes</CardTitle>
+      <div className="w-full space-y-8">
+        <div className="flex flex-row items-center justify-between px-2">
+          <h2 className="text-3xl sm:text-4xl font-black text-primary uppercase italic tracking-tighter">Vendas Recentes</h2>
           <Button variant="ghost" size="lg" className="text-base font-black text-primary hover:bg-primary/10 rounded-xl" asChild>
             <Link href="/pedidos">Ver Histórico</Link>
           </Button>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="w-full overflow-x-auto scrollbar-hide">
-            <table className="w-full text-lg">
-              <thead>
-                <tr className="border-b text-muted-foreground text-xs uppercase tracking-[0.2em] font-black bg-muted/10">
-                  <th className="h-14 px-10 text-left">Data</th>
-                  <th className="h-14 px-10 text-left">Total</th>
-                  <th className="h-14 px-10 text-left">Status</th>
-                  <th className="h-14 px-10 text-right">Ações</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y-2">
-                {recentOrders.map((order) => (
-                  <tr key={order.id} className="hover:bg-muted/50 transition-colors group">
-                    <td className="px-10 py-6 text-foreground font-bold">{new Date(order.orderDate).toLocaleDateString()}</td>
-                    <td className="px-10 py-6 font-black text-green-600 text-xl tracking-tighter px-2">R$ {Number(order.finalAmount).toFixed(2)}</td>
-                    <td className="px-10 py-6">
-                      <Badge variant={order.paymentStatus === "Pago" ? "default" : "secondary"} className={`text-[10px] font-black px-4 py-1.5 rounded-xl shadow-sm ${order.paymentStatus === "Pago" ? "bg-green-600" : "bg-orange-500 text-white"}`}>
-                        {order.paymentStatus?.toUpperCase()}
-                      </Badge>
-                    </td>
-                    <td className="px-10 py-6 text-right">
-                      <Button variant="outline" size="sm" className="h-10 text-[10px] font-black text-primary border-primary/20 rounded-xl" asChild>
-                        <Link href={`/pedidos/${order.id}`}>DETALHES</Link>
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {recentOrders.length === 0 && (
-              <div className="text-center py-20 text-muted-foreground text-xl font-black italic opacity-30">
-                Nenhuma venda registrada ainda.
+        </div>
+
+        <div className="grid grid-cols-1 gap-6">
+          {recentOrders.map((order) => (
+            <Card 
+              key={order.id} 
+              className="bg-background border-4 border-muted rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 shadow-xl hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)] hover:-translate-y-2 hover:border-primary/40 transition-all duration-500 flex flex-col justify-between w-full relative overflow-hidden group transform-gpu"
+            >
+              {/* LINHA SUPERIOR: ID E DATA */}
+              <div className="flex items-center justify-between w-full mb-4">
+                <Badge variant="outline" className="font-mono text-[10px] sm:text-xs font-black text-primary/60 bg-primary/5 border-2 border-primary/10 rounded-lg px-3 py-1">
+                  #{order.id?.slice(-6)}
+                </Badge>
+                <div className="flex items-center gap-2 text-muted-foreground font-black text-[10px] sm:text-xs uppercase tracking-widest opacity-60">
+                  <Calendar className="size-3" />
+                  {new Date(order.orderDate).toLocaleDateString()}
+                </div>
               </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+
+              {/* CONTEÚDO CENTRAL: CLIENTE E PAGAMENTO */}
+              <div className="flex flex-col gap-1 mb-4 text-left">
+                <h3 className="font-black text-2xl sm:text-4xl text-primary uppercase tracking-tighter italic leading-none px-1 line-clamp-1 drop-shadow-md">
+                  {order.clientName}
+                </h3>
+                <div className="flex items-center gap-2 mt-2 px-1">
+                  <div className="size-8 rounded-lg bg-muted flex items-center justify-center text-primary/60 shadow-inner">
+                    {getPaymentIcon(order.paymentMethod)}
+                  </div>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground font-black uppercase tracking-[0.2em]">
+                    PAGO VIA {order.paymentMethod?.toUpperCase()}
+                  </p>
+                </div>
+              </div>
+              
+              {/* LINHA DE VALOR E STATUS */}
+              <div className="flex items-center justify-between w-full mb-6 px-1">
+                <div className="flex flex-col">
+                  <p className="text-2xl sm:text-4xl font-black text-green-600 tracking-tighter leading-none italic">
+                    R$ {Number(order.finalAmount).toFixed(2)}
+                  </p>
+                  <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] opacity-40 mt-1">
+                    Total do Pedido
+                  </p>
+                </div>
+
+                <Badge className={`flex items-center gap-1 px-4 py-1.5 rounded-xl font-black text-[10px] uppercase tracking-widest border-none shadow-md ${getStatusClass(order.paymentStatus)}`}>
+                  {getStatusIcon(order.paymentStatus)}
+                  {order.paymentStatus?.toUpperCase()}
+                </Badge>
+              </div>
+
+              {/* BOTÕES DE AÇÃO ELITE */}
+              <div className="flex flex-row items-center justify-center gap-2 w-full pt-4 border-t-2 border-muted/30">
+                <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[10px] uppercase tracking-widest rounded-xl border-2 hover:bg-primary/5 px-2 flex-1 shadow-sm transition-all active:scale-95">
+                  <Link href={`/pedidos/${order.id}`}>
+                    <FileText className="mr-1 size-3" />
+                    Detalhes
+                  </Link>
+                </Button>
+              </div>
+            </Card>
+          ))}
+          {recentOrders.length === 0 && (
+            <div className="text-center py-20 bg-muted/10 rounded-[2.5rem] border-4 border-dashed border-muted w-full">
+              <ReceiptText className="size-24 text-muted-foreground/20 mx-auto mb-6" />
+              <h3 className="font-black text-3xl text-muted-foreground uppercase tracking-tighter">Sem vendas aqui</h3>
+              <p className="text-xl text-muted-foreground mt-4 font-bold italic opacity-60 px-4">Cadastre sua primeira venda para começar o faturamento.</p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
