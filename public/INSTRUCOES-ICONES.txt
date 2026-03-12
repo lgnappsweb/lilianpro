@@ -1,0 +1,9 @@
+LilianPro - Instruções de Ícones Elite
+
+Para que o seu aplicativo exiba um ícone personalizado ao ser instalado:
+
+1. Renomeie sua imagem quadrada (ex: seu logo) para "icon-192.png" (tamanho 192x192).
+2. Renomeie outra versão para "icon-512.png" (tamanho 512x512).
+3. Coloque ambos os arquivos dentro desta pasta "public".
+
+O sistema já está configurado para ler estes arquivos automaticamente.

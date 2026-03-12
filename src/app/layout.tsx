@@ -1,4 +1,3 @@
-
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { AppLayoutWrapper } from '@/components/layout/app-layout-wrapper';
@@ -15,6 +14,10 @@ export const metadata: Metadata = {
   },
   formatDetection: {
     telephone: false,
+  },
+  icons: {
+    icon: '/icon-192.png',
+    apple: '/icon-192.png',
   },
 };
 
