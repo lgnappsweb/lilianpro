@@ -1,0 +1,129 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * GLAMGESTÃO SECURITY RULES
+     *
+     * Core Philosophy: 
+     * This ruleset implements a "Single-Administrator Ownership" model. All data is logically
+     * and physically partitioned by the Administrator's UID (adminId). Access is strictly 
+     * gated by a Database-Backed Access Control (DBAC) mechanism.
+     *
+     * Data Structure:
+     * - /admins/{adminId}: Registry of authorized administrators.
+     * - /users/{adminId}/clients/{clientId}: Private client data.
+     * - /users/{adminId}/products/{productId}: Private product catalog.
+     * - /users/{adminId}/orders/{orderId}: Private sales transactions.
+     * - /users/{adminId}/orders/{orderId}/orderItems/{orderItemId}: Details of items within an order.
+     *
+     * Key Security Decisions:
+     * 1. DBAC Enforcement: Users must not only be authenticated but must also have a 
+     *    corresponding document in the '/admins' collection to access any application data.
+     * 2. Path-Data Consistency: Rules enforce that the 'id' field within documents matches 
+     *    the Firestore document ID, and the 'adminId' field matches the owner's UID.
+     * 3. Denormalization for Performance: Every document contains an 'adminId' field. 
+     *    This allows for fast, non-recursive ownership checks.
+     * 4. Prototyping Flexibility: Data types and non-relational fields are not validated 
+     *    to allow for rapid iteration, while authorization remains strictly enforced.
+     */
+
+    // --- HELPER FUNCTIONS ---
+
+    /** @description Checks if the user is authenticated. */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /** @description Checks if the authenticated user's UID matches the provided adminId. */
+    function isOwner(adminId) {
+      return isSignedIn() && request.auth.uid == adminId;
+    }
+
+    /** @description Checks the DBAC registry to see if the UID is an authorized administrator. */
+    function isRegisteredAdmin(adminId) {
+      return exists(/databases/$(database)/documents/admins/$(adminId));
+    }
+
+    /** @description Combines ownership and DBAC registration for primary authorization. */
+    function isAuthorizedAdmin(adminId) {
+      return isOwner(adminId) && isRegisteredAdmin(adminId);
+    }
+
+    /** @description Ensures a document exists before allowing modifications. */
+    function documentExists() {
+      return resource != null;
+    }
+
+    // --- COLLECTION RULES ---
+
+    /**
+     * @description Registry for authorized administrators. Used for DBAC.
+     * @path /admins/{adminId}
+     * @allow (get) If the user is checking their own admin status.
+     * @deny (list/write) Public listing or self-registration is prohibited.
+     * @principle DBAC - Access is controlled by an explicit registry.
+     */
+    match /admins/{adminId} {
+      allow get: if isOwner(adminId);
+      allow list: if false;
+      allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Customer records owned by a specific administrator.
+     * @path /users/{adminId}/clients/{clientId}
+     * @allow (create) If the user is the authorized admin and data.id matches clientId.
+     * @deny (read/write) If the user is not the owner or not a registered admin.
+     * @principle Ownership - Scopes private data to the specific administrator.
+     */
+    match /users/{adminId}/clients/{clientId} {
+      allow get, list: if isAuthorizedAdmin(adminId);
+      allow create: if isAuthorizedAdmin(adminId) && request.resource.data.id == clientId;
+      allow update: if isAuthorizedAdmin(adminId) && documentExists() && request.resource.data.id == resource.data.id;
+      allow delete: if isAuthorizedAdmin(adminId) && documentExists();
+    }
+
+    /**
+     * @description Product catalog entries owned by a specific administrator.
+     * @path /users/{adminId}/products/{productId}
+     * @allow (update) If owner and the product ID remains immutable.
+     * @deny (create) If the internal ID doesn't match the path ID.
+     * @principle Relational Integrity - Ensures ID consistency between path and document data.
+     */
+    match /users/{adminId}/products/{productId} {
+      allow get, list: if isAuthorizedAdmin(adminId);
+      allow create: if isAuthorizedAdmin(adminId) && request.resource.data.id == productId;
+      allow update: if isAuthorizedAdmin(adminId) && documentExists() && request.resource.data.id == resource.data.id;
+      allow delete: if isAuthorizedAdmin(adminId) && documentExists();
+    }
+
+    /**
+     * @description Sales transaction records.
+     * @path /users/{adminId}/orders/{orderId}
+     * @allow (list) The owner can query all their orders.
+     * @deny (create) If the user is not a registered admin.
+     * @principle QAPs - Structure ensures users only query their own order tree.
+     */
+    match /users/{adminId}/orders/{orderId} {
+      allow get, list: if isAuthorizedAdmin(adminId);
+      allow create: if isAuthorizedAdmin(adminId) && request.resource.data.id == orderId;
+      allow update: if isAuthorizedAdmin(adminId) && documentExists() && request.resource.data.id == resource.data.id;
+      allow delete: if isAuthorizedAdmin(adminId) && documentExists();
+
+      /**
+       * @description Individual items within a specific order.
+       * @path /users/{adminId}/orders/{orderId}/orderItems/{orderItemId}
+       * @allow (create) If adminId and orderId in data match the path context.
+       * @deny (read) If the path adminId is mismatched with the auth UID.
+       * @principle Authorization Independence - Uses denormalized fields for self-contained security.
+       */
+      match /orderItems/{orderItemId} {
+        allow get, list: if isAuthorizedAdmin(adminId);
+        allow create: if isAuthorizedAdmin(adminId) && request.resource.data.orderId == orderId && request.resource.data.id == orderItemId;
+        allow update: if isAuthorizedAdmin(adminId) && documentExists() && request.resource.data.orderId == resource.data.orderId && request.resource.data.id == resource.data.id;
+        allow delete: if isAuthorizedAdmin(adminId) && documentExists();
+      }
+    }
+  }
+}

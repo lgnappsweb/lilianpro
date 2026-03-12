@@ -1,0 +1,331 @@
+{
+  "entities": {
+    "Client": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Client",
+      "type": "object",
+      "description": "Represents a customer of the reseller, including contact and address details. This entity stores all information necessary for customer relationship management.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Client entity."
+        },
+        "fullName": {
+          "type": "string",
+          "description": "The full name of the client."
+        },
+        "phone": {
+          "type": "string",
+          "description": "Client's primary phone number, often used for WhatsApp communication."
+        },
+        "address": {
+          "type": "string",
+          "description": "The street address of the client."
+        },
+        "neighborhood": {
+          "type": "string",
+          "description": "The neighborhood where the client resides."
+        },
+        "city": {
+          "type": "string",
+          "description": "The city where the client resides."
+        },
+        "registrationDate": {
+          "type": "string",
+          "description": "The date and time when the client was registered in the system.",
+          "format": "date-time"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Any additional observations or notes about the client, such as preferences or important details."
+        }
+      },
+      "required": [
+        "id",
+        "fullName",
+        "phone",
+        "address",
+        "neighborhood",
+        "city",
+        "registrationDate"
+      ]
+    },
+    "Product": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Product",
+      "type": "object",
+      "description": "Represents a product available for sale, including its details, pricing, and branding.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Product entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the product."
+        },
+        "brand": {
+          "type": "string",
+          "description": "The brand of the product (e.g., Avon, Natura, Other)."
+        },
+        "category": {
+          "type": "string",
+          "description": "The category of the product (e.g., perfume, makeup, cream)."
+        },
+        "salePrice": {
+          "type": "number",
+          "description": "The selling price of the product to the customer."
+        },
+        "costPrice": {
+          "type": "number",
+          "description": "The cost price of the product to the reseller. (Optional)"
+        },
+        "productCode": {
+          "type": "string",
+          "description": "A unique code or SKU for the product, if available."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the product."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL to an image of the product.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "brand",
+        "category",
+        "salePrice",
+        "productCode"
+      ]
+    },
+    "Order": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Order",
+      "type": "object",
+      "description": "Represents a single sales transaction, detailing the client, payment, and financial status.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Order (sale) entity."
+        },
+        "clientId": {
+          "type": "string",
+          "description": "Reference to the Client who made the purchase. (Relationship: Client 1:N Order)"
+        },
+        "orderDate": {
+          "type": "string",
+          "description": "The date and time when the order was placed or recorded.",
+          "format": "date-time"
+        },
+        "totalAmount": {
+          "type": "number",
+          "description": "The total amount of the order before any discounts or additional fees."
+        },
+        "discountAmount": {
+          "type": "number",
+          "description": "The total discount applied to the order."
+        },
+        "additionalFeeAmount": {
+          "type": "number",
+          "description": "Any additional fees added to the order (e.g., delivery fee)."
+        },
+        "finalAmount": {
+          "type": "number",
+          "description": "The final amount due for the order after applying discounts and additional fees."
+        },
+        "paymentMethod": {
+          "type": "string",
+          "description": "The method of payment used for the order (e.g., Dinheiro, Pix, Cartão, Transferência, Fiado/Prazo)."
+        },
+        "paymentStatus": {
+          "type": "string",
+          "description": "The current payment status of the order.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dueDate": {
+          "type": "string",
+          "description": "The due date for payment, if the order is 'Fiado/Prazo'.",
+          "format": "date-time"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Any additional observations or notes related to the specific order."
+        }
+      },
+      "required": [
+        "id",
+        "clientId",
+        "orderDate",
+        "totalAmount",
+        "discountAmount",
+        "additionalFeeAmount",
+        "finalAmount",
+        "paymentMethod",
+        "paymentStatus"
+      ]
+    },
+    "OrderItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OrderItem",
+      "type": "object",
+      "description": "Represents a specific product included within an order, detailing quantity and price at the time of sale.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the OrderItem entity."
+        },
+        "orderId": {
+          "type": "string",
+          "description": "Reference to the Order this item belongs to. (Relationship: Order 1:N OrderItem)"
+        },
+        "productId": {
+          "type": "string",
+          "description": "Reference to the Product being sold. (Relationship: Product 1:N OrderItem)"
+        },
+        "productName": {
+          "type": "string",
+          "description": "The name of the product at the time of sale (denormalized for reporting/snapshot)."
+        },
+        "quantity": {
+          "type": "number",
+          "description": "The quantity of the product sold in this order item."
+        },
+        "unitPrice": {
+          "type": "number",
+          "description": "The unit price of the product at the time of sale."
+        },
+        "subtotal": {
+          "type": "number",
+          "description": "The subtotal for this specific order item (quantity * unitPrice)."
+        }
+      },
+      "required": [
+        "id",
+        "orderId",
+        "productId",
+        "productName",
+        "quantity",
+        "unitPrice",
+        "subtotal"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/admins/{adminId}",
+        "definition": {
+          "entityName": "Admin",
+          "schema": {
+            "$ref": "#/backend/entities/Admin"
+          },
+          "description": "Registers authorized administrators. The presence of a document for a specific `uid` in this collection grants administrative access. This acts as a database-backed access control (DBAC) mechanism. (Note: 'Admin' is a conceptual entity for authorization; its schema is minimal, typically just the 'id' field matching the 'uid').",
+          "params": [
+            {
+              "name": "adminId",
+              "description": "The Firebase Authentication UID of the administrator."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{adminId}/clients/{clientId}",
+        "definition": {
+          "entityName": "Client",
+          "schema": {
+            "$ref": "#/backend/entities/Client"
+          },
+          "description": "Contains client profiles, privately owned by the administrator. Each document includes a denormalized `adminId` for authorization independence and simplified security rules.",
+          "params": [
+            {
+              "name": "adminId",
+              "description": "The Firebase Authentication UID of the administrator who owns this client data."
+            },
+            {
+              "name": "clientId",
+              "description": "The unique identifier for the Client entity, used as the document ID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{adminId}/products/{productId}",
+        "definition": {
+          "entityName": "Product",
+          "schema": {
+            "$ref": "#/backend/entities/Product"
+          },
+          "description": "Stores product catalog entries, privately owned by the administrator. Each document includes a denormalized `adminId` for authorization independence and simplified security rules.",
+          "params": [
+            {
+              "name": "adminId",
+              "description": "The Firebase Authentication UID of the administrator who owns this product data."
+            },
+            {
+              "name": "productId",
+              "description": "The unique identifier for the Product entity, used as the document ID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{adminId}/orders/{orderId}",
+        "definition": {
+          "entityName": "Order",
+          "schema": {
+            "$ref": "#/backend/entities/Order"
+          },
+          "description": "Manages sales transactions, privately owned by the administrator. Each document includes denormalized `adminId` for authorization independence and `clientId` to link to the respective client.",
+          "params": [
+            {
+              "name": "adminId",
+              "description": "The Firebase Authentication UID of the administrator who owns this order data."
+            },
+            {
+              "name": "orderId",
+              "description": "The unique identifier for the Order (sale) entity, used as the document ID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{adminId}/orders/{orderId}/orderItems/{orderItemId}",
+        "definition": {
+          "entityName": "OrderItem",
+          "schema": {
+            "$ref": "#/backend/entities/OrderItem"
+          },
+          "description": "Details individual products sold within an order, privately owned by the administrator. Each document includes denormalized `adminId` and `orderId` for authorization independence, and `productId` for reference.",
+          "params": [
+            {
+              "name": "adminId",
+              "description": "The Firebase Authentication UID of the administrator who owns this order item data."
+            },
+            {
+              "name": "orderId",
+              "description": "The unique identifier of the parent Order, used as the subcollection ID."
+            },
+            {
+              "name": "orderItemId",
+              "description": "The unique identifier for the OrderItem entity, used as the document ID."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure for GlamGestão is designed around a single-administrator model, prioritizing security, simplicity, and debuggability. All application data is strictly scoped to the administrator's unique ID (UID) to ensure private access. \n\n**Authorization Independence (Denormalization Strategy):**\nTo achieve Authorization Independence, every document within the administrator's data collections (Clients, Products, Orders, OrderItems) will explicitly include an `adminId` field. This `adminId` field will store the Firebase Authentication UID of the administrator who owns the data, mirroring the `adminId` wildcard used in the document's path. For example, a Client document located at `/users/{adminId}/clients/{clientId}` will contain `adminId: \"{adminId}\"` within its data. This denormalization eliminates the need for `get()` calls in security rules to ascertain ownership, allowing rules to directly check `request.auth.uid == resource.data.adminId`. This design supports atomic operations (like transactions or batched writes) across related documents without compromising security or requiring complex rule evaluations.\n\nFor `OrderItem` documents, which are nested under `Order`, further denormalization includes both `adminId` and `orderId` within the document. This allows `OrderItem` documents to be authorized independently, verifying `request.auth.uid == resource.data.adminId` and `resource.data.orderId == orderId` (where `orderId` is the path wildcard), ensuring robust subcollection security.\n\n**QAPs (Rules are not Filters):**\nQuery-as-Permissions (QAPs) are naturally supported by the structural segregation. All core data is nested under `/users/{adminId}/...`. This means any `list` operation initiated by an authenticated user can only target collections within their specific `adminId` path. Security rules will enforce that `request.auth.uid` must match the `adminId` in the path and also the `adminId` field within the document. This inherently restricts data access to the owning administrator, making it impossible to query data belonging to other administrators (if they existed) or to retrieve unauthorized documents. The structure itself acts as the primary filter, ensuring that clients only receive data they are explicitly permitted to access.\n\n**DBAC (Database Access Control):**\nA dedicated top-level collection, `/admins/{adminId}`, is used to explicitly register and authorize administrators. The mere existence of a document for `request.auth.uid` in this collection confirms their administrative role. This acts as a simple yet powerful database-centric access control mechanism, validating the `adminId` before allowing access to any personal data collections. This setup ensures that only pre-approved UIDs can access the application's sensitive data, reinforcing the single-admin model."
+  }
+}
