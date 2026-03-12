@@ -69,7 +69,7 @@ export default function NovaVendaPage() {
   }, [clients, selectedClientId]);
 
   const addItem = () => {
-    setSelectedItems([...selectedItems, { id: `temp-${Date.now()}-${Math.random()}`, productId: "", quantity: 1, price: 0, name: "" }]);
+    setSelectedItems([{ id: `temp-${Date.now()}-${Math.random()}`, productId: "", quantity: 1, price: 0, name: "" }, ...selectedItems]);
   };
 
   const subtotal = useMemo(() => {
@@ -174,6 +174,13 @@ export default function NovaVendaPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 sm:p-8 space-y-4 sm:space-y-8">
+            <div className="pb-4">
+              <Button type="button" variant="outline" size="lg" className="w-full h-12 sm:h-16 text-sm sm:text-lg font-black border-4 border-primary/20 text-primary rounded-xl sm:rounded-2xl hover:bg-primary/5 transition-all" onClick={addItem}>
+                <Plus className="size-5 sm:size-6 mr-2" />
+                Adicionar Item
+              </Button>
+            </div>
+
             {selectedItems.map((item, index) => (
               <div key={item.id} className="flex flex-col gap-4 animate-in slide-in-from-left-4 duration-500 bg-muted/10 p-4 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] border-2 border-border/30 relative group">
                 <div className="space-y-2">
@@ -225,13 +232,6 @@ export default function NovaVendaPage() {
                 )}
               </div>
             ))}
-
-            <div className="pt-4">
-              <Button type="button" variant="outline" size="lg" className="w-full h-12 sm:h-16 text-sm sm:text-lg font-black border-4 border-primary/20 text-primary rounded-xl sm:rounded-2xl hover:bg-primary/5 transition-all" onClick={addItem}>
-                <Plus className="size-5 sm:size-6 mr-2" />
-                Adicionar Item
-              </Button>
-            </div>
           </CardContent>
         </Card>
 
