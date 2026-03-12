@@ -85,8 +85,8 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         </header>
-        <main className="flex-1 p-4 pb-24 md:p-6 md:pb-6">
-          <div className="max-w-7xl mx-auto space-y-6">
+        <main className="flex-1 p-2 sm:p-4 md:p-6 pb-24 md:pb-8 overflow-x-hidden">
+          <div className="max-w-7xl mx-auto border-2 border-primary rounded-[2rem] p-4 sm:p-6 md:p-8 bg-card/40 backdrop-blur-sm shadow-md overflow-x-hidden relative min-h-[calc(100vh-12rem)]">
             {children}
           </div>
         </main>
