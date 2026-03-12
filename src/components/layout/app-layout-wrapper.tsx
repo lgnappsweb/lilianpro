@@ -50,14 +50,14 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
         {/* Branding condicional exclusivo do Dashboard */}
         {isDashboard ? (
           <div className="flex flex-col items-center justify-center pt-10 pb-6 gap-4 animate-in fade-in slide-in-from-top-4 duration-700">
-            <div className="bg-primary p-2 sm:p-3 rounded-[1.5rem] text-primary-foreground shadow-xl border-4 border-white">
-              <Sparkles className="size-8 sm:size-10" />
+            <div className="bg-primary p-4 sm:p-5 rounded-[2rem] text-primary-foreground shadow-xl border-4 border-white transition-all">
+              <Sparkles className="size-12 sm:size-16" />
             </div>
             <div className="text-center px-4">
-              <h1 className="text-7xl sm:text-9xl font-black tracking-tighter text-primary font-headline italic drop-shadow-md">
+              <h1 className="text-6xl sm:text-8xl font-black tracking-tighter text-primary font-headline italic drop-shadow-md">
                 GlamGestão
               </h1>
-              <p className="text-sm sm:text-lg text-muted-foreground font-black uppercase tracking-[0.3em] mt-2 opacity-70">
+              <p className="text-xs sm:text-base text-muted-foreground font-black uppercase tracking-[0.3em] mt-2 opacity-70">
                 LINHAS ROSA VERDE E MARROM
               </p>
             </div>
