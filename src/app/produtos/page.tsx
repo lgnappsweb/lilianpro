@@ -20,7 +20,7 @@ import {
   Loader2,
   Edit,
   FileText,
-} from "lucide-react";
+} from "lucide-material";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, doc } from "firebase/firestore";
 import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
@@ -158,34 +158,33 @@ export default function ProdutosPage() {
                 </Badge>
               </div>
 
-              <div className="flex items-center justify-between gap-4 sm:gap-6 mb-4 sm:mb-6">
-                <div className="flex items-center gap-3 sm:gap-6 flex-1 min-w-0">
-                  <div className="flex flex-col items-center gap-1 shrink-0">
-                    <Badge className={`text-[10px] sm:text-[13px] font-black px-2 py-0.5 rounded-md border-none text-white shadow-sm ${getBrandBadgeColor(product.brand)}`}>
-                      {product.brand}
-                    </Badge>
-                    <div className="size-12 sm:size-20 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
-                      <Package className="size-6 sm:size-10" />
-                    </div>
-                  </div>
-
-                  <div className="flex-1 min-w-0 text-left">
-                    <h3 className="font-black text-2xl sm:text-5xl text-primary uppercase tracking-tighter italic leading-tight px-1 line-clamp-1">
-                      {product.name}
-                    </h3>
-                    <p className="text-[11px] sm:text-xl text-muted-foreground font-bold opacity-60 uppercase tracking-widest px-1">
-                      COD: {product.productCode}
-                    </p>
+              <div className="flex items-center gap-4 sm:gap-6 mb-4 sm:mb-6">
+                <div className="flex flex-col items-center gap-1 shrink-0">
+                  <Badge className={`text-[10px] sm:text-[13px] font-black px-2 py-0.5 rounded-md border-none text-white shadow-sm ${getBrandBadgeColor(product.brand)}`}>
+                    {product.brand}
+                  </Badge>
+                  <div className="size-12 sm:size-20 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                    <Package className="size-6 sm:size-10" />
                   </div>
                 </div>
 
-                <div className="text-right shrink-0">
-                  <p className="text-2xl sm:text-6xl font-black text-primary tracking-tighter px-1 leading-none">
-                    R$ {Number(product.salePrice).toFixed(2)}
+                <div className="flex-1 min-w-0 text-left">
+                  <h3 className="font-black text-2xl sm:text-5xl text-primary uppercase tracking-tighter italic leading-tight px-1 line-clamp-1">
+                    {product.name}
+                  </h3>
+                  <p className="text-[11px] sm:text-xl text-muted-foreground font-bold opacity-60 uppercase tracking-widest px-1">
+                    COD: {product.productCode}
                   </p>
-                  <p className="text-[10px] sm:text-[14px] font-black text-muted-foreground uppercase tracking-widest opacity-60 mt-1">
-                    Preço Venda
-                  </p>
+                  
+                  {/* Preço posicionado abaixo do nome e código */}
+                  <div className="mt-2 px-1">
+                    <p className="text-2xl sm:text-4xl font-black text-primary tracking-tighter leading-none">
+                      R$ {Number(product.salePrice).toFixed(2)}
+                    </p>
+                    <p className="text-[10px] sm:text-[14px] font-black text-muted-foreground uppercase tracking-widest opacity-60 mt-1">
+                      Preço Venda
+                    </p>
+                  </div>
                 </div>
               </div>
 
