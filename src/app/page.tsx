@@ -64,6 +64,7 @@ export default function DashboardPage() {
         icon: TrendingUp,
         color: "text-primary",
         bg: "bg-primary/10",
+        href: "/pedidos",
       },
       {
         title: "Total Recebido",
@@ -72,6 +73,7 @@ export default function DashboardPage() {
         icon: Wallet,
         color: "text-green-600",
         bg: "bg-green-100",
+        href: "/financeiro",
       },
       {
         title: "Total Pendente",
@@ -80,6 +82,7 @@ export default function DashboardPage() {
         icon: Clock,
         color: "text-orange-600",
         bg: "bg-orange-100",
+        href: "/financeiro",
       },
       {
         title: "Total Clientes",
@@ -88,6 +91,7 @@ export default function DashboardPage() {
         icon: Users,
         color: "text-accent",
         bg: "bg-accent/10",
+        href: "/clientes",
       },
     ];
   }, [orders, clients]);
@@ -152,20 +156,26 @@ export default function DashboardPage() {
         </Button>
       </div>
 
-      <div className="grid gap-6 grid-cols-2 lg:grid-cols-4">
+      {/* Stats em Lista Vertical Clicável */}
+      <div className="grid gap-6 grid-cols-1">
         {stats.map((stat, i) => (
-          <Card key={i} className="border-none shadow-lg hover:shadow-2xl transition-all rounded-[2rem] overflow-hidden group">
-            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 px-6 pt-6">
-              <CardTitle className="text-sm font-black text-muted-foreground uppercase tracking-widest">{stat.title}</CardTitle>
-              <div className={`${stat.bg} ${stat.color} p-3 rounded-2xl group-hover:scale-110 transition-transform`}>
-                <stat.icon className="h-6 w-6" />
-              </div>
-            </CardHeader>
-            <CardContent className="px-6 pb-8">
-              <div className="text-3xl md:text-4xl font-black truncate">{stat.value}</div>
-              <p className="text-xs font-black text-muted-foreground mt-2 uppercase tracking-wider opacity-60">{stat.description}</p>
-            </CardContent>
-          </Card>
+          <Link href={stat.href} key={i} className="block group">
+            <Card className="border-none shadow-lg hover:shadow-2xl transition-all rounded-[2.5rem] overflow-hidden group-hover:scale-[1.01] active:scale-[0.99] border-2 border-transparent hover:border-primary/20">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 px-8 pt-8">
+                <CardTitle className="text-base font-black text-muted-foreground uppercase tracking-widest">{stat.title}</CardTitle>
+                <div className={`${stat.bg} ${stat.color} p-4 rounded-2xl group-hover:scale-110 transition-transform shadow-inner`}>
+                  <stat.icon className="h-8 w-8" />
+                </div>
+              </CardHeader>
+              <CardContent className="px-8 pb-10">
+                <div className="text-4xl md:text-6xl font-black truncate text-primary">{stat.value}</div>
+                <div className="flex items-center justify-between mt-4">
+                  <p className="text-sm font-black text-muted-foreground uppercase tracking-widest opacity-60">{stat.description}</p>
+                  <ChevronRight className="size-8 text-primary opacity-0 group-hover:opacity-100 transition-all -translate-x-4 group-hover:translate-x-0" />
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
 
@@ -195,28 +205,30 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-8 space-y-6">
-            <div className="flex items-center gap-5 p-5 rounded-[1.5rem] bg-background border-2 border-muted shadow-sm hover:border-primary/20 transition-colors">
-              <div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
-                <Package className="size-8" />
+            <Link href="/produtos" className="block">
+              <div className="flex items-center gap-5 p-5 rounded-[1.5rem] bg-background border-2 border-muted shadow-sm hover:border-primary/20 transition-colors">
+                <div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                  <Package className="size-8" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xl font-black truncate">Produtos</p>
+                  <p className="text-sm text-muted-foreground font-bold">{products?.length || 0} itens registrados</p>
+                </div>
+                <Badge variant="secondary" className="text-xs font-black px-3 py-1 bg-primary/5 text-primary border-none">Ver</Badge>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xl font-black truncate">Produtos</p>
-                <p className="text-sm text-muted-foreground font-bold">{products?.length || 0} itens cadastrados</p>
+            </Link>
+            <Link href="/clientes" className="block">
+              <div className="flex items-center gap-5 p-5 rounded-[1.5rem] bg-background border-2 border-muted shadow-sm hover:border-accent/20 transition-colors">
+                <div className="size-14 rounded-2xl bg-accent/10 flex items-center justify-center text-accent shadow-inner">
+                  <Users className="size-8" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xl font-black truncate">Clientes</p>
+                  <p className="text-sm text-muted-foreground font-bold">{clients?.length || 0} contatos ativos</p>
+                </div>
+                <Badge variant="secondary" className="text-xs font-black px-3 py-1 bg-accent/5 text-accent border-none">Ver</Badge>
               </div>
-              <Badge variant="secondary" className="text-xs font-black px-3 py-1 bg-primary/5 text-primary border-none">{products?.filter(p => p.brand === "Natura").length} Nat.</Badge>
-            </div>
-            <div className="flex items-center gap-5 p-5 rounded-[1.5rem] bg-background border-2 border-muted shadow-sm hover:border-accent/20 transition-colors">
-              <div className="size-14 rounded-2xl bg-accent/10 flex items-center justify-center text-accent shadow-inner">
-                <Users className="size-8" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xl font-black truncate">Clientes</p>
-                <p className="text-sm text-muted-foreground font-bold">{clients?.length || 0} contatos ativos</p>
-              </div>
-            </div>
-            <Button variant="outline" className="w-full text-sm font-black text-primary h-14 mt-4 rounded-2xl border-2 border-primary/20 hover:bg-primary/5" asChild>
-              <Link href="/produtos">Acessar Catálogo Completo <ChevronRight className="ml-2 size-5" /></Link>
-            </Button>
+            </Link>
           </CardContent>
         </Card>
       </div>
