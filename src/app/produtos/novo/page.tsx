@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -29,6 +29,7 @@ import {
   Hash,
   Info,
   Plus,
+  Sparkles,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
@@ -61,6 +62,27 @@ export default function NovoProdutoPage() {
   }, [db, user]);
 
   const { data: categories, isLoading: categoriesLoading } = useCollection(categoriesQuery);
+
+  // Lógica de cálculo automático baseada na marca e preço de revista
+  useEffect(() => {
+    const catalog = parseFloat(formData.catalogPrice);
+    if (isNaN(catalog) || !formData.brand) return;
+
+    let discount = 0;
+    if (formData.brand === "VERDE (N)") discount = 0.30;
+    else if (formData.brand === "ROSA (A)") discount = 0.35;
+    else if (formData.brand === "MARROM (C&E)") discount = 0.15;
+
+    if (discount > 0) {
+      const calculatedCost = catalog * (1 - discount);
+      setFormData(prev => ({
+        ...prev,
+        costPrice: calculatedCost.toFixed(2),
+        // Por padrão, o preço de venda sugerido é o preço de revista
+        salePrice: catalog.toFixed(2)
+      }));
+    }
+  }, [formData.brand, formData.catalogPrice]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -199,16 +221,23 @@ export default function NovoProdutoPage() {
             <div className="grid sm:grid-cols-3 gap-8">
               <div className="space-y-4 text-left">
                 <Label htmlFor="catalogPrice" className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Preço de Revista (R$)</Label>
-                <Input
-                  id="catalogPrice"
-                  name="catalogPrice"
-                  type="number"
-                  step="0.01"
-                  placeholder="0,00"
-                  className="h-16 text-xl font-black rounded-xl border-4 border-muted bg-background"
-                  value={formData.catalogPrice}
-                  onChange={handleChange}
-                />
+                <div className="relative">
+                  <Input
+                    id="catalogPrice"
+                    name="catalogPrice"
+                    type="number"
+                    step="0.01"
+                    placeholder="0,00"
+                    className="h-16 text-xl font-black rounded-xl border-4 border-muted bg-background focus:border-primary"
+                    value={formData.catalogPrice}
+                    onChange={handleChange}
+                  />
+                  {formData.brand && (
+                    <div className="absolute -top-3 right-4 bg-primary text-white text-[8px] font-black px-2 py-1 rounded-full animate-in zoom-in">
+                      CÁLCULO AUTO ATIVO
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="space-y-4 text-left">
                 <Label htmlFor="costPrice" className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Preço de Custo (R$)</Label>
