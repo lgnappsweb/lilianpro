@@ -20,18 +20,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Trash2,
-  Plus,
   ReceiptText,
   User,
   Package,
   CreditCard,
   Calendar as CalendarIcon,
   ClipboardCheck,
+  Plus,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection, doc } from "firebase/firestore";
+import { collection } from "firebase/firestore";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -71,12 +70,6 @@ export default function NovaVendaPage() {
 
   const addItem = () => {
     setSelectedItems([...selectedItems, { id: `temp-${Date.now()}`, productId: "", quantity: 1, price: 0, name: "" }]);
-  };
-
-  const removeItem = (id: string) => {
-    if (selectedItems.length > 1) {
-      setSelectedItems(selectedItems.filter(item => item.id !== id));
-    }
   };
 
   const subtotal = useMemo(() => {
@@ -149,7 +142,6 @@ export default function NovaVendaPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6 sm:gap-10">
-        {/* 1. Selecionar Cliente */}
         <Card className="border-none shadow-xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
           <CardHeader className="bg-muted/30 p-6 sm:p-8">
             <CardTitle className="flex flex-row items-center gap-3 text-xl sm:text-2xl md:text-3xl font-black text-left">
@@ -174,14 +166,13 @@ export default function NovaVendaPage() {
           </CardContent>
         </Card>
 
-        {/* 2. Adicionar Produtos */}
         <Card className="border-none shadow-xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between bg-muted/30 p-6 sm:p-8 gap-4">
+          <CardHeader className="flex flex-row items-center justify-between bg-muted/30 p-6 sm:p-8 gap-4">
             <CardTitle className="flex flex-row items-center gap-3 text-xl sm:text-2xl md:text-3xl font-black text-left">
               <Package className="size-6 sm:size-8 text-primary" />
               2. Produtos
             </CardTitle>
-            <Button type="button" variant="outline" size="lg" className="w-full sm:w-auto h-12 sm:h-14 px-6 sm:px-8 text-base sm:text-lg font-black border-4 border-primary/20 text-primary rounded-xl sm:rounded-2xl hover:bg-primary/5 transition-all" onClick={addItem}>
+            <Button type="button" variant="outline" size="lg" className="h-12 sm:h-14 px-4 sm:px-8 text-sm sm:text-lg font-black border-4 border-primary/20 text-primary rounded-xl sm:rounded-2xl hover:bg-primary/5 transition-all" onClick={addItem}>
               <Plus className="size-5 sm:size-6 mr-2" />
               Adicionar Item
             </Button>
@@ -189,7 +180,6 @@ export default function NovaVendaPage() {
           <CardContent className="p-4 sm:p-8 space-y-4 sm:space-y-8">
             {selectedItems.map((item, index) => (
               <div key={item.id} className="flex flex-col gap-4 animate-in slide-in-from-left-4 duration-500 bg-muted/10 p-4 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] border-2 border-border/30 relative group">
-                
                 <div className="space-y-2">
                   <Label className="text-[10px] sm:text-sm font-black uppercase tracking-widest text-muted-foreground block text-left">Escolha o Produto</Label>
                   <Select onValueChange={(val) => {
@@ -237,22 +227,11 @@ export default function NovaVendaPage() {
                     </div>
                   </div>
                 )}
-
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute -top-2 -right-2 size-10 sm:size-12 bg-background border-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full shadow-md transition-colors"
-                  onClick={() => removeItem(item.id)}
-                >
-                  <Trash2 className="size-5 sm:size-6" />
-                </Button>
               </div>
             ))}
           </CardContent>
         </Card>
 
-        {/* 3. Pagamento */}
         <Card className="border-none shadow-xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
           <CardHeader className="bg-muted/30 p-6 sm:p-8">
             <CardTitle className="flex flex-row items-center gap-3 text-xl sm:text-2xl md:text-3xl font-black text-left">
@@ -296,7 +275,6 @@ export default function NovaVendaPage() {
           </CardContent>
         </Card>
 
-        {/* 4. Check-in da Venda */}
         <Card className={cn(
           "border-none shadow-2xl rounded-[1.5rem] sm:rounded-[3rem] overflow-hidden transition-all duration-700 transform",
           isReady ? "bg-primary text-primary-foreground scale-[1.01] sm:scale-[1.02]" : "bg-muted/50 text-muted-foreground opacity-50"
