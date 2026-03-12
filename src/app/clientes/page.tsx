@@ -53,7 +53,6 @@ export default function ClientesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [clientToDelete, setClientToDelete] = useState<any | null>(null);
 
-  // Consulta memoizada para evitar loops de renderização
   const clientsQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
     return collection(db, "users", user.uid, "clients");
@@ -76,10 +75,7 @@ export default function ClientesPage() {
   const handleDeleteConfirm = () => {
     if (clientToDelete && user && db) {
       const docRef = doc(db, "users", user.uid, "clients", clientToDelete.id);
-      
-      // PADRÃO ELITE: Operação Non-blocking (não espera o servidor)
       deleteDocumentNonBlocking(docRef);
-      
       toast({
         title: "Removendo cliente...",
         description: `${clientToDelete.fullName} será excluída em instantes.`,
@@ -89,110 +85,110 @@ export default function ClientesPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-primary font-headline">Minhas Clientes</h1>
-          <p className="text-muted-foreground mt-1">Gerencie seu catálogo de contatos e histórico de vendas.</p>
+          <h1 className="text-4xl font-black tracking-tight text-primary font-headline">Minhas Clientes</h1>
+          <p className="text-lg text-muted-foreground mt-2 font-medium">Gerencie seu catálogo de contatos e histórico de vendas.</p>
         </div>
-        <Button asChild className="bg-primary hover:bg-primary/90">
+        <Button asChild className="h-14 px-8 bg-primary hover:bg-primary/90 text-lg font-bold shadow-lg rounded-2xl">
           <Link href="/clientes/novo">
-            <UserPlus className="mr-2 size-4" />
+            <UserPlus className="mr-3 size-6" />
             Nova Cliente
           </Link>
         </Button>
       </div>
 
-      <Card className="border-none shadow-sm">
-        <CardHeader className="pb-3">
+      <Card className="border-none shadow-lg rounded-3xl overflow-hidden">
+        <CardHeader className="pb-6 pt-8 bg-muted/30">
           <div className="flex items-center gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-6 text-muted-foreground" />
               <Input
                 placeholder="Pesquisar por nome ou bairro..."
-                className="pl-10 h-10"
+                className="pl-12 h-14 text-lg bg-background rounded-2xl shadow-inner border-muted focus-visible:ring-primary"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-12 gap-2 text-muted-foreground">
-              <Loader2 className="size-8 animate-spin" />
-              <p>Carregando clientes...</p>
+            <div className="flex flex-col items-center justify-center py-24 gap-4 text-muted-foreground">
+              <Loader2 className="size-14 animate-spin text-primary" />
+              <p className="text-xl font-medium animate-pulse">Carregando clientes...</p>
             </div>
           ) : (
             <div className="relative w-full overflow-auto">
-              <table className="w-full text-sm">
+              <table className="w-full text-lg">
                 <thead>
-                  <tr className="border-b text-muted-foreground">
-                    <th className="h-10 px-4 text-left font-medium">Nome</th>
-                    <th className="h-10 px-4 text-left font-medium">Contato</th>
-                    <th className="h-10 px-4 text-left font-medium">Localização</th>
-                    <th className="h-10 px-4 text-right font-medium">Ações</th>
+                  <tr className="border-b text-muted-foreground bg-muted/10 uppercase text-xs tracking-widest font-black">
+                    <th className="h-14 px-6 text-left">Nome</th>
+                    <th className="h-14 px-6 text-left">Contato</th>
+                    <th className="h-14 px-6 text-left">Localização</th>
+                    <th className="h-14 px-6 text-right">Ações</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
                   {filteredClientes.map((cliente) => (
-                    <tr key={cliente.id} className="hover:bg-muted/50 transition-colors">
-                      <td className="p-4">
-                        <div className="flex items-center gap-3">
-                          <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+                    <tr key={cliente.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="p-6">
+                        <div className="flex items-center gap-4">
+                          <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black text-lg border border-primary/20 shadow-sm">
                             {cliente.fullName?.charAt(0)}
                           </div>
-                          <span className="font-medium">{cliente.fullName}</span>
+                          <span className="font-black text-xl text-foreground">{cliente.fullName}</span>
                         </div>
                       </td>
-                      <td className="p-4">
-                        <div className="flex items-center gap-2">
-                          <Phone className="size-3 text-muted-foreground" />
-                          <span className="text-muted-foreground">{cliente.phone}</span>
+                      <td className="p-6">
+                        <div className="flex items-center gap-3 font-bold text-muted-foreground">
+                          <Phone className="size-5 text-primary/60" />
+                          <span>{cliente.phone}</span>
                         </div>
                       </td>
-                      <td className="p-4">
-                        <div className="text-xs">
-                          <p className="font-medium">{cliente.neighborhood}</p>
-                          <p className="text-muted-foreground">{cliente.city}</p>
+                      <td className="p-6">
+                        <div className="space-y-1">
+                          <p className="font-black text-foreground">{cliente.neighborhood}</p>
+                          <p className="text-sm text-muted-foreground font-bold">{cliente.city}</p>
                         </div>
                       </td>
-                      <td className="p-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
+                      <td className="p-6 text-right">
+                        <div className="flex items-center justify-end gap-3">
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                            className="size-12 rounded-2xl text-green-600 hover:text-green-700 hover:bg-green-50 shadow-sm border border-green-100"
                             onClick={() => openWhatsApp(cliente.phone)}
                           >
-                            <MessageCircle className="size-4" />
+                            <MessageCircle className="size-6" />
                           </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="size-4" />
+                              <Button variant="ghost" size="icon" className="size-12 rounded-2xl border border-border/50 shadow-sm">
+                                <MoreHorizontal className="size-6" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56">
-                              <DropdownMenuLabel>Opções para {cliente.fullName}</DropdownMenuLabel>
+                            <DropdownMenuContent align="end" className="w-64 p-2 rounded-2xl shadow-xl">
+                              <DropdownMenuLabel className="font-black text-base px-4 py-3">Opções para {cliente.fullName}</DropdownMenuLabel>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem asChild>
-                                <Link href={`/clientes/${cliente.id}`} className="cursor-pointer">
-                                  <FileText className="mr-2 size-4" />
-                                  Ver Perfil Completo
+                              <DropdownMenuItem asChild className="p-3 rounded-xl cursor-pointer">
+                                <Link href={`/clientes/${cliente.id}`}>
+                                  <FileText className="mr-3 size-5 text-primary" />
+                                  <span className="font-bold">Ver Perfil Completo</span>
                                 </Link>
                               </DropdownMenuItem>
-                              <DropdownMenuItem className="cursor-pointer">
-                                <Edit className="mr-2 size-4" />
-                                Editar Dados
+                              <DropdownMenuItem className="p-3 rounded-xl cursor-pointer">
+                                <Edit className="mr-3 size-5 text-primary" />
+                                <span className="font-bold">Editar Dados</span>
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem 
-                                className="text-destructive cursor-pointer"
+                                className="p-3 rounded-xl text-destructive cursor-pointer"
                                 onSelect={() => setClientToDelete(cliente)}
                               >
-                                <Trash2 className="mr-2 size-4" />
-                                Excluir Cliente
+                                <Trash2 className="mr-3 size-5" />
+                                <span className="font-bold">Excluir Cliente</span>
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -205,29 +201,29 @@ export default function ClientesPage() {
             </div>
           )}
           {!isLoading && filteredClientes.length === 0 && (
-            <div className="text-center py-12">
-              <div className="size-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-                <Search className="size-8 text-muted-foreground/50" />
+            <div className="text-center py-24 bg-muted/10">
+              <div className="size-24 rounded-3xl bg-muted flex items-center justify-center mx-auto mb-6 shadow-inner">
+                <Search className="size-12 text-muted-foreground/30" />
               </div>
-              <h3 className="text-lg font-medium">Nenhuma cliente encontrada</h3>
-              <p className="text-muted-foreground">Tente buscar por um nome diferente ou cadastre uma nova.</p>
+              <h3 className="text-2xl font-black text-foreground">Nenhuma cliente encontrada</h3>
+              <p className="text-lg text-muted-foreground mt-2 font-medium">Tente buscar por um nome diferente ou cadastre uma nova.</p>
             </div>
           )}
         </CardContent>
       </Card>
 
       <AlertDialog open={!!clientToDelete} onOpenChange={(open) => !open && setClientToDelete(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-3xl border-none shadow-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Tem certeza que deseja excluir?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-2xl font-black">Tem certeza que deseja excluir?</AlertDialogTitle>
+            <AlertDialogDescription className="text-lg font-medium">
               Esta ação removerá permanentemente os dados da cliente 
-              <strong> {clientToDelete?.fullName}</strong>.
+              <strong className="text-primary"> {clientToDelete?.fullName}</strong>.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+          <AlertDialogFooter className="mt-6 gap-3">
+            <AlertDialogCancel className="h-12 rounded-xl text-base font-bold">Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="h-12 rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90 text-base font-bold shadow-lg">
               Sim, excluir cliente
             </AlertDialogAction>
           </AlertDialogFooter>

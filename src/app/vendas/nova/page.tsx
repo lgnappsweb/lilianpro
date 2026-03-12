@@ -134,30 +134,31 @@ export default function NovaVendaPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto w-full overflow-x-hidden">
+    <div className="space-y-8 max-w-5xl mx-auto w-full overflow-x-hidden animate-in fade-in duration-500 pb-12">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-primary font-headline">Nova Venda</h1>
-        <p className="text-sm text-muted-foreground mt-1">Cadastre uma venda rapidamente.</p>
+        <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-primary font-headline">Nova Venda</h1>
+        <p className="text-lg text-muted-foreground mt-2 font-medium">Cadastre uma venda rapidamente no seu sistema.</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="grid gap-6 md:grid-cols-3">
-        <div className="md:col-span-2 space-y-6">
-          <Card className="border-none shadow-sm">
-            <CardHeader className="p-4 sm:p-6">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <User className="size-4 text-primary" />
+      <form onSubmit={handleSubmit} className="grid gap-8 md:grid-cols-3">
+        <div className="md:col-span-2 space-y-8">
+          <Card className="border-none shadow-lg rounded-3xl overflow-hidden">
+            <CardHeader className="p-6 pb-2 bg-muted/20">
+              <CardTitle className="flex items-center gap-3 text-xl font-black">
+                <User className="size-6 text-primary" />
                 Cliente
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
-              <div className="grid gap-2">
+            <CardContent className="p-6">
+              <div className="grid gap-3">
+                <Label className="text-sm font-black uppercase tracking-widest text-muted-foreground">Selecionar Cliente</Label>
                 <Select onValueChange={setSelectedClientId} value={selectedClientId}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Selecione a cliente..." />
+                  <SelectTrigger className="h-14 text-lg font-bold rounded-2xl bg-background border-muted shadow-inner">
+                    <SelectValue placeholder="Busque pelo nome da cliente..." />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="rounded-2xl shadow-xl p-2">
                     {clients?.map(c => (
-                      <SelectItem key={c.id} value={c.id}>{c.fullName}</SelectItem>
+                      <SelectItem key={c.id} value={c.id} className="text-lg font-medium p-3 rounded-xl">{c.fullName}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -165,22 +166,22 @@ export default function NovaVendaPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between p-4 sm:p-6 pb-2">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Package className="size-4 text-primary" />
+          <Card className="border-none shadow-lg rounded-3xl overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between p-6 pb-2 bg-muted/20">
+              <CardTitle className="flex items-center gap-3 text-xl font-black">
+                <Package className="size-6 text-primary" />
                 Produtos
               </CardTitle>
-              <Button type="button" variant="outline" size="sm" className="h-8 text-xs" onClick={addItem}>
-                <Plus className="size-3 mr-1" />
-                Item
+              <Button type="button" variant="outline" size="sm" className="h-10 px-4 text-sm font-black rounded-xl border-primary/20 text-primary" onClick={addItem}>
+                <Plus className="size-4 mr-2" />
+                Adicionar Item
               </Button>
             </CardHeader>
-            <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0 space-y-4">
+            <CardContent className="p-6 space-y-6">
               {selectedItems.map((item, index) => (
-                <div key={item.id} className="grid grid-cols-12 gap-2 items-end animate-in slide-in-from-left-2 duration-300">
-                  <div className="col-span-12 sm:col-span-6 space-y-1">
-                    {index === 0 && <Label className="text-[10px] sm:text-xs">Produto</Label>}
+                <div key={item.id} className="grid grid-cols-12 gap-4 items-end animate-in slide-in-from-left-4 duration-500 bg-muted/10 p-4 rounded-2xl border border-border/30">
+                  <div className="col-span-12 sm:col-span-6 space-y-2">
+                    <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Produto</Label>
                     <Select onValueChange={(val) => {
                       const product = products?.find(p => p.id === val);
                       if (product) {
@@ -191,22 +192,22 @@ export default function NovaVendaPage() {
                         setSelectedItems(newItems);
                       }
                     }}>
-                      <SelectTrigger className="text-xs h-9">
-                        <SelectValue placeholder="Produto..." />
+                      <SelectTrigger className="text-base h-12 font-bold rounded-xl bg-background shadow-inner">
+                        <SelectValue placeholder="Escolha um produto..." />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="rounded-2xl shadow-xl p-2">
                         {products?.map(p => (
-                          <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                          <SelectItem key={p.id} value={p.id} className="text-base font-medium p-3 rounded-xl">{p.name}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="col-span-4 sm:col-span-2 space-y-1">
-                    {index === 0 && <Label className="text-[10px] sm:text-xs">Qtd</Label>}
+                  <div className="col-span-4 sm:col-span-2 space-y-2">
+                    <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground text-center block">Qtd</Label>
                     <Input
                       type="number"
                       min="1"
-                      className="h-9 text-xs"
+                      className="h-12 text-lg font-black text-center rounded-xl bg-background shadow-inner"
                       value={item.quantity}
                       onChange={(e) => {
                         const newItems = [...selectedItems];
@@ -215,9 +216,9 @@ export default function NovaVendaPage() {
                       }}
                     />
                   </div>
-                  <div className="col-span-6 sm:col-span-3 space-y-1">
-                    {index === 0 && <Label className="text-[10px] sm:text-xs">Total</Label>}
-                    <div className="h-9 flex items-center px-2 bg-muted rounded-md text-[10px] font-medium truncate">
+                  <div className="col-span-6 sm:col-span-3 space-y-2">
+                    <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Total Item</Label>
+                    <div className="h-12 flex items-center px-4 bg-primary/10 rounded-xl text-lg font-black text-primary border border-primary/10">
                       R$ {(item.price * item.quantity).toFixed(2)}
                     </div>
                   </div>
@@ -226,10 +227,10 @@ export default function NovaVendaPage() {
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="size-9 text-muted-foreground hover:text-destructive"
+                      className="size-12 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                       onClick={() => removeItem(item.id)}
                     >
-                      <Trash2 className="size-4" />
+                      <Trash2 className="size-6" />
                     </Button>
                   </div>
                 </div>
@@ -237,41 +238,41 @@ export default function NovaVendaPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-sm">
-            <CardHeader className="p-4 sm:p-6 pb-2">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <CreditCard className="size-4 text-primary" />
+          <Card className="border-none shadow-lg rounded-3xl overflow-hidden">
+            <CardHeader className="p-6 pb-2 bg-muted/20">
+              <CardTitle className="flex items-center gap-3 text-xl font-black">
+                <CreditCard className="size-6 text-primary" />
                 Pagamento
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-1">
-                  <Label className="text-xs">Forma</Label>
+            <CardContent className="p-6">
+              <div className="grid gap-6 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Forma de Pagamento</Label>
                   <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                    <SelectTrigger className="h-9 text-xs">
+                    <SelectTrigger className="h-14 text-lg font-bold rounded-2xl bg-background shadow-inner">
                       <SelectValue placeholder="Selecione..." />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pix">Pix</SelectItem>
-                      <SelectItem value="dinheiro">Dinheiro</SelectItem>
-                      <SelectItem value="cartao">Cartão</SelectItem>
-                      <SelectItem value="fiado">Fiado / Prazo</SelectItem>
+                    <SelectContent className="rounded-2xl shadow-xl p-2">
+                      <SelectItem value="pix" className="text-lg font-medium p-3 rounded-xl">Pix</SelectItem>
+                      <SelectItem value="dinheiro" className="text-lg font-medium p-3 rounded-xl">Dinheiro</SelectItem>
+                      <SelectItem value="cartao" className="text-lg font-medium p-3 rounded-xl">Cartão</SelectItem>
+                      <SelectItem value="fiado" className="text-lg font-medium p-3 rounded-xl">Fiado / Prazo</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Vencimento</Label>
+                <div className="space-y-2">
+                  <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Data de Vencimento</Label>
                   <div className="relative">
-                    <CalendarIcon className="absolute left-2 top-1/2 -translate-y-1/2 size-3 text-muted-foreground" />
-                    <Input type="date" className="h-9 pl-8 text-xs" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+                    <CalendarIcon className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-primary/60" />
+                    <Input type="date" className="h-14 pl-12 text-lg font-bold rounded-2xl bg-background shadow-inner" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
                   </div>
                 </div>
-                <div className="sm:col-span-2 space-y-1">
-                  <Label className="text-xs">Observações</Label>
+                <div className="sm:col-span-2 space-y-2">
+                  <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Observações do Pedido</Label>
                   <textarea 
-                    className="w-full min-h-[60px] rounded-md border border-input bg-transparent px-3 py-2 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" 
-                    placeholder="Detalhes..."
+                    className="w-full min-h-[100px] rounded-2xl border border-input bg-background px-4 py-3 text-lg font-medium shadow-inner focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" 
+                    placeholder="Ex: Entrega agendada para sábado, presente para aniversário..."
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                   />
@@ -281,44 +282,44 @@ export default function NovaVendaPage() {
           </Card>
         </div>
 
-        <div className="space-y-6">
-          <Card className="border-none shadow-sm md:sticky md:top-24 bg-primary text-primary-foreground">
-            <CardHeader className="p-4 sm:p-6">
-              <CardTitle className="text-lg">Resumo</CardTitle>
+        <div className="space-y-8">
+          <Card className="border-none shadow-2xl md:sticky md:top-24 bg-primary text-primary-foreground rounded-[2rem] overflow-hidden">
+            <CardHeader className="p-8 pb-4">
+              <CardTitle className="text-2xl font-black uppercase tracking-widest">Resumo da Venda</CardTitle>
             </CardHeader>
-            <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0 space-y-3">
-              <div className="flex justify-between text-xs">
-                <span>Subtotal</span>
+            <CardContent className="p-8 pt-0 space-y-6">
+              <div className="flex justify-between text-lg font-bold opacity-90">
+                <span>Subtotal Itens</span>
                 <span>R$ {subtotal.toFixed(2)}</span>
               </div>
-              <div className="space-y-1">
-                <Label className="text-[10px] text-primary-foreground/80">Desconto (R$)</Label>
+              <div className="space-y-2">
+                <Label className="text-xs font-black uppercase tracking-widest text-primary-foreground/70">Desconto Aplicado (R$)</Label>
                 <Input
                   type="number"
-                  className="h-8 bg-white/10 border-white/20 text-white text-xs"
+                  className="h-12 bg-white/20 border-white/30 text-white text-xl font-black rounded-xl shadow-inner placeholder:text-white/40"
                   value={discount}
                   onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
                 />
               </div>
-              <div className="space-y-1">
-                <Label className="text-[10px] text-primary-foreground/80">Taxa (R$)</Label>
+              <div className="space-y-2">
+                <Label className="text-xs font-black uppercase tracking-widest text-primary-foreground/70">Taxas Adicionais (R$)</Label>
                 <Input
                   type="number"
-                  className="h-8 bg-white/10 border-white/20 text-white text-xs"
+                  className="h-12 bg-white/20 border-white/30 text-white text-xl font-black rounded-xl shadow-inner placeholder:text-white/40"
                   value={additionalFee}
                   onChange={(e) => setAdditionalFee(parseFloat(e.target.value) || 0)}
                 />
               </div>
               <Separator className="bg-white/20" />
-              <div className="flex justify-between items-center py-2">
-                <span className="font-semibold text-sm">Total</span>
-                <span className="text-xl font-bold">R$ {finalTotal.toFixed(2)}</span>
+              <div className="flex justify-between items-center py-4">
+                <span className="font-bold text-xl uppercase tracking-widest">Total Final</span>
+                <span className="text-4xl font-black drop-shadow-md">R$ {finalTotal.toFixed(2)}</span>
               </div>
             </CardContent>
-            <CardFooter className="p-4 sm:p-6 pt-0 sm:pt-0">
-              <Button type="submit" className="w-full bg-white text-primary hover:bg-white/90 font-bold h-11 text-sm">
-                <ReceiptText className="mr-2 size-4" />
-                Finalizar
+            <CardFooter className="p-8 pt-0">
+              <Button type="submit" className="w-full bg-white text-primary hover:bg-pink-50 font-black h-16 text-xl rounded-2xl shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]">
+                <ReceiptText className="mr-3 size-7" />
+                FINALIZAR VENDA
               </Button>
             </CardFooter>
           </Card>
