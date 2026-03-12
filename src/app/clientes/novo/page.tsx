@@ -44,9 +44,21 @@ export default function NovoClientePage() {
     notes: "",
   });
 
+  const formatPhone = (value: string) => {
+    if (!value) return "";
+    const cleaned = value.replace(/\D/g, "");
+    if (cleaned.length <= 2) return `(${cleaned}`;
+    if (cleaned.length <= 7) return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2)}`;
+    return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 7)}-${cleaned.slice(7, 11)}`;
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === "phone") {
+      setFormData((prev) => ({ ...prev, [name]: formatPhone(value) }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -94,12 +106,12 @@ export default function NovoClientePage() {
   };
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-500 w-full pb-20">
+    <div className="space-y-12 animate-in fade-in duration-500 w-full pb-20">
       <div className="flex flex-col items-center text-center gap-6 px-2 mb-10">
         <div className="w-full">
-          <div className="flex flex-col items-center justify-center gap-4">
-            <UserPlus className="size-10 sm:size-16 text-primary" />
-            <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm">NOVO CLIENTE</h1>
+          <div className="flex flex-col items-center justify-center gap-6">
+            <UserPlus className="size-16 sm:size-24 text-primary" />
+            <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl">NOVO CLIENTE</h1>
           </div>
           <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest">Adicione uma nova cliente ao seu catálogo de elite.</p>
         </div>
@@ -117,12 +129,12 @@ export default function NovoClientePage() {
             <div className="space-y-4">
               <Label htmlFor="fullName" className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Nome Completo</Label>
               <div className="relative">
-                <User className="absolute left-5 top-1/2 -translate-y-1/2 size-6 text-muted-foreground hidden sm:block" />
+                <User className="absolute left-5 top-1/2 -translate-y-1/2 size-6 text-muted-foreground/30 hidden sm:block" />
                 <Input
                   id="fullName"
                   name="fullName"
                   placeholder="Ex: Maria Oliveira"
-                  className="h-16 sm:h-20 sm:pl-16 text-xl sm:text-3xl font-black rounded-xl sm:rounded-3xl border-4 border-muted bg-background focus:border-primary transition-all"
+                  className="h-16 sm:h-20 sm:pl-16 text-xl sm:text-3xl font-black rounded-xl sm:rounded-3xl border-4 border-muted bg-background focus:border-primary transition-all placeholder:text-muted-foreground/40"
                   value={formData.fullName}
                   onChange={handleChange}
                   required
@@ -133,12 +145,13 @@ export default function NovoClientePage() {
             <div className="space-y-4">
               <Label htmlFor="phone" className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">WhatsApp / Telefone</Label>
               <div className="relative">
-                <Phone className="absolute left-5 top-1/2 -translate-y-1/2 size-6 text-muted-foreground hidden sm:block" />
+                <Phone className="absolute left-5 top-1/2 -translate-y-1/2 size-6 text-muted-foreground/30 hidden sm:block" />
                 <Input
                   id="phone"
                   name="phone"
+                  maxLength={15}
                   placeholder="(00) 00000-0000"
-                  className="h-16 sm:h-20 sm:pl-16 text-xl sm:text-3xl font-black rounded-xl sm:rounded-3xl border-4 border-muted bg-background focus:border-primary transition-all"
+                  className="h-16 sm:h-20 sm:pl-16 text-xl sm:text-3xl font-black rounded-xl sm:rounded-3xl border-4 border-muted bg-background focus:border-primary transition-all placeholder:text-muted-foreground/40"
                   value={formData.phone}
                   onChange={handleChange}
                   required
@@ -160,12 +173,12 @@ export default function NovoClientePage() {
               <div className="space-y-4">
                 <Label htmlFor="city" className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Cidade</Label>
                 <div className="relative">
-                  <Map className="absolute left-5 top-1/2 -translate-y-1/2 size-6 text-muted-foreground hidden sm:block" />
+                  <Map className="absolute left-5 top-1/2 -translate-y-1/2 size-6 text-muted-foreground/30 hidden sm:block" />
                   <Input
                     id="city"
                     name="city"
                     placeholder="Ex: São Paulo"
-                    className="h-16 sm:h-20 sm:pl-16 text-xl sm:text-2xl font-black rounded-xl sm:rounded-3xl border-4 border-muted bg-background focus:border-primary transition-all"
+                    className="h-16 sm:h-20 sm:pl-16 text-xl sm:text-2xl font-black rounded-xl sm:rounded-3xl border-4 border-muted bg-background focus:border-primary transition-all placeholder:text-muted-foreground/40"
                     value={formData.city}
                     onChange={handleChange}
                   />
@@ -175,12 +188,12 @@ export default function NovoClientePage() {
               <div className="space-y-4">
                 <Label htmlFor="neighborhood" className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Bairro</Label>
                 <div className="relative">
-                  <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 size-6 text-muted-foreground hidden sm:block" />
+                  <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 size-6 text-muted-foreground/30 hidden sm:block" />
                   <Input
                     id="neighborhood"
                     name="neighborhood"
                     placeholder="Ex: Centro"
-                    className="h-16 sm:h-20 sm:pl-16 text-xl sm:text-2xl font-black rounded-xl sm:rounded-3xl border-4 border-muted bg-background focus:border-primary transition-all"
+                    className="h-16 sm:h-20 sm:pl-16 text-xl sm:text-2xl font-black rounded-xl sm:rounded-3xl border-4 border-muted bg-background focus:border-primary transition-all placeholder:text-muted-foreground/40"
                     value={formData.neighborhood}
                     onChange={handleChange}
                   />
@@ -191,12 +204,12 @@ export default function NovoClientePage() {
             <div className="space-y-4">
               <Label htmlFor="address" className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Referência / Endereço</Label>
               <div className="relative">
-                <Info className="absolute left-5 top-1/2 -translate-y-1/2 size-6 text-muted-foreground hidden sm:block" />
+                <Info className="absolute left-5 top-1/2 -translate-y-1/2 size-6 text-muted-foreground/30 hidden sm:block" />
                 <Input
                   id="address"
                   name="address"
                   placeholder="Ex: Próximo à padaria central"
-                  className="h-16 sm:h-20 sm:pl-16 text-xl sm:text-2xl font-black rounded-xl sm:rounded-3xl border-4 border-muted bg-background focus:border-primary transition-all"
+                  className="h-16 sm:h-20 sm:pl-16 text-xl sm:text-2xl font-black rounded-xl sm:rounded-3xl border-4 border-muted bg-background focus:border-primary transition-all placeholder:text-muted-foreground/40"
                   value={formData.address}
                   onChange={handleChange}
                 />
@@ -219,7 +232,7 @@ export default function NovoClientePage() {
                 id="notes"
                 name="notes"
                 placeholder="Preferências, horários de entrega ou detalhes especiais..."
-                className="min-h-[200px] text-xl sm:text-2xl font-bold rounded-[1.5rem] sm:rounded-[2.5rem] border-4 border-muted bg-background p-8 focus:border-primary transition-all shadow-inner"
+                className="min-h-[200px] text-xl sm:text-2xl font-bold rounded-[1.5rem] sm:rounded-[2.5rem] border-4 border-muted bg-background p-8 focus:border-primary transition-all shadow-inner placeholder:text-muted-foreground/40"
                 value={formData.notes}
                 onChange={handleChange}
               />

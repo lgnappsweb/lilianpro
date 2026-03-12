@@ -59,9 +59,9 @@ export default function ProdutosPage() {
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col items-center text-center gap-6 px-2 mb-10">
         <div className="w-full">
-          <div className="flex flex-col items-center justify-center gap-4">
-            <Package className="size-10 sm:size-16 text-primary" />
-            <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm">PRODUTOS</h1>
+          <div className="flex flex-col items-center justify-center gap-6">
+            <Package className="size-16 sm:size-24 text-primary" />
+            <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl">PRODUTOS</h1>
           </div>
           <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest">Organize seus produtos da Avon, Natura e outras marcas.</p>
         </div>

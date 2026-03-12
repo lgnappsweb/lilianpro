@@ -78,9 +78,9 @@ export default function ClientesPage() {
     <div className="space-y-8 sm:space-y-12 animate-in fade-in duration-500 w-full">
       <div className="flex flex-col items-center text-center gap-6 px-2 mb-10">
         <div className="w-full">
-          <div className="flex flex-col items-center justify-center gap-4">
-            <Users className="size-10 sm:size-16 text-primary" />
-            <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm">CLIENTES</h1>
+          <div className="flex flex-col items-center justify-center gap-6">
+            <Users className="size-16 sm:size-24 text-primary" />
+            <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl">CLIENTES</h1>
           </div>
           <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Gerencie seu catálogo de contatos e histórico.</p>
         </div>
@@ -111,31 +111,31 @@ export default function ClientesPage() {
         ) : (
           <div className="grid grid-cols-1 gap-6 w-full">
             {filteredClientes.map((cliente) => (
-              <Card key={cliente.id} className="bg-background border-4 border-muted rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl hover:border-primary/20 transition-all flex flex-col justify-between h-full min-h-[350px] w-full max-w-none">
-                <div className="flex flex-col items-center justify-center gap-4 mb-2">
-                  <div className="size-16 sm:size-24 rounded-full bg-primary/10 flex items-center justify-center text-primary shadow-inner">
-                    <User className="size-10 sm:size-14" />
+              <Card key={cliente.id} className="bg-background border-4 border-muted rounded-2xl p-6 sm:p-8 space-y-4 shadow-xl hover:border-primary/20 transition-all flex flex-col justify-between w-full max-w-none">
+                <div className="flex flex-col items-center justify-center gap-2 mb-2">
+                  <div className="size-12 sm:size-16 rounded-full bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                    <User className="size-6 sm:size-10" />
                   </div>
-                  <h3 className="font-black text-3xl sm:text-5xl text-primary uppercase tracking-tighter italic text-center line-clamp-2 leading-tight">
+                  <h3 className="font-black text-2xl sm:text-4xl text-primary uppercase tracking-tighter italic text-center line-clamp-2 leading-tight">
                     {cliente.fullName}
                   </h3>
                 </div>
 
                 <div className="space-y-4">
                   <div className="flex flex-row items-center justify-center gap-2 w-full">
-                    <Button variant="outline" asChild className="h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2 flex-1">
+                    <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2 flex-1">
                       <Link href={`/clientes/${cliente.id}`}>
                         <FileText className="mr-1 size-3 sm:size-4" />
                         Detalhes
                       </Link>
                     </Button>
-                    <Button variant="outline" className="h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2 flex-1">
+                    <Button variant="outline" className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2 flex-1">
                       <Edit className="mr-1 size-3 sm:size-4" />
                       Editar
                     </Button>
                     <Button 
                       variant="outline" 
-                      className="h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 text-destructive border-destructive/20 hover:bg-destructive/5 hover:border-destructive px-2 flex-1"
+                      className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 text-destructive border-destructive/20 hover:bg-destructive/5 hover:border-destructive px-2 flex-1"
                       onClick={() => setClientToDelete(cliente)}
                     >
                       <Trash2 className="mr-1 size-3 sm:size-4" />
@@ -146,10 +146,10 @@ export default function ClientesPage() {
                   <Button
                     variant="default"
                     size="lg"
-                    className="w-full bg-green-600 hover:bg-green-700 h-16 sm:h-20 rounded-xl sm:rounded-2xl font-black text-sm sm:text-xl gap-3 shadow-xl transition-all active:scale-95 uppercase tracking-widest"
+                    className="w-full bg-green-600 hover:bg-green-700 h-14 sm:h-16 rounded-xl sm:rounded-2xl font-black text-sm sm:text-lg gap-3 shadow-xl transition-all active:scale-95 uppercase tracking-widest"
                     onClick={() => openWhatsApp(cliente.phone)}
                   >
-                    <MessageCircle className="size-6 sm:size-8" />
+                    <MessageCircle className="size-6 sm:size-7" />
                     Chamar no WhatsApp
                   </Button>
                 </div>
