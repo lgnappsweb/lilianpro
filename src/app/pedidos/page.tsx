@@ -4,7 +4,6 @@
 import React, { useState, useMemo } from "react";
 import {
   Card,
-  CardContent,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +14,6 @@ import {
   Clock,
   AlertCircle,
   Eye,
-  MoreVertical,
   Calendar,
   Loader2,
   ClipboardList,
@@ -24,18 +22,25 @@ import {
   Banknote,
   CreditCard,
   HandCoins,
+  Trash2,
+  FileText,
+  CheckCircle2,
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, doc } from "firebase/firestore";
-import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
+import { deleteDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function PedidosPage() {
   const { user } = useUser();
@@ -43,6 +48,7 @@ export default function PedidosPage() {
   const { toast } = useToast();
   const [activeFilter, setActiveFilter] = useState("todos");
   const [searchTerm, setSearchTerm] = useState("");
+  const [orderToDelete, setOrderToDelete] = useState<any | null>(null);
 
   const ordersQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -62,20 +68,20 @@ export default function PedidosPage() {
 
   const getStatusClass = (status: string) => {
     switch (status) {
-      case "Pago": return "bg-green-100 text-green-700";
-      case "Pendente": return "bg-orange-100 text-orange-700";
-      case "Atrasado": return "bg-red-100 text-red-700";
+      case "Pago": return "bg-green-600 text-white";
+      case "Pendente": return "bg-orange-500 text-white";
+      case "Atrasado": return "bg-red-600 text-white";
       default: return "bg-muted text-muted-foreground";
     }
   };
 
   const getPaymentIcon = (method: string) => {
     switch (method?.toLowerCase()) {
-      case "pix": return <Smartphone className="size-3" />;
-      case "dinheiro": return <Banknote className="size-3" />;
-      case "cartao": return <CreditCard className="size-3" />;
-      case "fiado": return <HandCoins className="size-3" />;
-      default: return null;
+      case "pix": return <Smartphone className="size-4" />;
+      case "dinheiro": return <Banknote className="size-4" />;
+      case "cartao": return <CreditCard className="size-4" />;
+      case "fiado": return <HandCoins className="size-4" />;
+      default: return <CreditCard className="size-4" />;
     }
   };
 
@@ -91,24 +97,36 @@ export default function PedidosPage() {
     }).sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
   }, [orders, searchTerm, activeFilter]);
 
-  const handleDelete = (orderId: string) => {
-    if (user && db) {
-      const docRef = doc(db, "users", user.uid, "orders", orderId);
+  const handleDeleteConfirm = () => {
+    if (orderToDelete && user && db) {
+      const docRef = doc(db, "users", user.uid, "orders", orderToDelete.id);
       deleteDocumentNonBlocking(docRef);
       toast({
         title: "Pedido removido",
-        description: "O registro do pedido foi excluído.",
+        description: "O registro do pedido foi excluído com sucesso.",
+      });
+      setOrderToDelete(null);
+    }
+  };
+
+  const markAsPaid = (order: any) => {
+    if (user && db) {
+      const docRef = doc(db, "users", user.uid, "orders", order.id);
+      updateDocumentNonBlocking(docRef, { paymentStatus: "Pago" });
+      toast({
+        title: "Pagamento confirmado!",
+        description: `O pedido de ${order.clientName} agora está marcado como PAGO.`,
       });
     }
   };
 
   return (
-    <div className="space-y-12 animate-in fade-in duration-500 w-full">
+    <div className="space-y-12 animate-in fade-in duration-500 w-full overflow-x-hidden">
       <div className="flex flex-col items-center text-center gap-6 px-2 mb-10">
         <div className="w-full">
           <div className="flex flex-col items-center justify-center gap-6">
             <ClipboardList className="size-16 sm:size-24 text-primary" />
-            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap px-2">PEDIDOS</h1>
+            <h1 className="text-5xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap px-2">PEDIDOS</h1>
           </div>
           <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Controle de faturamento e recebimentos.</p>
         </div>
@@ -119,10 +137,10 @@ export default function PedidosPage() {
 
       <div className="flex flex-col gap-6 w-full">
         <div className="relative flex-1 w-full">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-6 text-muted-foreground" />
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 size-6 sm:size-8 text-muted-foreground" />
           <Input 
             placeholder="Buscar por ID ou nome da cliente..." 
-            className="pl-14 h-14 bg-background rounded-2xl border-muted shadow-inner font-black text-lg" 
+            className="pl-14 sm:pl-20 h-14 sm:h-24 text-lg sm:text-3xl bg-background rounded-xl sm:rounded-[2rem] border-4 border-muted shadow-inner font-black" 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -133,10 +151,10 @@ export default function PedidosPage() {
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
-              className={`capitalize h-12 sm:h-14 px-4 sm:px-8 text-xs sm:text-sm font-black rounded-xl sm:rounded-2xl transition-all border-2 ${
+              className={`capitalize h-12 sm:h-14 px-4 sm:px-8 text-xs sm:text-sm font-black rounded-xl sm:rounded-2xl transition-all border-4 ${
                 activeFilter === filter 
                   ? "bg-primary text-white border-primary shadow-lg scale-105" 
-                  : "bg-background text-muted-foreground border-muted hover:border-primary/20"
+                  : "bg-background text-muted-foreground border-muted hover:border-primary/20 opacity-60"
               }`}
             >
               {filter}
@@ -145,102 +163,120 @@ export default function PedidosPage() {
         </div>
       </div>
 
-      <Card className="border-none shadow-xl rounded-[2rem] overflow-hidden">
-        <CardContent className="p-0">
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-24 gap-3 text-muted-foreground">
-              <Loader2 className="size-16 animate-spin text-primary" />
-              <p className="text-xl font-black animate-pulse uppercase tracking-widest text-center">Carregando pedidos...</p>
-            </div>
-          ) : (
-            <div className="relative w-full overflow-auto scrollbar-hide">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b text-muted-foreground bg-muted/10 uppercase text-[10px] tracking-[0.2em] font-black">
-                    <th className="h-16 px-8 text-left">Pedido/ID</th>
-                    <th className="h-16 px-8 text-left">Cliente</th>
-                    <th className="h-16 px-8 text-left">Data</th>
-                    <th className="h-16 px-8 text-left">Pagamento</th>
-                    <th className="h-16 px-8 text-left">Total</th>
-                    <th className="h-16 px-8 text-left">Status</th>
-                    <th className="h-16 px-8 text-right">Ações</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y-2">
-                  {filteredOrders.map((order) => (
-                    <tr key={order.id} className="hover:bg-muted/30 transition-colors group">
-                      <td className="px-8 py-6">
-                        <span className="font-mono text-[10px] font-black text-primary/60 bg-primary/5 px-2 py-1 rounded">#{order.id?.slice(-6)}</span>
-                      </td>
-                      <td className="px-8 py-6">
-                        <div className="flex items-center gap-3">
-                          <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                            <User className="size-4" />
-                          </div>
-                          <span className="font-black text-base text-foreground tracking-tight line-clamp-1">{order.clientName}</span>
-                        </div>
-                      </td>
-                      <td className="px-8 py-6">
-                        <div className="flex items-center gap-2 text-muted-foreground font-bold whitespace-nowrap">
-                          <Calendar className="size-4 opacity-40" />
-                          {new Date(order.orderDate).toLocaleDateString()}
-                        </div>
-                      </td>
-                      <td className="px-8 py-6">
-                        <div className="flex items-center gap-2 text-muted-foreground font-black uppercase text-[10px] tracking-widest">
-                          <div className="size-6 rounded-lg bg-muted flex items-center justify-center">
-                            {getPaymentIcon(order.paymentMethod)}
-                          </div>
-                          {order.paymentMethod}
-                        </div>
-                      </td>
-                      <td className="px-8 py-6">
-                        <span className="font-black text-lg text-primary tracking-tighter">R$ {Number(order.finalAmount).toFixed(2)}</span>
-                      </td>
-                      <td className="px-8 py-6">
-                        <Badge className={`flex items-center gap-1 w-fit px-3 py-1 text-[9px] font-black rounded-lg border-none shadow-sm ${getStatusClass(order.paymentStatus)}`}>
-                          {getStatusIcon(order.paymentStatus)}
-                          {order.paymentStatus?.toUpperCase()}
-                        </Badge>
-                      </td>
-                      <td className="px-8 py-6 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button variant="ghost" size="icon" className="size-10 rounded-xl hover:bg-primary/10 text-primary transition-all" asChild>
-                            <Link href={`/pedidos/${order.id}`}><Eye className="size-5" /></Link>
-                          </Button>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="size-10 rounded-xl hover:bg-muted transition-all">
-                                <MoreVertical className="size-5" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl shadow-2xl border-2">
-                              <DropdownMenuItem className="p-3 rounded-xl text-sm font-black cursor-pointer hover:bg-primary/5 transition-colors">
-                                MARCAR COMO PAGO
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                className="p-3 rounded-xl text-sm font-black cursor-pointer text-destructive hover:bg-destructive/5 transition-colors" 
-                                onSelect={() => handleDelete(order.id)}
-                              >
-                                EXCLUIR REGISTRO
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {filteredOrders.length === 0 && (
-                <div className="text-center py-32 text-muted-foreground text-xl font-black italic opacity-30">
-                  Nenhum pedido encontrado.
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center py-32 gap-6 text-muted-foreground">
+          <Loader2 className="size-16 animate-spin text-primary" />
+          <p className="text-2xl font-black animate-pulse uppercase tracking-widest text-center">Carregando pedidos...</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-6 w-full pb-10">
+          {filteredOrders.map((order) => (
+            <Card 
+              key={order.id} 
+              className="bg-background border-4 border-primary/5 rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 shadow-xl hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)] hover:-translate-y-2 hover:border-primary/20 transition-all duration-500 flex flex-col justify-between w-full relative overflow-hidden group transform-gpu"
+            >
+              {/* LINHA SUPERIOR: ID E DATA */}
+              <div className="flex items-center justify-between w-full mb-4">
+                <Badge variant="outline" className="font-mono text-[10px] sm:text-xs font-black text-primary/60 bg-primary/5 border-2 border-primary/10 rounded-lg px-3 py-1">
+                  #{order.id?.slice(-6)}
+                </Badge>
+                <div className="flex items-center gap-2 text-muted-foreground font-black text-[10px] sm:text-xs uppercase tracking-widest opacity-60">
+                  <Calendar className="size-3" />
+                  {new Date(order.orderDate).toLocaleDateString()}
                 </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+              </div>
+
+              {/* CONTEÚDO CENTRAL: CLIENTE E PAGAMENTO */}
+              <div className="flex flex-col gap-1 mb-4 text-left">
+                <h3 className="font-black text-2xl sm:text-4xl text-primary uppercase tracking-tighter italic leading-none px-1 line-clamp-1 drop-shadow-md">
+                  {order.clientName}
+                </h3>
+                <div className="flex items-center gap-2 mt-2 px-1">
+                  <div className="size-8 rounded-lg bg-muted flex items-center justify-center text-primary/60 shadow-inner">
+                    {getPaymentIcon(order.paymentMethod)}
+                  </div>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground font-black uppercase tracking-[0.2em]">
+                    PAGO VIA {order.paymentMethod}
+                  </p>
+                </div>
+              </div>
+              
+              {/* LINHA DE VALOR E STATUS */}
+              <div className="flex items-center justify-between w-full mb-6 px-1">
+                <div className="flex flex-col">
+                  <p className="text-2xl sm:text-4xl font-black text-primary tracking-tighter leading-none italic">
+                    R$ {Number(order.finalAmount).toFixed(2)}
+                  </p>
+                  <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] opacity-40 mt-1">
+                    Total do Pedido
+                  </p>
+                </div>
+
+                <Badge className={`flex items-center gap-1 px-4 py-1.5 rounded-xl font-black text-[10px] uppercase tracking-widest border-none shadow-md ${getStatusClass(order.paymentStatus)}`}>
+                  {getStatusIcon(order.paymentStatus)}
+                  {order.paymentStatus?.toUpperCase()}
+                </Badge>
+              </div>
+
+              {/* BOTÕES DE AÇÃO ELITE */}
+              <div className="flex flex-row items-center justify-center gap-2 w-full pt-4 border-t-2 border-muted/30">
+                <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[10px] uppercase tracking-widest rounded-xl border-2 hover:bg-primary/5 px-2 flex-1 shadow-sm transition-all active:scale-95">
+                  <Link href={`/pedidos/${order.id}`}>
+                    <FileText className="mr-1 size-3" />
+                    Detalhes
+                  </Link>
+                </Button>
+                
+                {order.paymentStatus !== "Pago" && (
+                  <Button 
+                    variant="outline" 
+                    className="h-10 sm:h-12 font-black text-[9px] sm:text-[10px] uppercase tracking-widest rounded-xl border-2 border-green-200 text-green-600 hover:bg-green-50 hover:border-green-400 px-2 flex-1 shadow-sm transition-all active:scale-95"
+                    onClick={() => markAsPaid(order)}
+                  >
+                    <CheckCircle2 className="mr-1 size-3" />
+                    Pagar
+                  </Button>
+                )}
+
+                <Button 
+                  variant="outline" 
+                  className="h-10 sm:h-12 font-black text-[9px] sm:text-[10px] uppercase tracking-widest rounded-xl border-2 text-destructive border-destructive/20 hover:bg-destructive/5 hover:border-destructive px-2 flex-1 shadow-sm transition-all active:scale-95"
+                  onClick={() => setOrderToDelete(order)}
+                >
+                  <Trash2 className="mr-1 size-3" />
+                  EXCLUIR
+                </Button>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {!isLoading && filteredOrders.length === 0 && (
+        <div className="text-center py-32 bg-muted/10 rounded-[2.5rem] border-4 border-dashed border-muted w-full">
+          <ClipboardList className="size-24 text-muted-foreground/20 mx-auto mb-6" />
+          <h3 className="font-black text-3xl text-muted-foreground uppercase tracking-tighter">Sem vendas aqui</h3>
+          <p className="text-xl text-muted-foreground mt-4 font-bold italic opacity-60 px-4">Cadastre sua primeira venda no botão "Nova Venda" para começar o faturamento.</p>
+        </div>
+      )}
+
+      {/* Alerta de Confirmação para Excluir Pedido */}
+      <AlertDialog open={!!orderToDelete} onOpenChange={(open) => !open && setOrderToDelete(null)}>
+        <AlertDialogContent className="rounded-[2.5rem] p-8 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-3xl sm:text-5xl font-black tracking-tighter text-primary uppercase leading-none text-left px-2">Excluir Pedido?</AlertDialogTitle>
+            <AlertDialogDescription className="text-xl sm:text-2xl font-bold mt-6 leading-relaxed text-muted-foreground text-left">
+              O registro do pedido de <strong className="text-foreground border-b-4 border-primary px-1">{orderToDelete?.clientName}</strong> será removido definitivamente do histórico financeiro.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-4 mt-12 flex-col sm:flex-row">
+            <AlertDialogCancel className="h-16 sm:h-24 px-10 text-xl font-black rounded-2xl sm:rounded-3xl border-4 border-muted hover:bg-muted/50">Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="h-16 sm:h-24 px-10 text-xl font-black bg-destructive text-white hover:bg-destructive/90 rounded-2xl sm:rounded-3xl shadow-xl active:scale-95 transition-all">
+              SIM, EXCLUIR AGORA
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
