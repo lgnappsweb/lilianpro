@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "Client": {
@@ -215,6 +216,35 @@
         "unitPrice",
         "subtotal"
       ]
+    },
+    "Category": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Category",
+      "type": "object",
+      "description": "Represents a product category (e.g., Perfume, Makeup) created by the admin.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Category entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the category."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description of the category."
+        },
+        "adminId": {
+          "type": "string",
+          "description": "The ID of the admin who owns this category."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "adminId"
+      ]
     }
   },
   "auth": {
@@ -324,8 +354,28 @@
             }
           ]
         }
+      },
+      {
+        "path": "/users/{adminId}/categories/{categoryId}",
+        "definition": {
+          "entityName": "Category",
+          "schema": {
+            "$ref": "#/backend/entities/Category"
+          },
+          "description": "Stores product categories, privately owned by the administrator.",
+          "params": [
+            {
+              "name": "adminId",
+              "description": "The Firebase Authentication UID of the administrator who owns this category data."
+            },
+            {
+              "name": "categoryId",
+              "description": "The unique identifier for the Category entity."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "The Firestore structure for GlamGestão is designed around a single-administrator model, prioritizing security, simplicity, and debuggability. All application data is strictly scoped to the administrator's unique ID (UID) to ensure private access. \n\n**Authorization Independence (Denormalization Strategy):**\nTo achieve Authorization Independence, every document within the administrator's data collections (Clients, Products, Orders, OrderItems) will explicitly include an `adminId` field. This `adminId` field will store the Firebase Authentication UID of the administrator who owns the data, mirroring the `adminId` wildcard used in the document's path. For example, a Client document located at `/users/{adminId}/clients/{clientId}` will contain `adminId: \"{adminId}\"` within its data. This denormalization eliminates the need for `get()` calls in security rules to ascertain ownership, allowing rules to directly check `request.auth.uid == resource.data.adminId`. This design supports atomic operations (like transactions or batched writes) across related documents without compromising security or requiring complex rule evaluations.\n\nFor `OrderItem` documents, which are nested under `Order`, further denormalization includes both `adminId` and `orderId` within the document. This allows `OrderItem` documents to be authorized independently, verifying `request.auth.uid == resource.data.adminId` and `resource.data.orderId == orderId` (where `orderId` is the path wildcard), ensuring robust subcollection security.\n\n**QAPs (Rules are not Filters):**\nQuery-as-Permissions (QAPs) are naturally supported by the structural segregation. All core data is nested under `/users/{adminId}/...`. This means any `list` operation initiated by an authenticated user can only target collections within their specific `adminId` path. Security rules will enforce that `request.auth.uid` must match the `adminId` in the path and also the `adminId` field within the document. This inherently restricts data access to the owning administrator, making it impossible to query data belonging to other administrators (if they existed) or to retrieve unauthorized documents. The structure itself acts as the primary filter, ensuring that clients only receive data they are explicitly permitted to access.\n\n**DBAC (Database Access Control):**\nA dedicated top-level collection, `/admins/{adminId}`, is used to explicitly register and authorize administrators. The mere existence of a document for `request.auth.uid` in this collection confirms their administrative role. This acts as a simple yet powerful database-centric access control mechanism, validating the `adminId` before allowing access to any personal data collections. This setup ensures that only pre-approved UIDs can access the application's sensitive data, reinforcing the single-admin model."
+    "reasoning": "The Firestore structure for GlamGestão is designed around a single-administrator model, prioritizing security, simplicity, and debuggability. All application data is strictly scoped to the administrator's unique ID (UID) to ensure private access. \n\n**Authorization Independence (Denormalization Strategy):**\nTo achieve Authorization Independence, every document within the administrator's data collections (Clients, Products, Orders, OrderItems, Categories) will explicitly include an `adminId` field. This `adminId` field will store the Firebase Authentication UID of the administrator who owns the data, mirroring the `adminId` wildcard used in the document's path. For example, a Client document located at `/users/{adminId}/clients/{clientId}` will contain `adminId: \"{adminId}\"` within its data. This denormalization eliminates the need for `get()` calls in security rules to ascertain ownership, allowing rules to directly check `request.auth.uid == resource.data.adminId`. This design supports atomic operations (like transactions or batched writes) across related documents without compromising security or requiring complex rule evaluations.\n\nFor `OrderItem` documents, which are nested under `Order`, further denormalization includes both `adminId` and `orderId` within the document. This allows `OrderItem` documents to be authorized independently, verifying `request.auth.uid == resource.data.adminId` and `resource.data.orderId == orderId` (where `orderId` is the path wildcard), ensuring robust subcollection security.\n\n**QAPs (Rules are not Filters):**\nQuery-as-Permissions (QAPs) are naturally supported by the structural segregation. All core data is nested under `/users/{adminId}/...`. This means any `list` operation initiated by an authenticated user can only target collections within their specific `adminId` path. Security rules will enforce that `request.auth.uid` must match the `adminId` in the path and also the `adminId` field within the document. This inherently restricts data access to the owning administrator, making it impossible to query data belonging to other administrators (if they existed) or to retrieve unauthorized documents. The structure itself acts as the primary filter, ensuring that clients only receive data they are explicitly permitted to access.\n\n**DBAC (Database Access Control):**\nA dedicated top-level collection, `/admins/{adminId}`, is used to explicitly register and authorize administrators. The mere existence of a document for `request.auth.uid` in this collection confirms their administrative role. This acts as a simple yet powerful database-centric access control mechanism, validating the `adminId` before allowing access to any personal data collections. This setup ensures that only pre-approved UIDs can access the application's sensitive data, reinforcing the single-admin model."
   }
 }
