@@ -55,7 +55,7 @@ export default function DetalhesClientePage() {
         <div className="bg-muted p-8 rounded-full mb-6">
           <User className="size-24 text-muted-foreground/40" />
         </div>
-        <h2 className="text-4xl font-black text-primary uppercase tracking-tighter">Ops! Cliente não encontrada</h2>
+        <h2 className="text-4xl font-black text-primary uppercase tracking-tighter px-2">Ops! Cliente não encontrada</h2>
         <p className="text-xl text-muted-foreground mt-4 font-bold opacity-60">Este registro pode ter sido excluído ou movido.</p>
         <Button asChild className="mt-10 h-16 px-10 text-xl font-black rounded-2xl shadow-xl bg-primary" variant="default">
           <Link href="/clientes">Voltar para a lista</Link>
@@ -75,7 +75,7 @@ export default function DetalhesClientePage() {
         <div className="w-full">
           <div className="flex flex-col items-center justify-center gap-6">
             <ClipboardCheck className="size-16 sm:size-24 text-primary" />
-            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap">
+            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap px-2">
               CADASTRO
             </h1>
           </div>
@@ -85,7 +85,7 @@ export default function DetalhesClientePage() {
 
       {/* NOME DA CLIENTE (FLEXÍVEL - ATÉ 2 LINHAS) */}
       <div className="flex flex-col items-center text-center mb-10 px-4">
-        <h2 className="text-4xl md:text-7xl font-black tracking-tighter text-foreground font-headline uppercase leading-tight italic drop-shadow-sm max-w-5xl">
+        <h2 className="text-4xl md:text-7xl font-black tracking-tighter text-foreground font-headline uppercase leading-tight italic drop-shadow-sm max-w-5xl px-2">
           {cliente.fullName}
         </h2>
         <Badge variant="secondary" className="mt-4 bg-primary/10 text-primary border-none font-black px-6 py-2 rounded-full text-xs sm:text-sm uppercase tracking-widest">
@@ -98,7 +98,7 @@ export default function DetalhesClientePage() {
         <div className="lg:col-span-4 space-y-8">
           <Card className="border-none shadow-2xl rounded-[2rem] overflow-hidden border-t-8 border-green-500 bg-background">
             <CardHeader className="bg-muted/30 p-8 border-b-2">
-              <CardTitle className="flex flex-row items-center gap-3 text-2xl font-black">
+              <CardTitle className="flex flex-row items-center gap-3 text-2xl font-black px-2">
                 <Phone className="size-7 text-green-600" />
                 CONEXÃO
               </CardTitle>
@@ -123,7 +123,7 @@ export default function DetalhesClientePage() {
         <div className="lg:col-span-8 space-y-8">
           <Card className="border-none shadow-2xl rounded-[2rem] overflow-hidden bg-background">
             <CardHeader className="bg-muted/30 p-8 border-b-2">
-              <CardTitle className="flex flex-row items-center gap-3 text-2xl font-black text-left">
+              <CardTitle className="flex flex-row items-center gap-3 text-2xl font-black text-left px-2">
                 <MapPin className="size-7 text-primary" />
                 LOCALIZAÇÃO & ENTREGA
               </CardTitle>
@@ -156,7 +156,7 @@ export default function DetalhesClientePage() {
 
           <Card className="border-none shadow-2xl rounded-[2rem] overflow-hidden bg-white/50 backdrop-blur-sm border-2 border-primary/5">
             <CardHeader className="bg-primary/5 p-8 border-b-2 border-primary/10">
-              <CardTitle className="flex flex-row items-center gap-3 text-2xl font-black text-left">
+              <CardTitle className="flex flex-row items-center gap-3 text-2xl font-black text-left px-2">
                 <Info className="size-7 text-primary" />
                 OBSERVAÇÕES DO PERFIL
               </CardTitle>

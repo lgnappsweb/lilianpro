@@ -148,7 +148,7 @@ export default function DashboardPage() {
         <div className="w-full">
           <div className="flex flex-col items-center justify-center gap-6">
             <LayoutDashboard className="size-16 sm:size-24 text-primary" />
-            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap">Olá, LILIAN</h1>
+            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap px-2">Olá, LILIAN</h1>
           </div>
           <p className="text-base sm:text-xl text-muted-foreground mt-4 font-bold opacity-80 uppercase tracking-widest">Veja como está o seu negócio hoje.</p>
         </div>
@@ -165,13 +165,13 @@ export default function DashboardPage() {
           <Link href={stat.href} key={i} className="block group">
             <Card className="border-none shadow-lg hover:shadow-2xl transition-all rounded-[2.5rem] overflow-hidden group-hover:scale-[1.01] active:scale-[0.99] border-2 border-transparent hover:border-primary/20">
               <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 px-8 pt-8">
-                <CardTitle className="text-base font-black text-muted-foreground uppercase tracking-widest">{stat.title}</CardTitle>
+                <CardTitle className="text-base font-black text-muted-foreground uppercase tracking-widest px-2">{stat.title}</CardTitle>
                 <div className={`${stat.bg} ${stat.color} p-4 rounded-2xl group-hover:scale-110 transition-transform shadow-inner`}>
                   <stat.icon className="h-8 w-8" />
                 </div>
               </CardHeader>
               <CardContent className="px-8 pb-10">
-                <div className="text-4xl md:text-6xl font-black truncate text-primary tracking-tighter">{stat.value}</div>
+                <div className="text-4xl md:text-6xl font-black truncate text-primary tracking-tighter px-2">{stat.value}</div>
                 <div className="flex items-center justify-between mt-4">
                   <p className="text-sm font-black text-muted-foreground uppercase tracking-widest opacity-60">{stat.description}</p>
                   <ChevronRight className="size-8 text-primary opacity-0 group-hover:opacity-100 transition-all -translate-x-4 group-hover:translate-x-0" />
@@ -187,7 +187,7 @@ export default function DashboardPage() {
           <CardHeader className="p-8 pb-4">
             <div className="flex flex-col items-center gap-3 text-primary">
               <Sparkles className="size-8" />
-              <CardTitle className="text-2xl md:text-3xl font-black">Resumo Inteligente</CardTitle>
+              <CardTitle className="text-2xl md:text-3xl font-black px-2">Resumo Inteligente</CardTitle>
             </div>
             <CardDescription className="text-base font-bold mt-1">Insights automáticos para seu crescimento</CardDescription>
           </CardHeader>
@@ -202,7 +202,7 @@ export default function DashboardPage() {
 
         <Card className="md:col-span-3 border-none shadow-xl rounded-[2.5rem] overflow-hidden">
           <CardHeader className="p-8 pb-4 bg-muted/20">
-            <CardTitle className="text-2xl md:text-3xl font-black flex flex-col items-center gap-3">
+            <CardTitle className="text-2xl md:text-3xl font-black flex flex-col items-center gap-3 px-2">
               <ShoppingBag className="size-8 text-primary" />
               Catálogo
             </CardTitle>
@@ -214,7 +214,7 @@ export default function DashboardPage() {
                   <Package className="size-8" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xl font-black truncate uppercase tracking-tight">Produtos</p>
+                  <p className="text-xl font-black truncate uppercase tracking-tight px-2">Produtos</p>
                   <p className="text-sm text-muted-foreground font-bold">{products?.length || 0} itens</p>
                 </div>
                 <Badge variant="secondary" className="text-xs font-black px-3 py-1 bg-primary/5 text-primary border-none">Ver</Badge>
@@ -226,7 +226,7 @@ export default function DashboardPage() {
                   <Users className="size-8" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xl font-black truncate uppercase tracking-tight">Clientes</p>
+                  <p className="text-xl font-black truncate uppercase tracking-tight px-2">Clientes</p>
                   <p className="text-sm text-muted-foreground font-bold">{clients?.length || 0} contatos</p>
                 </div>
                 <Badge variant="secondary" className="text-xs font-black px-3 py-1 bg-accent/5 text-accent border-none">Ver</Badge>
@@ -238,7 +238,7 @@ export default function DashboardPage() {
 
       <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden">
         <CardHeader className="flex flex-row items-center justify-between px-10 py-8 bg-muted/30">
-          <CardTitle className="text-2xl md:text-3xl font-black">Vendas Recentes</CardTitle>
+          <CardTitle className="text-2xl md:text-3xl font-black px-2">Vendas Recentes</CardTitle>
           <Button variant="ghost" size="lg" className="text-base font-black text-primary hover:bg-primary/10 rounded-xl" asChild>
             <Link href="/pedidos">Ver Histórico</Link>
           </Button>
@@ -258,7 +258,7 @@ export default function DashboardPage() {
                 {recentOrders.map((order) => (
                   <tr key={order.id} className="hover:bg-muted/50 transition-colors group">
                     <td className="px-10 py-6 text-foreground font-bold">{new Date(order.orderDate).toLocaleDateString()}</td>
-                    <td className="px-10 py-6 font-black text-primary text-xl tracking-tighter">R$ {Number(order.finalAmount).toFixed(2)}</td>
+                    <td className="px-10 py-6 font-black text-primary text-xl tracking-tighter px-2">R$ {Number(order.finalAmount).toFixed(2)}</td>
                     <td className="px-10 py-6">
                       <Badge variant={order.paymentStatus === "Pago" ? "default" : "secondary"} className={`text-[10px] font-black px-4 py-1.5 rounded-xl shadow-sm ${order.paymentStatus === "Pago" ? "bg-green-600" : "bg-orange-500 text-white"}`}>
                         {order.paymentStatus?.toUpperCase()}

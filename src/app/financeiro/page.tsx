@@ -59,7 +59,7 @@ export default function FinanceiroPage() {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-4 text-muted-foreground">
         <Loader2 className="size-14 animate-spin text-primary" />
-        <p className="text-xl font-medium animate-pulse">Sincronizando finanças...</p>
+        <p className="text-xl font-medium animate-pulse text-center px-2">Sincronizando finanças...</p>
       </div>
     );
   }
@@ -70,9 +70,9 @@ export default function FinanceiroPage() {
         <div className="w-full">
           <div className="flex flex-col items-center justify-center gap-6">
             <Wallet className="size-16 sm:size-24 text-primary" />
-            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap">FINANCEIRO</h1>
+            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap px-2">FINANCEIRO</h1>
           </div>
-          <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest">Controle real de entradas e contas a receber.</p>
+          <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Controle real de entradas e contas a receber.</p>
         </div>
         <div className="flex gap-3 w-full sm:w-auto">
           <Button variant="outline" className="flex-1 sm:flex-none h-12 px-6 text-base font-bold rounded-xl border-muted">
@@ -91,13 +91,13 @@ export default function FinanceiroPage() {
           <Card key={i} className="border-none shadow-lg overflow-hidden rounded-3xl group">
             <div className={`h-2.5 w-full ${item.bg.replace('100', '500')} opacity-80 group-hover:opacity-100 transition-opacity`} />
             <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 px-6 pt-6">
-              <CardTitle className="text-sm font-black text-muted-foreground uppercase tracking-widest">{item.title}</CardTitle>
+              <CardTitle className="text-sm font-black text-muted-foreground uppercase tracking-widest px-2">{item.title}</CardTitle>
               <div className={`${item.bg} ${item.color} p-3 rounded-2xl shadow-inner`}>
                 <item.icon className="h-6 w-6" />
               </div>
             </CardHeader>
             <CardContent className="px-6 pb-8">
-              <div className="text-4xl font-black text-foreground">{item.value}</div>
+              <div className="text-4xl font-black text-foreground px-2">{item.value}</div>
             </CardContent>
           </Card>
         ))}
@@ -106,20 +106,20 @@ export default function FinanceiroPage() {
       <div className="grid gap-8 md:grid-cols-2">
         <Card className="border-none shadow-lg rounded-3xl overflow-hidden">
           <CardHeader className="bg-muted/30 pb-6">
-            <CardTitle className="text-2xl font-black">Pagamentos para Receber</CardTitle>
+            <CardTitle className="text-2xl font-black px-2">Pagamentos para Receber</CardTitle>
             <CardDescription className="text-base font-medium">Vendas "Fiado" com vencimento próximo</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 p-6">
             {proximosRecebimentos.map((p, i) => (
               <div key={i} className="flex items-center justify-between p-6 rounded-2xl border border-border/50 bg-background shadow-sm hover:shadow-md transition-all">
                 <div>
-                  <p className="font-black text-xl">Pedido #{p.id.slice(-6)}</p>
+                  <p className="font-black text-xl px-2">Pedido #{p.id.slice(-6)}</p>
                   <p className="text-sm text-muted-foreground font-bold flex items-center gap-2 mt-1">
                     <Calendar className="size-4" /> Vence em: {new Date(p.dueDate).toLocaleDateString()}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-black text-primary">R$ {Number(p.finalAmount).toFixed(2)}</p>
+                  <p className="text-2xl font-black text-primary px-2">R$ {Number(p.finalAmount).toFixed(2)}</p>
                   <Badge variant="outline" className="text-orange-600 border-orange-200 font-black px-3 py-1 mt-2">
                     Aguardando
                   </Badge>
@@ -134,7 +134,7 @@ export default function FinanceiroPage() {
 
         <Card className="border-none shadow-lg rounded-3xl overflow-hidden">
           <CardHeader className="bg-muted/30 pb-6">
-            <CardTitle className="text-2xl font-black">Entradas Confirmadas</CardTitle>
+            <CardTitle className="text-2xl font-black px-2">Entradas Confirmadas</CardTitle>
             <CardDescription className="text-base font-medium">Últimos pagamentos recebidos com sucesso</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 p-6">
@@ -145,14 +145,14 @@ export default function FinanceiroPage() {
                     <ArrowDownCircle className="size-7" />
                   </div>
                   <div>
-                    <p className="font-black text-xl">Via {p.paymentMethod}</p>
+                    <p className="font-black text-xl px-2">Via {p.paymentMethod}</p>
                     <p className="text-sm text-muted-foreground font-bold flex items-center gap-2 mt-1">
                       <Calendar className="size-4" /> {new Date(p.orderDate).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-black text-green-700">+ R$ {Number(p.finalAmount).toFixed(2)}</p>
+                  <p className="text-2xl font-black text-green-700 px-2">+ R$ {Number(p.finalAmount).toFixed(2)}</p>
                 </div>
               </div>
             ))}

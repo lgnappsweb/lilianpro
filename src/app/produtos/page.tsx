@@ -61,9 +61,9 @@ export default function ProdutosPage() {
         <div className="w-full">
           <div className="flex flex-col items-center justify-center gap-6">
             <Package className="size-16 sm:size-24 text-primary" />
-            <h1 className="text-6xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap">PRODUTOS</h1>
+            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap px-2">PRODUTOS</h1>
           </div>
-          <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest">Organize seus produtos da Avon, Natura e outras marcas.</p>
+          <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Organize seus produtos da Avon, Natura e outras marcas.</p>
         </div>
         <Button className="w-full h-14 sm:h-20 px-10 text-xl font-black rounded-2xl shadow-xl bg-primary hover:bg-primary/90 transition-transform hover:scale-105">
           <Plus className="mr-3 size-6 sm:size-8" />
@@ -109,7 +109,7 @@ export default function ProdutosPage() {
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-32 gap-4 text-muted-foreground">
           <Loader2 className="size-16 animate-spin text-primary" />
-          <p className="text-xl font-medium animate-pulse">Carregando seu catálogo...</p>
+          <p className="text-xl font-medium animate-pulse text-center px-2">Carregando seu catálogo...</p>
         </div>
       ) : (
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
@@ -132,14 +132,14 @@ export default function ProdutosPage() {
               <CardHeader className="pb-3 pt-6 px-6">
                 <div className="flex items-start justify-between gap-3">
                   <div className="space-y-1">
-                    <CardTitle className="text-2xl font-black leading-tight group-hover:text-primary transition-colors line-clamp-2">{product.name}</CardTitle>
-                    <CardDescription className="text-sm font-bold uppercase tracking-wider text-primary/60">{product.category}</CardDescription>
+                    <CardTitle className="text-2xl font-black leading-tight group-hover:text-primary transition-colors line-clamp-2 px-2">{product.name}</CardTitle>
+                    <CardDescription className="text-sm font-bold uppercase tracking-wider text-primary/60 px-2">{product.category}</CardDescription>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="pb-6 px-6 space-y-4">
                 <div className="flex items-center justify-between">
-                  <p className="text-3xl font-black text-primary">R$ {Number(product.salePrice).toFixed(2)}</p>
+                  <p className="text-3xl font-black text-primary px-2">R$ {Number(product.salePrice).toFixed(2)}</p>
                   <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-xl">
                     <Package className="size-4" />
                     <span>COD: {product.productCode}</span>

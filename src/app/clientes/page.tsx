@@ -78,7 +78,7 @@ export default function ClientesPage() {
         <div className="w-full">
           <div className="flex flex-col items-center justify-center gap-6">
             <Users className="size-16 sm:size-24 text-primary" />
-            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap">CLIENTES</h1>
+            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap px-2">CLIENTES</h1>
           </div>
           <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Gerencie seu catálogo de contatos e histórico.</p>
         </div>
@@ -114,7 +114,7 @@ export default function ClientesPage() {
                   <div className="size-12 sm:size-16 rounded-full bg-primary/10 flex items-center justify-center text-primary shadow-inner">
                     <User className="size-6 sm:size-10" />
                   </div>
-                  <h3 className="font-black text-2xl sm:text-4xl text-primary uppercase tracking-tighter italic text-center line-clamp-2 leading-tight">
+                  <h3 className="font-black text-2xl sm:text-4xl text-primary uppercase tracking-tighter italic text-center line-clamp-2 leading-tight px-2">
                     {cliente.fullName}
                   </h3>
                 </div>
@@ -170,7 +170,7 @@ export default function ClientesPage() {
       <AlertDialog open={!!clientToDelete} onOpenChange={(open) => !open && setClientToDelete(null)}>
         <AlertDialogContent className="rounded-[2.5rem] p-8 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-3xl sm:text-5xl font-black tracking-tighter text-primary uppercase leading-none text-left">Deseja excluir permanentemente?</AlertDialogTitle>
+            <AlertDialogTitle className="text-3xl sm:text-5xl font-black tracking-tighter text-primary uppercase leading-none text-left px-2">Deseja excluir permanentemente?</AlertDialogTitle>
             <AlertDialogDescription className="text-xl sm:text-2xl font-bold mt-6 leading-relaxed text-muted-foreground text-left">
               Os dados da cliente <strong className="text-foreground border-b-4 border-primary px-1">{clientToDelete?.fullName}</strong> e todo o seu histórico serão removidos definitivamente.
             </AlertDialogDescription>

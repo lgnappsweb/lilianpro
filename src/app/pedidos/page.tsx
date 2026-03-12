@@ -90,7 +90,7 @@ export default function PedidosPage() {
         <div className="w-full">
           <div className="flex flex-col items-center justify-center gap-6">
             <ClipboardList className="size-16 sm:size-24 text-primary" />
-            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap">PEDIDOS</h1>
+            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap px-2">PEDIDOS</h1>
           </div>
           <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Controle de faturamento e recebimentos.</p>
         </div>
@@ -148,12 +148,12 @@ export default function PedidosPage() {
                     <tr key={order.id} className="hover:bg-muted/30 transition-colors group">
                       <td className="px-8 py-6 font-mono text-xs font-black text-primary/80">#{order.id?.slice(-6)}</td>
                       <td className="px-8 py-6">
-                        <div className="flex items-center gap-2 text-foreground font-bold">
+                        <div className="flex items-center gap-2 text-foreground font-bold px-2">
                           <Calendar className="size-4 opacity-40 text-primary" />
                           {new Date(order.orderDate).toLocaleDateString()}
                         </div>
                       </td>
-                      <td className="px-8 py-6 font-black text-lg text-primary tracking-tighter">R$ {Number(order.finalAmount).toFixed(2)}</td>
+                      <td className="px-8 py-6 font-black text-lg text-primary tracking-tighter px-2">R$ {Number(order.finalAmount).toFixed(2)}</td>
                       <td className="px-8 py-6">
                         <Badge className={`flex items-center gap-1 w-fit px-3 py-1 text-[10px] font-black rounded-lg border-none shadow-sm ${getStatusClass(order.paymentStatus)}`}>
                           {getStatusIcon(order.paymentStatus)}

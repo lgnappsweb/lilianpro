@@ -54,7 +54,7 @@ export default function RelatoriosPage() {
         <div className="w-full">
           <div className="flex flex-col items-center justify-center gap-6">
             <BarChart3 className="size-16 sm:size-24 text-primary" />
-            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap">RELATÓRIOS</h1>
+            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap px-2">RELATÓRIOS</h1>
           </div>
           <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Desempenho do seu negócio em gráficos detalhados.</p>
         </div>
@@ -68,7 +68,7 @@ export default function RelatoriosPage() {
         {/* Sales Trend Chart */}
         <Card className="md:col-span-2 border-none shadow-lg rounded-[2rem] overflow-hidden">
           <CardHeader className="bg-muted/10 pb-4">
-            <CardTitle className="text-2xl font-black flex items-center gap-3">
+            <CardTitle className="text-2xl font-black flex items-center gap-3 px-2">
               <TrendingUp className="size-7 text-primary" />
               Evolução de Vendas
             </CardTitle>
@@ -95,7 +95,7 @@ export default function RelatoriosPage() {
         {/* Brands Distribution */}
         <Card className="border-none shadow-lg rounded-[2rem] overflow-hidden">
           <CardHeader className="bg-muted/10 pb-4">
-            <CardTitle className="text-2xl font-black flex items-center gap-3">
+            <CardTitle className="text-2xl font-black flex items-center gap-3 px-2">
               <Award className="size-7 text-primary" />
               Mix de Marcas
             </CardTitle>
@@ -127,9 +127,9 @@ export default function RelatoriosPage() {
                 <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-muted/20">
                   <div className="flex items-center gap-3">
                     <div className="size-4 rounded-full shadow-sm" style={{ backgroundColor: COLORS[i] }} />
-                    <span className="text-lg font-black">{item.name}</span>
+                    <span className="text-lg font-black px-2">{item.name}</span>
                   </div>
-                  <span className="text-lg font-black text-primary">{item.value}%</span>
+                  <span className="text-lg font-black text-primary px-2">{item.value}%</span>
                 </div>
               ))}
             </div>
@@ -139,7 +139,7 @@ export default function RelatoriosPage() {
         {/* Top Clients Table */}
         <Card className="md:col-span-3 border-none shadow-lg rounded-[2rem] overflow-hidden">
           <CardHeader className="bg-muted/10 pb-4">
-            <CardTitle className="text-2xl font-black flex items-center gap-3">
+            <CardTitle className="text-2xl font-black flex items-center gap-3 px-2">
               <Users className="size-7 text-primary" />
               Melhores Clientes
             </CardTitle>
@@ -157,12 +157,12 @@ export default function RelatoriosPage() {
                     {i + 1}
                   </div>
                   <div>
-                    <p className="text-2xl font-black text-foreground leading-tight">{client.name}</p>
+                    <p className="text-2xl font-black text-foreground leading-tight px-2">{client.name}</p>
                     <p className="text-sm font-bold text-muted-foreground mt-1 uppercase tracking-widest">{client.count} pedidos realizados</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-3xl font-black text-primary leading-tight">R$ {client.total.toFixed(2)}</p>
+                  <p className="text-3xl font-black text-primary leading-tight px-2">R$ {client.total.toFixed(2)}</p>
                   <p className="text-xs font-black text-green-600 bg-green-50 px-3 py-1 rounded-lg mt-2 inline-block">Top {i + 1} Compradora</p>
                 </div>
               </div>

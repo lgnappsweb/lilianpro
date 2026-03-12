@@ -166,9 +166,9 @@ export default function NovaVendaPage() {
         <div className="w-full">
           <div className="flex flex-col items-center justify-center gap-6">
             <ShoppingBag className="size-16 sm:size-24 text-primary" />
-            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm whitespace-nowrap">NOVA VENDA</h1>
+            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm whitespace-nowrap px-2">NOVA VENDA</h1>
           </div>
-          <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest">Cadastre uma venda rapidamente no seu sistema.</p>
+          <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Cadastre uma venda rapidamente no seu sistema.</p>
         </div>
       </div>
 
@@ -176,7 +176,7 @@ export default function NovaVendaPage() {
         {/* 1. Cliente */}
         <Card className="border-none shadow-xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
           <CardHeader className="bg-muted/30 p-6 sm:p-8 border-b-2">
-            <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left">
+            <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left px-2">
               <User className="size-8 sm:size-10 text-primary" />
               1. Selecionar Cliente
             </CardTitle>
@@ -201,7 +201,7 @@ export default function NovaVendaPage() {
         {/* 2. Produtos */}
         <Card className="border-none shadow-xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
           <CardHeader className="bg-muted/30 p-6 sm:p-8 border-b-2">
-            <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left">
+            <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left px-2">
               <Package className="size-8 sm:size-10 text-primary" />
               2. Produtos
             </CardTitle>
@@ -265,7 +265,7 @@ export default function NovaVendaPage() {
                     </div>
                     <div className="space-y-2 text-left">
                       <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Subtotal</Label>
-                      <div className="h-14 sm:h-16 flex items-center justify-center bg-primary/10 rounded-xl sm:rounded-2xl text-xl sm:text-2xl font-black text-primary border-2 border-primary/20 shadow-inner">
+                      <div className="h-14 sm:h-16 flex items-center justify-center bg-primary/10 rounded-xl sm:rounded-2xl text-xl sm:text-2xl font-black text-primary border-2 border-primary/20 shadow-inner px-2">
                         R$ {(item.price * item.quantity).toFixed(2)}
                       </div>
                     </div>
@@ -279,7 +279,7 @@ export default function NovaVendaPage() {
         {/* 3. Pagamento */}
         <Card className="border-none shadow-xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
           <CardHeader className="bg-muted/30 p-6 sm:p-8 border-b-2">
-            <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left">
+            <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left px-2">
               <CreditCard className="size-8 sm:size-10 text-primary" />
               3. Pagamento
             </CardTitle>
@@ -307,7 +307,7 @@ export default function NovaVendaPage() {
                       )}
                     >
                       <option.icon className={cn("size-8 sm:size-12", paymentMethod === option.id ? "text-white" : "text-primary")} />
-                      <span className="text-xs sm:text-2xl font-black uppercase tracking-tight">{option.label}</span>
+                      <span className="text-xs sm:text-2xl font-black uppercase tracking-tight px-2">{option.label}</span>
                     </button>
                   ))}
                 </div>
@@ -335,7 +335,7 @@ export default function NovaVendaPage() {
         {/* 4. Checklist do Pedido (Resumo) */}
         <Card className="border-none shadow-xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden bg-slate-900 text-white">
           <CardHeader className="p-8 sm:p-10 border-b border-white/10">
-            <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left">
+            <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left px-2">
               <ShoppingBag className="size-8 sm:size-10 text-[#39FF14]" />
               4. Check-in da Venda
             </CardTitle>
@@ -349,7 +349,7 @@ export default function NovaVendaPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className={cn("text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] mb-1 transition-colors", selectedClientId ? "text-[#39FF14]" : "text-white/40")}>Cliente Selecionada</p>
-                  <p className={cn("text-xl sm:text-3xl font-black truncate transition-colors", selectedClientId ? "text-white" : "text-white/20")}>
+                  <p className={cn("text-xl sm:text-3xl font-black truncate transition-colors px-2", selectedClientId ? "text-white" : "text-white/20")}>
                     {selectedClient?.fullName || "Aguardando seleção..."}
                   </p>
                 </div>
@@ -365,8 +365,8 @@ export default function NovaVendaPage() {
                   <div className="space-y-3 max-h-60 overflow-y-auto scrollbar-hide pr-4">
                     {selectedItems.filter(i => i.productId).map((item, idx) => (
                       <div key={idx} className="flex justify-between items-center text-base sm:text-xl font-bold border-b border-white/10 pb-2 last:border-0 last:pb-0 animate-in slide-in-from-left-2">
-                        <span className="text-white/80">{item.quantity}x {item.name}</span>
-                        <span className="font-black text-[#39FF14]">R$ {(item.price * item.quantity).toFixed(2)}</span>
+                        <span className="text-white/80 px-2">{item.quantity}x {item.name}</span>
+                        <span className="font-black text-[#39FF14] px-2">R$ {(item.price * item.quantity).toFixed(2)}</span>
                       </div>
                     ))}
                     {!hasItems && <p className="text-lg italic text-white/20">Nenhum item adicionado ainda...</p>}
@@ -381,7 +381,7 @@ export default function NovaVendaPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className={cn("text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] mb-1 transition-colors", paymentMethod ? "text-[#39FF14]" : "text-white/40")}>Forma de Pagamento</p>
-                  <p className={cn("text-xl sm:text-3xl font-black uppercase transition-colors", paymentMethod ? "text-white" : "text-white/20")}>
+                  <p className={cn("text-xl sm:text-3xl font-black uppercase transition-colors px-2", paymentMethod ? "text-white" : "text-white/20")}>
                     {paymentMethod || "Aguardando..."}
                   </p>
                 </div>
@@ -393,7 +393,7 @@ export default function NovaVendaPage() {
         {/* 5. Finalização Financeira (Cores do Sistema) */}
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[3rem] overflow-hidden bg-primary text-primary-foreground">
           <CardHeader className="p-8 sm:p-12 pb-4">
-             <CardTitle className="flex flex-row items-center gap-4 text-3xl sm:text-5xl font-black tracking-tighter uppercase text-left">
+             <CardTitle className="flex flex-row items-center gap-4 text-3xl sm:text-5xl font-black tracking-tighter uppercase text-left px-2">
               <ReceiptText className="size-10 sm:size-14" />
               5. Finalização
             </CardTitle>
@@ -425,7 +425,7 @@ export default function NovaVendaPage() {
 
                <div className="p-8 sm:p-12 rounded-[2rem] sm:rounded-[3rem] shadow-2xl text-center border-8 bg-white text-primary border-white animate-in zoom-in-95 duration-500">
                   <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.4em] mb-4 opacity-60">Total a Pagar</p>
-                  <p className="text-4xl sm:text-8xl font-black tracking-tighter leading-none">R$ {finalTotal.toFixed(2)}</p>
+                  <p className="text-4xl sm:text-8xl font-black tracking-tighter leading-none px-2">R$ {finalTotal.toFixed(2)}</p>
                 </div>
             </div>
           </CardContent>
@@ -450,7 +450,7 @@ export default function NovaVendaPage() {
       <AlertDialog open={!!itemToDeleteId} onOpenChange={(open) => !open && setItemToDeleteId(null)}>
         <AlertDialogContent className="rounded-[2rem] sm:rounded-[3rem] p-8 sm:p-12 border-4 shadow-2xl max-w-xl mx-auto">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-2xl sm:text-4xl font-black tracking-tight text-primary text-left">Remover este item?</AlertDialogTitle>
+            <AlertDialogTitle className="text-2xl sm:text-4xl font-black tracking-tight text-primary text-left px-2">Remover este item?</AlertDialogTitle>
             <AlertDialogDescription className="text-lg sm:text-2xl font-bold mt-4 text-muted-foreground text-left">
               Você tem certeza que deseja retirar este produto da venda atual?
             </AlertDialogDescription>

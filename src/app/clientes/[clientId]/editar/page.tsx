@@ -120,7 +120,7 @@ export default function EditarClientePage() {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-4 text-muted-foreground">
         <Loader2 className="size-14 animate-spin text-primary" />
-        <p className="text-xl font-medium animate-pulse">Buscando dados da cliente...</p>
+        <p className="text-xl font-medium animate-pulse text-center px-2">Buscando dados da cliente...</p>
       </div>
     );
   }
@@ -131,7 +131,7 @@ export default function EditarClientePage() {
         <div className="w-full">
           <div className="flex flex-col items-center justify-center gap-6">
             <Edit className="size-16 sm:size-24 text-primary" />
-            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap">EDITAR CLIENTE</h1>
+            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap px-2">EDITAR CLIENTE</h1>
           </div>
           <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">ATUALIZE AS INFORMAÇÕES DO CLIENTE</p>
         </div>
@@ -140,7 +140,7 @@ export default function EditarClientePage() {
       <form onSubmit={handleSubmit} className="flex flex-col gap-10">
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
           <CardHeader className="bg-muted/30 p-8 border-b-2">
-            <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left">
+            <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left px-2">
               <User className="size-8 text-primary" />
               Identificação & Contato
             </CardTitle>
@@ -183,7 +183,7 @@ export default function EditarClientePage() {
 
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
           <CardHeader className="bg-muted/30 p-8 border-b-2">
-            <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left">
+            <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left px-2">
               <MapPin className="size-8 text-primary" />
               Localização & Endereço
             </CardTitle>
@@ -240,7 +240,7 @@ export default function EditarClientePage() {
 
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
           <CardHeader className="bg-muted/30 p-8 border-b-2">
-            <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left">
+            <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left px-2">
               <Info className="size-8 text-primary" />
               Observações & Descrição
             </CardTitle>

@@ -111,7 +111,7 @@ export default function NovoClientePage() {
         <div className="w-full">
           <div className="flex flex-col items-center justify-center gap-6">
             <UserPlus className="size-16 sm:size-24 text-primary" />
-            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap">NOVO CLIENTE</h1>
+            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap px-2">NOVO CLIENTE</h1>
           </div>
           <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">ADICIONE UM NOVO CLIENTE AO SEU CATÁLOGO</p>
         </div>
@@ -120,7 +120,7 @@ export default function NovoClientePage() {
       <form onSubmit={handleSubmit} className="flex flex-col gap-10">
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
           <CardHeader className="bg-muted/30 p-8 border-b-2">
-            <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left">
+            <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left px-2">
               <User className="size-8 text-primary" />
               Identificação & Contato
             </CardTitle>
@@ -163,7 +163,7 @@ export default function NovoClientePage() {
 
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
           <CardHeader className="bg-muted/30 p-8 border-b-2">
-            <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left">
+            <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left px-2">
               <MapPin className="size-8 text-primary" />
               Localização & Endereço
             </CardTitle>
@@ -220,7 +220,7 @@ export default function NovoClientePage() {
 
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
           <CardHeader className="bg-muted/30 p-8 border-b-2">
-            <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left">
+            <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left px-2">
               <Info className="size-8 text-primary" />
               Observações & Descrição
             </CardTitle>
