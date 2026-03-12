@@ -4,9 +4,6 @@
 import React, { useState, useMemo } from "react";
 import {
   Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +17,7 @@ import {
   Loader2,
   Edit,
   FileText,
-} from "lucide-material";
+} from "lucide-react";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, doc } from "firebase/firestore";
 import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
@@ -176,7 +173,6 @@ export default function ProdutosPage() {
                     COD: {product.productCode}
                   </p>
                   
-                  {/* Preço posicionado abaixo do nome e código */}
                   <div className="mt-2 px-1">
                     <p className="text-2xl sm:text-4xl font-black text-primary tracking-tighter leading-none">
                       R$ {Number(product.salePrice).toFixed(2)}
