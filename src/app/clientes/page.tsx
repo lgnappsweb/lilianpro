@@ -4,8 +4,6 @@
 import React, { useState, useMemo } from "react";
 import {
   Card,
-  CardContent,
-  CardHeader,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -124,69 +122,74 @@ export default function ClientesPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredClientes.map((cliente) => (
-              <Card key={cliente.id} className="bg-background border-4 border-muted rounded-[2rem] p-6 sm:p-8 space-y-6 shadow-xl hover:border-primary/20 transition-all group relative overflow-hidden">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-center gap-4 sm:gap-6 min-w-0 flex-1">
-                    <div className="size-16 sm:size-20 rounded-2xl sm:rounded-3xl bg-primary/10 flex items-center justify-center text-primary font-black text-2xl sm:text-4xl border-4 border-primary/20 shrink-0 group-hover:scale-110 transition-transform">
-                      {cliente.fullName?.charAt(0).toUpperCase()}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="font-black text-xl sm:text-2xl break-words leading-tight uppercase tracking-tight text-primary">{cliente.fullName}</h3>
-                      <div className="flex flex-col gap-2 mt-2">
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <MapPin className="size-4 text-primary/40 shrink-0" />
-                          <span className="text-xs sm:text-sm font-black uppercase tracking-widest opacity-80 break-words">
-                            {cliente.neighborhood ? `${cliente.neighborhood}, ` : ""}{cliente.city}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <Phone className="size-4 text-primary/40 shrink-0" />
-                          <span className="text-xs sm:text-sm font-black uppercase tracking-widest opacity-80">{cliente.phone}</span>
-                        </div>
+              <Card key={cliente.id} className="bg-background border-4 border-muted rounded-[2rem] p-6 sm:p-8 space-y-6 shadow-xl hover:border-primary/20 transition-all group relative overflow-hidden flex flex-col justify-between h-full min-h-[280px]">
+                <div className="space-y-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-center gap-4 min-w-0 flex-1">
+                      <div className="size-14 sm:size-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black text-xl sm:text-2xl border-4 border-primary/20 shrink-0 group-hover:scale-110 transition-transform">
+                        {cliente.fullName?.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-black text-xl sm:text-2xl break-words leading-tight uppercase tracking-tight text-primary">
+                          {cliente.fullName}
+                        </h3>
                       </div>
                     </div>
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="size-10 sm:size-12 rounded-2xl border-2 border-transparent hover:border-muted-foreground/10 shrink-0">
+                          <MoreHorizontal className="size-6 sm:size-8" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-64 p-2 rounded-2xl shadow-2xl border-4">
+                        <DropdownMenuLabel className="font-black text-[10px] px-4 py-2 uppercase tracking-[0.2em] opacity-40">Opções da Cliente</DropdownMenuLabel>
+                        <DropdownMenuSeparator className="my-2 h-1 bg-muted" />
+                        <DropdownMenuItem asChild className="p-4 font-black text-lg cursor-pointer rounded-xl focus:bg-primary/5">
+                          <Link href={`/clientes/${cliente.id}`}>
+                            <FileText className="mr-3 size-6 text-primary" />
+                            Ver Detalhes
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="p-4 font-black text-lg cursor-pointer rounded-xl focus:bg-primary/5">
+                          <Edit className="mr-3 size-6 text-primary" />
+                          Editar Cadastro
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator className="my-2 h-1 bg-muted" />
+                        <DropdownMenuItem 
+                          className="p-4 font-black text-lg text-destructive cursor-pointer rounded-xl focus:bg-destructive/10" 
+                          onSelect={() => setClientToDelete(cliente)}
+                        >
+                          <Trash2 className="mr-3 size-6" />
+                          Excluir Cliente
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
 
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="size-12 rounded-2xl border-2 border-transparent hover:border-muted-foreground/10 shrink-0">
-                        <MoreHorizontal className="size-8" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-64 p-2 rounded-2xl shadow-2xl border-4">
-                      <DropdownMenuLabel className="font-black text-[10px] px-4 py-2 uppercase tracking-[0.2em] opacity-40">Opções da Cliente</DropdownMenuLabel>
-                      <DropdownMenuSeparator className="my-2 h-1 bg-muted" />
-                      <DropdownMenuItem asChild className="p-4 font-black text-lg cursor-pointer rounded-xl focus:bg-primary/5">
-                        <Link href={`/clientes/${cliente.id}`}>
-                          <FileText className="mr-3 size-6 text-primary" />
-                          Ver Detalhes
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="p-4 font-black text-lg cursor-pointer rounded-xl focus:bg-primary/5">
-                        <Edit className="mr-3 size-6 text-primary" />
-                        Editar Cadastro
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator className="my-2 h-1 bg-muted" />
-                      <DropdownMenuItem 
-                        className="p-4 font-black text-lg text-destructive cursor-pointer rounded-xl focus:bg-destructive/10" 
-                        onSelect={() => setClientToDelete(cliente)}
-                      >
-                        <Trash2 className="mr-3 size-6" />
-                        Excluir Cliente
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <div className="flex flex-col gap-2 mt-2">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <MapPin className="size-5 text-primary/40 shrink-0" />
+                      <span className="text-sm sm:text-base font-black uppercase tracking-widest opacity-80 break-words leading-tight">
+                        {cliente.city} {cliente.neighborhood ? `• ${cliente.neighborhood}` : ""}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Phone className="size-5 text-primary/40 shrink-0" />
+                      <span className="text-sm sm:text-base font-black uppercase tracking-widest opacity-80">{cliente.phone}</span>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="pt-4">
+                <div className="pt-6">
                   <Button
                     variant="default"
                     size="lg"
-                    className="w-full bg-green-600 hover:bg-green-700 h-16 sm:h-20 rounded-2xl sm:rounded-[1.5rem] font-black text-lg sm:text-xl gap-3 shadow-lg transition-all active:scale-95"
+                    className="w-full bg-green-600 hover:bg-green-700 h-14 sm:h-16 rounded-2xl font-black text-base sm:text-lg gap-3 shadow-lg transition-all active:scale-95 uppercase"
                     onClick={() => openWhatsApp(cliente.phone)}
                   >
-                    <MessageCircle className="size-7 sm:size-8" />
-                    CHAMAR NO WHATSAPP
+                    <MessageCircle className="size-6 sm:size-7" />
+                    Chamar no WhatsApp
                   </Button>
                 </div>
               </Card>
