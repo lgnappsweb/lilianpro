@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState } from "react";
@@ -34,7 +33,7 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const SUGESTOES_CATEGORIAS = {
-  "NATURA": [
+  "VERDE (N)": [
     "Perfumaria Feminina", "Perfumaria Masculina", "Perfumaria Unissex",
     "Corpo e Banho (Tododia)", "Rosto (Chronos)", "Maquiagem (Una)", 
     "Maquiagem (Faces)", "Cabelos (Lumina)", "Cabelos (Plant)",
@@ -43,7 +42,7 @@ const SUGESTOES_CATEGORIAS = {
     "Homen (Barba e Bigode)", "Homen (Cuidados)", "Kits & Presentes", 
     "Refis", "Crer Para Ver", "Acessórios Natura", "Proteção Solar (Fotoequilíbrio)"
   ],
-  "AVON": [
+  "ROSA (A)": [
     "Perfumaria Feminina", "Perfumaria Masculina", "Maquiagem (Color Trend)", 
     "Maquiagem (Avon True)", "Maquiagem (Power Stay)", "Maquiagem (Olhos)",
     "Maquiagem (Lábios)", "Maquiagem (Rosto)", "Esmaltes e Unhas",
@@ -53,7 +52,7 @@ const SUGESTOES_CATEGORIAS = {
     "Desodorantes Aerossol", "Kits de Presente Avon", "Acessórios de Beleza",
     "Bijuterias e Folheados", "Moda & Casa (Avon)"
   ],
-  "CASA & ESTILO": [
+  "MARROM (C&E)": [
     "Cozinha e Utensílios", "Potes e Vasilhas", "Panelas e Frigideiras",
     "Mesa Posta (Toalhas e Sousplat)", "Cama (Jogos de Lençol)", "Cama (Edredons e Mantas)",
     "Banho (Toalhas e Roupões)", "Organização Doméstica", "Decoração de Interiores",
