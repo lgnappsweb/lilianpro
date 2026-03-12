@@ -80,7 +80,7 @@ export default function ClientesPage() {
         <div className="w-full">
           <div className="flex flex-col items-center justify-center gap-6">
             <Users className="size-16 sm:size-24 text-primary" />
-            <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl">CLIENTES</h1>
+            <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap">CLIENTES</h1>
           </div>
           <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Gerencie seu catálogo de contatos e histórico.</p>
         </div>
@@ -111,7 +111,7 @@ export default function ClientesPage() {
         ) : (
           <div className="grid grid-cols-1 gap-6 w-full">
             {filteredClientes.map((cliente) => (
-              <Card key={cliente.id} className="bg-background border-4 border-muted rounded-2xl p-6 sm:p-8 space-y-4 shadow-xl hover:border-primary/20 transition-all flex flex-col justify-between w-full max-w-none">
+              <Card key={cliente.id} className="bg-background border-4 border-muted rounded-2xl p-6 sm:p-4 space-y-4 shadow-xl hover:border-primary/20 transition-all flex flex-col justify-between w-full max-w-none">
                 <div className="flex flex-col items-center justify-center gap-2 mb-2">
                   <div className="size-12 sm:size-16 rounded-full bg-primary/10 flex items-center justify-center text-primary shadow-inner">
                     <User className="size-6 sm:size-10" />

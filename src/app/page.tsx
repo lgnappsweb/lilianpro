@@ -148,7 +148,7 @@ export default function DashboardPage() {
         <div className="w-full">
           <div className="flex flex-col items-center justify-center gap-6">
             <LayoutDashboard className="size-16 sm:size-24 text-primary" />
-            <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl">Olá, LILIAN</h1>
+            <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap">Olá, LILIAN</h1>
           </div>
           <p className="text-base sm:text-xl text-muted-foreground mt-4 font-bold opacity-80 uppercase tracking-widest">Veja como está o seu negócio hoje.</p>
         </div>

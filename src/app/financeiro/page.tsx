@@ -70,7 +70,7 @@ export default function FinanceiroPage() {
         <div className="w-full">
           <div className="flex flex-col items-center justify-center gap-4">
             <Wallet className="size-10 sm:size-16 text-primary" />
-            <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm">FINANCEIRO</h1>
+            <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm whitespace-nowrap">FINANCEIRO</h1>
           </div>
           <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest">Controle real de entradas e contas a receber.</p>
         </div>
