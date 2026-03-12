@@ -22,8 +22,6 @@ import {
   ArrowLeft,
   MessageCircle,
   Loader2,
-  Trash2,
-  Edit,
   ClipboardCheck,
 } from "lucide-react";
 import Link from "next/link";
@@ -119,15 +117,6 @@ export default function DetalhesClientePage() {
               </Button>
             </CardContent>
           </Card>
-
-          <div className="grid grid-cols-2 gap-4">
-             <Button variant="outline" className="h-16 font-black rounded-2xl border-4 text-primary border-primary/20 hover:bg-primary/5 gap-2">
-                <Edit className="size-5" /> EDITAR
-             </Button>
-             <Button variant="outline" className="h-16 font-black rounded-2xl border-4 text-destructive border-destructive/20 hover:bg-destructive/5 gap-2">
-                <Trash2 className="size-5" /> EXCLUIR
-             </Button>
-          </div>
         </div>
 
         {/* Coluna 2: Localização e Notas */}
