@@ -28,7 +28,6 @@ import {
   DollarSign,
   Hash,
   Info,
-  Sparkles,
   Plus,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -37,7 +36,6 @@ import { collection } from "firebase/firestore";
 import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { generateProductDescription } from "@/ai/flows/generate-product-description";
 
 export default function NovoProdutoPage() {
   const { user } = useUser();
@@ -46,7 +44,6 @@ export default function NovoProdutoPage() {
   const { toast } = useToast();
 
   const [isLoading, setIsLoading] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     brand: "",
@@ -68,38 +65,6 @@ export default function NovoProdutoPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleGenAiDescription = async () => {
-    if (!formData.name || !formData.category) {
-      toast({
-        variant: "destructive",
-        title: "Dados insuficientes",
-        description: "Informe o nome e a categoria para gerar uma descrição.",
-      });
-      return;
-    }
-
-    setIsGenerating(true);
-    try {
-      const result = await generateProductDescription({
-        productName: formData.name,
-        productCategory: formData.category,
-      });
-      setFormData(prev => ({ ...prev, description: result.description }));
-      toast({
-        title: "Descrição gerada!",
-        description: "A IA criou uma descrição atrativa para seu produto.",
-      });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erro na IA",
-        description: "Não foi possível gerar a descrição agora.",
-      });
-    } finally {
-      setIsGenerating(false);
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -125,7 +90,7 @@ export default function NovoProdutoPage() {
       catalogPrice: Number(formData.catalogPrice) || 0,
       costPrice: Number(formData.costPrice) || 0,
       salePrice: Number(formData.salePrice) || 0,
-      imageUrl: `https://picsum.photos/seed/${productId}/500/500`, // Placeholder Elite
+      imageUrl: `https://picsum.photos/seed/${productId}/500/500`,
     };
 
     try {
@@ -162,7 +127,6 @@ export default function NovoProdutoPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-10">
-        {/* Identificação Básica */}
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
           <CardHeader className="bg-muted/30 p-6 sm:p-8 border-b-2">
             <CardTitle className="flex flex-row items-center gap-3 text-xl sm:text-3xl font-black text-left px-2 whitespace-nowrap">
@@ -224,7 +188,6 @@ export default function NovoProdutoPage() {
           </CardContent>
         </Card>
 
-        {/* Financeiro do Produto */}
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
           <CardHeader className="bg-muted/30 p-6 sm:p-8 border-b-2">
             <CardTitle className="flex flex-row items-center gap-3 text-xl sm:text-3xl font-black text-left px-2 whitespace-nowrap">
@@ -295,24 +258,12 @@ export default function NovoProdutoPage() {
           </CardContent>
         </Card>
 
-        {/* Detalhes & GenAI */}
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="bg-muted/30 p-6 sm:p-8 border-b-2 flex flex-row items-center justify-between">
+          <CardHeader className="bg-muted/30 p-6 sm:p-8 border-b-2">
             <CardTitle className="flex flex-row items-center gap-3 text-xl sm:text-3xl font-black text-left px-2 whitespace-nowrap">
               <Info className="size-6 sm:size-8 text-primary shrink-0" />
               Descrição & Notas
             </CardTitle>
-            <Button 
-              type="button" 
-              variant="outline" 
-              size="sm"
-              onClick={handleGenAiDescription}
-              disabled={isGenerating}
-              className="hidden sm:flex rounded-full border-primary/20 bg-primary/5 text-primary font-black uppercase tracking-tighter hover:bg-primary/10 transition-all gap-2"
-            >
-              {isGenerating ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-              Gerar com IA
-            </Button>
           </CardHeader>
           <CardContent className="p-8 sm:p-12 text-left">
             <div className="space-y-4">
@@ -325,21 +276,10 @@ export default function NovoProdutoPage() {
                 value={formData.description}
                 onChange={handleChange}
               />
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="w-full h-12 sm:hidden rounded-xl border-2 border-primary/20 text-primary font-black uppercase text-xs"
-                onClick={handleGenAiDescription}
-                disabled={isGenerating}
-              >
-                {isGenerating ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Sparkles className="mr-2 size-4" />}
-                GERAR DESCRIÇÃO COM IA
-              </Button>
             </div>
           </CardContent>
         </Card>
 
-        {/* Botão Salvar */}
         <div className="p-4 sm:p-0">
           <Button 
             type="submit" 
