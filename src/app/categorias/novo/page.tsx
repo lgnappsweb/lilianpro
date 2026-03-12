@@ -149,9 +149,9 @@ export default function NovaCategoriaPage() {
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-10">
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="bg-muted/30 p-8 border-b-2">
-            <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left px-2">
-              <Type className="size-8 text-primary" />
+          <CardHeader className="bg-muted/30 p-4 sm:p-8 border-b-2">
+            <CardTitle className="flex flex-row items-center gap-3 text-xl sm:text-3xl font-black text-left px-2 whitespace-nowrap">
+              <Type className="size-6 sm:size-8 text-primary shrink-0" />
               Dados da Categoria
             </CardTitle>
           </CardHeader>
