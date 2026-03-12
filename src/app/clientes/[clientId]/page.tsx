@@ -24,6 +24,7 @@ import {
   Loader2,
   Trash2,
   Edit,
+  ClipboardCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -71,16 +72,27 @@ export default function DetalhesClientePage() {
 
   return (
     <div className="space-y-12 animate-in fade-in duration-500 w-full pb-20">
+      {/* CABEÇALHO ELITE MONUMENTAL */}
       <div className="flex flex-col items-center text-center gap-6 px-2 mb-10">
         <div className="w-full">
           <div className="flex flex-col items-center justify-center gap-6">
-            <User className="size-16 sm:size-24 text-primary" />
+            <ClipboardCheck className="size-16 sm:size-24 text-primary" />
             <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap">
-              {cliente.fullName}
+              CADASTRO
             </h1>
           </div>
-          <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest">Ficha Cadastral Elite - GlamGestão</p>
+          <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Ficha Detalhada da Cliente Elite</p>
         </div>
+      </div>
+
+      {/* NOME DA CLIENTE (FLEXÍVEL - ATÉ 2 LINHAS) */}
+      <div className="flex flex-col items-center text-center mb-10 px-4">
+        <h2 className="text-4xl md:text-7xl font-black tracking-tighter text-foreground font-headline uppercase leading-tight italic drop-shadow-sm max-w-5xl">
+          {cliente.fullName}
+        </h2>
+        <Badge variant="secondary" className="mt-4 bg-primary/10 text-primary border-none font-black px-6 py-2 rounded-full text-xs sm:text-sm uppercase tracking-widest">
+          Cliente Ativa
+        </Badge>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -95,8 +107,8 @@ export default function DetalhesClientePage() {
             </CardHeader>
             <CardContent className="p-8 space-y-8">
               <div className="space-y-2">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">WhatsApp Principal</p>
-                <p className="text-3xl font-black text-foreground tracking-tighter">{cliente.phone}</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground text-left">WhatsApp Principal</p>
+                <p className="text-3xl font-black text-foreground tracking-tighter text-left">{cliente.phone}</p>
               </div>
               <Button
                 className="w-full bg-green-600 hover:bg-green-700 h-20 rounded-2xl font-black text-lg gap-4 shadow-xl transition-all active:scale-95 uppercase tracking-widest"
@@ -173,9 +185,6 @@ export default function DetalhesClientePage() {
                      Cadastrada em: {new Date(cliente.registrationDate).toLocaleDateString()}
                    </p>
                 </div>
-                <Badge variant="secondary" className="bg-primary/10 text-primary border-none font-black px-4 py-1.5 rounded-full text-[10px]">
-                  CLIENTE ATIVA
-                </Badge>
               </div>
             </CardContent>
           </Card>
@@ -191,7 +200,7 @@ export default function DetalhesClientePage() {
         >
           <Link href="/clientes">
             <ArrowLeft className="mr-3 size-6" />
-            VOLTAR AO CATÁLOGO
+            VOLTAR AOS CLIENTES
           </Link>
         </Button>
       </div>
