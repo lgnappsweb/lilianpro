@@ -209,7 +209,7 @@ export default function ProdutosPage() {
                   onClick={() => setProductToDelete(product)}
                 >
                   <Trash2 className="mr-1 size-3" />
-                  Apagar
+                  EXCLUIR
                 </Button>
               </div>
             </Card>
