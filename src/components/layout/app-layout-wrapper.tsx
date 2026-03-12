@@ -1,20 +1,16 @@
 
 "use client";
 
-import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "./app-sidebar";
 import { MobileNav } from "./mobile-nav";
-import { Search, Bell, LogOut } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { useUser, useAuth } from "@/firebase";
+import { Sparkles } from "lucide-react";
+import { useUser } from "@/firebase";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { signOut } from "firebase/auth";
 
 export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
   const { user, isUserLoading } = useUser();
-  const auth = useAuth();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -30,8 +26,8 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-pulse flex flex-col items-center gap-4">
-          <div className="size-12 rounded-full bg-primary/20"></div>
-          <p className="text-muted-foreground font-medium">Carregando...</p>
+          <div className="size-16 rounded-full bg-primary/20"></div>
+          <p className="text-xl text-muted-foreground font-black uppercase tracking-widest">Carregando GlamGestão...</p>
         </div>
       </div>
     );
@@ -46,47 +42,24 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider defaultOpen={true}>
       <AppSidebar />
-      <SidebarInset className="overflow-x-hidden">
-        <header className="flex h-16 shrink-0 items-center justify-between px-4 sm:px-6 border-b bg-background/50 backdrop-blur-sm sticky top-0 z-10">
-          <div className="flex items-center gap-4">
-            <div className="md:hidden">
-              <span className="font-headline font-bold text-lg text-primary">GlamGestão</span>
-            </div>
-            <div className="hidden md:flex items-center gap-4">
-              <SidebarTrigger />
-              <div className="relative w-64 md:w-96">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                <Input
-                  placeholder="Pesquisar..."
-                  className="pl-10 h-9 bg-muted/50 border-none focus-visible:ring-1"
-                />
-              </div>
-            </div>
+      <SidebarInset className="overflow-x-hidden bg-background">
+        {/* Branding Monumental */}
+        <div className="flex flex-col items-center justify-center pt-12 pb-8 gap-6 animate-in fade-in slide-in-from-top-8 duration-1000">
+          <div className="bg-primary p-6 rounded-[2.5rem] text-primary-foreground shadow-2xl scale-110 md:scale-125 border-4 border-white">
+            <Sparkles className="size-16 md:size-24" />
           </div>
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="relative text-muted-foreground">
-              <Bell className="size-5" />
-              <span className="absolute top-2 right-2 size-2 bg-primary rounded-full border-2 border-background"></span>
-            </Button>
-            <div className="h-8 w-px bg-border mx-1"></div>
-            <div className="flex items-center gap-2 pl-2">
-              <div className="text-right hidden sm:block">
-                <p className="text-sm font-medium leading-none">{user.displayName || 'Administradora'}</p>
-                <p className="text-xs text-muted-foreground">Avon & Natura</p>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => signOut(auth)}
-                className="text-muted-foreground hover:text-destructive"
-              >
-                <LogOut className="size-5" />
-              </Button>
-            </div>
+          <div className="text-center">
+            <h1 className="text-6xl md:text-9xl font-black tracking-tighter text-primary font-headline italic drop-shadow-sm px-4">
+              GlamGestão
+            </h1>
+            <p className="text-lg md:text-2xl text-muted-foreground font-black uppercase tracking-[0.3em] mt-2 opacity-60">
+              Elite Business Control
+            </p>
           </div>
-        </header>
-        <main className="flex-1 p-2 sm:p-4 md:p-6 pb-24 md:pb-8 overflow-x-hidden">
-          <div className="max-w-7xl mx-auto border-2 border-primary rounded-[1.5rem] sm:rounded-[2rem] p-3 sm:p-6 md:p-8 bg-card/40 backdrop-blur-sm shadow-md overflow-x-hidden relative min-h-[calc(100vh-12rem)] w-full">
+        </div>
+
+        <main className="flex-1 p-3 sm:p-4 md:p-6 pb-28 md:pb-12 overflow-x-hidden">
+          <div className="max-w-7xl mx-auto border-4 border-primary rounded-[2.5rem] sm:rounded-[3.5rem] p-4 sm:p-8 md:p-12 bg-card/60 backdrop-blur-xl shadow-2xl overflow-x-hidden relative min-h-[calc(100vh-25rem)] w-full">
             {children}
           </div>
         </main>
