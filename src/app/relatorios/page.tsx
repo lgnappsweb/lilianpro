@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -46,6 +46,18 @@ export default function RelatoriosPage() {
   const { user } = useUser();
   const db = useFirestore();
 
+  // Estado para garantir que a data de referência seja "hoje" e atualize se o app ficar aberto
+  const [today, setToday] = useState(new Date());
+
+  useEffect(() => {
+    // Atualiza a referência de "hoje" diariamente
+    const interval = setInterval(() => setToday(new Date()), 1000 * 60 * 60 * 24);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Define a data de início do período de 6 meses (início do mês de 5 meses atrás)
+  const reportingStartDate = useMemo(() => startOfMonth(subMonths(today, 5)), [today]);
+
   // Busca dados do Firestore
   const ordersQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -66,12 +78,19 @@ export default function RelatoriosPage() {
   const { data: clients, isLoading: clientsLoading } = useCollection(clientsQuery);
   const { data: products, isLoading: productsLoading } = useCollection(productsQuery);
 
-  // 1. Processamento: Evolução de Vendas (Últimos 6 meses)
-  const salesHistory = useMemo(() => {
+  // Filtra as ordens para o período dos últimos 6 meses
+  const ordersInPeriod = useMemo(() => {
     if (!orders) return [];
-    
+    return orders.filter(o => {
+      const orderDate = new Date(o.orderDate);
+      return orderDate >= reportingStartDate;
+    });
+  }, [orders, reportingStartDate]);
+
+  // 1. Processamento: Evolução de Vendas (Últimos 6 meses baseados em 'today')
+  const salesHistory = useMemo(() => {
     const months = Array.from({ length: 6 }, (_, i) => {
-      const date = subMonths(new Date(), 5 - i);
+      const date = subMonths(today, 5 - i);
       return {
         name: format(date, "MMM", { locale: ptBR }).toUpperCase(),
         fullName: format(date, "MMMM / yyyy", { locale: ptBR }),
@@ -81,7 +100,7 @@ export default function RelatoriosPage() {
       };
     });
 
-    orders.forEach(order => {
+    ordersInPeriod.forEach(order => {
       const orderDate = new Date(order.orderDate);
       months.forEach(m => {
         if (isWithinInterval(orderDate, { start: m.start, end: m.end })) {
@@ -91,14 +110,14 @@ export default function RelatoriosPage() {
     });
 
     return months;
-  }, [orders]);
+  }, [ordersInPeriod, today]);
 
-  // 2. Processamento: Melhores Clientes
+  // 2. Processamento: Melhores Clientes (Apenas compras nos últimos 6 meses)
   const topClients = useMemo(() => {
-    if (!orders || !clients) return [];
+    if (!ordersInPeriod || !clients) return [];
 
     const clientStats = clients.map(client => {
-      const clientOrders = orders.filter(o => o.clientId === client.id);
+      const clientOrders = ordersInPeriod.filter(o => o.clientId === client.id);
       const totalSpent = clientOrders.reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0);
       return {
         name: client.fullName,
@@ -111,9 +130,9 @@ export default function RelatoriosPage() {
       .filter(c => c.count > 0)
       .sort((a, b) => b.total - a.total)
       .slice(0, 10);
-  }, [orders, clients]);
+  }, [ordersInPeriod, clients]);
 
-  // 3. Processamento: Mix de Marcas Real (Baseado no Catálogo)
+  // 3. Processamento: Mix de Marcas (Baseado no Catálogo Geral)
   const brandStats = useMemo(() => {
     if (!products || products.length === 0) {
       return [
@@ -144,7 +163,7 @@ export default function RelatoriosPage() {
   }, [products]);
 
   const handleGeneratePDF = () => {
-    if (!orders || !clients) return;
+    if (!ordersInPeriod || !clients) return;
 
     const doc = new jsPDF();
     const now = new Date();
@@ -161,25 +180,26 @@ export default function RelatoriosPage() {
     
     doc.setFontSize(12);
     doc.setFont("helvetica", "normal");
-    doc.text("RELATÓRIO DE DESEMPENHO ELITE", 105, 30, { align: "center" });
+    doc.text("RELATÓRIO DE DESEMPENHO ELITE - ÚLTIMOS 6 MESES", 105, 30, { align: "center" });
 
     // --- RESUMO EXECUTIVO ---
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(18);
-    doc.text("Resumo Geral", 14, 55);
+    doc.text("Resumo do Período", 14, 55);
     
-    const totalRevenue = orders.reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0);
-    const avgTicket = orders.length > 0 ? totalRevenue / orders.length : 0;
+    const totalRevenue = ordersInPeriod.reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0);
+    const avgTicket = ordersInPeriod.length > 0 ? totalRevenue / ordersInPeriod.length : 0;
+    const activeClientsCount = topClients.length;
 
     autoTable(doc, {
       startY: 60,
-      head: [['Métrica', 'Valor']],
+      head: [['Métrica (6 Meses)', 'Valor']],
       body: [
-        ['Faturamento Total Acumulado', `R$ ${totalRevenue.toFixed(2)}`],
-        ['Total de Vendas Realizadas', `${orders.length} pedidos`],
-        ['Ticket Médio por Venda', `R$ ${avgTicket.toFixed(2)}`],
-        ['Base de Clientes Ativos', `${clients.length} contatos`],
-        ['Total de Itens no Catálogo', `${products?.length || 0} itens`],
+        ['Faturamento no Período', `R$ ${totalRevenue.toFixed(2)}`],
+        ['Pedidos Realizados', `${ordersInPeriod.length} pedidos`],
+        ['Ticket Médio', `R$ ${avgTicket.toFixed(2)}`],
+        ['Clientes que Compraram', `${activeClientsCount} contatos`],
+        ['Itens no Catálogo Atual', `${products?.length || 0} itens`],
       ],
       theme: 'grid',
       headStyles: { fillColor: [194, 24, 91] },
@@ -188,7 +208,7 @@ export default function RelatoriosPage() {
 
     // --- EVOLUÇÃO MENSAL ---
     doc.setFontSize(18);
-    doc.text("Evolução de Vendas (6 Meses)", 14, (doc as any).lastAutoTable.finalY + 20);
+    doc.text("Evolução de Vendas", 14, (doc as any).lastAutoTable.finalY + 20);
     
     autoTable(doc, {
       startY: (doc as any).lastAutoTable.finalY + 25,
@@ -205,7 +225,7 @@ export default function RelatoriosPage() {
     
     doc.setFontSize(18);
     doc.setTextColor(0, 0, 0);
-    doc.text("Ranking de Clientes VIP", 14, 30);
+    doc.text("Ranking VIP do Período", 14, 30);
     
     autoTable(doc, {
       startY: 35,
@@ -255,7 +275,7 @@ export default function RelatoriosPage() {
             <BarChart3 className="size-16 sm:size-24 text-primary" />
             <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap px-2">RELATÓRIOS</h1>
           </div>
-          <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Desempenho do seu negócio em gráficos detalhados.</p>
+          <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Performance dos últimos 6 meses atualizada hoje.</p>
         </div>
         <Button 
           onClick={handleGeneratePDF}
@@ -274,7 +294,7 @@ export default function RelatoriosPage() {
               <TrendingUp className="size-7 text-primary" />
               Evolução de Vendas
             </CardTitle>
-            <CardDescription className="text-base font-bold uppercase tracking-widest opacity-60">Faturamento total dos últimos 6 meses</CardDescription>
+            <CardDescription className="text-base font-bold uppercase tracking-widest opacity-60">Faturamento mensal do semestre atual</CardDescription>
           </CardHeader>
           <CardContent className="p-8">
             <div className="h-[350px] w-full">
@@ -351,9 +371,9 @@ export default function RelatoriosPage() {
           <CardHeader className="bg-muted/10 pb-4">
             <CardTitle className="text-2xl font-black flex items-center gap-3 px-2">
               <Users className="size-7 text-primary" />
-              Melhores Clientes (VIP)
+              Melhores Clientes do Período
             </CardTitle>
-            <CardDescription className="text-base font-bold uppercase tracking-widest opacity-60">Ranking por volume total de compras</CardDescription>
+            <CardDescription className="text-base font-bold uppercase tracking-widest opacity-60">Ranking por faturamento nos últimos 6 meses</CardDescription>
           </CardHeader>
           <CardContent className="p-4 sm:p-8 space-y-6">
             {topClients.map((client, i) => {
@@ -363,7 +383,7 @@ export default function RelatoriosPage() {
               return (
                 <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-6 rounded-[2rem] border-4 border-muted bg-background hover:border-primary/20 transition-all group gap-4">
                   <div className="flex items-center gap-5 w-full sm:w-auto">
-                    <div className="size-10 sm:size-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-black text-xl shadow-inner shrink-0 group-hover:scale-110 transition-transform">
+                    <div className="size-8 sm:size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-black text-lg shadow-inner shrink-0 group-hover:scale-110 transition-transform">
                       {i + 1}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -373,7 +393,7 @@ export default function RelatoriosPage() {
                       )}>
                         {client.name}
                       </p>
-                      <p className="text-[10px] sm:text-xs font-black text-muted-foreground mt-1 uppercase tracking-widest px-2">{client.count} pedidos realizados</p>
+                      <p className="text-[10px] sm:text-xs font-black text-muted-foreground mt-1 uppercase tracking-widest px-2">{client.count} pedidos realizados no período</p>
                     </div>
                   </div>
                   <div className="text-center sm:text-right w-full sm:w-auto border-t sm:border-t-0 pt-4 sm:pt-0 border-muted">
@@ -386,7 +406,7 @@ export default function RelatoriosPage() {
             {topClients.length === 0 && (
               <div className="text-center py-20 bg-muted/10 rounded-[2rem] border-4 border-dashed border-muted">
                 <Users className="size-16 text-muted-foreground/20 mx-auto mb-4" />
-                <p className="text-muted-foreground text-lg font-black uppercase tracking-tighter opacity-40 italic">Nenhum dado de cliente disponível para o ranking.</p>
+                <p className="text-muted-foreground text-lg font-black uppercase tracking-tighter opacity-40 italic px-4 text-center">Nenhuma venda registrada nos últimos 6 meses para compor o ranking.</p>
               </div>
             )}
           </CardContent>
