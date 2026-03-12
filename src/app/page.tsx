@@ -209,18 +209,18 @@ export default function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent className="p-8 pt-4">
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              <div className="bg-white/60 dark:bg-white/5 p-4 rounded-2xl text-center shadow-inner border border-white/20">
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Pagos</p>
-                <p className="text-3xl font-black text-green-600">{healthStatus.counts.pago}</p>
+            <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
+              <div className="bg-white/60 dark:bg-white/5 p-2 sm:p-4 rounded-2xl text-center shadow-inner border border-white/20 min-w-0">
+                <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-tighter sm:tracking-widest mb-1 truncate">Pagos</p>
+                <p className="text-2xl sm:text-3xl font-black text-green-600">{healthStatus.counts.pago}</p>
               </div>
-              <div className="bg-white/60 dark:bg-white/5 p-4 rounded-2xl text-center shadow-inner border border-white/20">
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">A Prazo</p>
-                <p className="text-3xl font-black text-orange-500">{healthStatus.counts.pendente}</p>
+              <div className="bg-white/60 dark:bg-white/5 p-2 sm:p-4 rounded-2xl text-center shadow-inner border border-white/20 min-w-0">
+                <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-tighter sm:tracking-widest mb-1 truncate">A Prazo</p>
+                <p className="text-2xl sm:text-3xl font-black text-orange-500">{healthStatus.counts.pendente}</p>
               </div>
-              <div className="bg-white/60 dark:bg-white/5 p-4 rounded-2xl text-center shadow-inner border border-white/20">
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Atrasados</p>
-                <p className="text-3xl font-black text-red-600">{healthStatus.counts.atrasado}</p>
+              <div className="bg-white/60 dark:bg-white/5 p-2 sm:p-4 rounded-2xl text-center shadow-inner border border-white/20 min-w-0">
+                <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-tighter sm:tracking-widest mb-1 truncate">Atrasados</p>
+                <p className="text-2xl sm:text-3xl font-black text-red-600">{healthStatus.counts.atrasado}</p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-4 bg-white/40 dark:bg-white/5 rounded-2xl border border-white/20">
