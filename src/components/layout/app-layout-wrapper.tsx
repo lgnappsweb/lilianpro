@@ -1,4 +1,3 @@
-
 "use client";
 
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
@@ -43,17 +42,17 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
     <SidebarProvider defaultOpen={true}>
       <AppSidebar />
       <SidebarInset className="overflow-x-hidden bg-background">
-        {/* Branding Refinado */}
+        {/* Branding Refinado com Subtítulo Personalizado */}
         <div className="flex flex-col items-center justify-center pt-8 pb-6 gap-4 animate-in fade-in slide-in-from-top-4 duration-700">
-          <div className="bg-primary p-4 rounded-[2rem] text-primary-foreground shadow-xl scale-100 md:scale-105 border-2 border-white">
-            <Sparkles className="size-12 md:size-16" />
+          <div className="bg-primary p-4 rounded-[1.5rem] text-primary-foreground shadow-xl scale-90 md:scale-100 border-2 border-white">
+            <Sparkles className="size-10 md:size-12" />
           </div>
           <div className="text-center">
-            <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-primary font-headline italic drop-shadow-sm px-4">
+            <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-primary font-headline italic drop-shadow-sm px-4">
               GlamGestão
             </h1>
             <p className="text-sm md:text-base text-muted-foreground font-black uppercase tracking-[0.3em] mt-1 opacity-60">
-              Elite Business Control
+              LINHAS ROSA VERDE E MARROM
             </p>
           </div>
         </div>
