@@ -195,10 +195,10 @@ export default function NovaVendaPage() {
             <div className="space-y-4 text-left">
               <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Quem está comprando?</Label>
               <Select onValueChange={setSelectedClientId} value={selectedClientId}>
-                <SelectTrigger className="h-14 sm:h-20 text-lg sm:text-2xl font-black rounded-xl sm:rounded-3xl border-4 border-muted bg-background text-primary">
+                <SelectTrigger className="h-14 sm:h-20 text-lg sm:text-2xl font-black rounded-xl sm:rounded-3xl border-4 border-muted bg-background text-black">
                   <SelectValue placeholder="Busque pelo nome..." />
                 </SelectTrigger>
-                <SelectContent className="rounded-2xl shadow-2xl border-2 bg-white">
+                <SelectContent className="rounded-2xl shadow-2xl border-2 bg-white text-black">
                   {clients?.map(c => (
                     <SelectItem key={c.id} value={c.id} className="text-base sm:text-xl font-black p-3 sm:p-4 focus:bg-primary/5 text-black">
                       {c.fullName}
@@ -249,10 +249,10 @@ export default function NovaVendaPage() {
                       setSelectedItems(newItems);
                     }
                   }} value={item.productId}>
-                    <SelectTrigger className="h-14 sm:h-16 text-sm sm:text-xl font-black rounded-xl sm:rounded-2xl bg-background border-2 border-border shadow-sm group-hover:border-primary/20 transition-all text-primary">
+                    <SelectTrigger className="h-14 sm:h-16 text-sm sm:text-xl font-black rounded-xl sm:rounded-2xl bg-background border-2 border-border shadow-sm group-hover:border-primary/20 transition-all text-black">
                       <SelectValue placeholder="Selecione o item..." />
                     </SelectTrigger>
-                    <SelectContent className="rounded-xl shadow-xl bg-white">
+                    <SelectContent className="rounded-xl shadow-xl bg-white text-black">
                       {products?.map(p => (
                         <SelectItem key={p.id} value={p.id} className="text-sm sm:text-lg font-black p-3 text-black">
                           {p.name}
