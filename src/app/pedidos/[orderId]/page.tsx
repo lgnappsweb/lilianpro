@@ -236,7 +236,7 @@ export default function DetalhesPedidoPage() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-3xl font-black text-primary tracking-tighter italic">
+                      <p className="text-3xl font-black text-green-600 tracking-tighter italic">
                         R$ {Number(item.subtotal).toFixed(2)}
                       </p>
                     </div>
