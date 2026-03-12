@@ -240,6 +240,28 @@
         "name",
         "adminId"
       ]
+    },
+    "AppSettings": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "AppSettings",
+      "type": "object",
+      "description": "Global customization settings for the application.",
+      "properties": {
+        "appName": {
+          "type": "string",
+          "description": "The custom name of the application."
+        },
+        "primaryColor": {
+          "type": "string",
+          "description": "The main theme color in hex format."
+        },
+        "themeMode": {
+          "type": "string",
+          "enum": ["light", "dark"],
+          "description": "The UI appearance mode."
+        }
+      },
+      "required": ["appName", "primaryColor", "themeMode"]
     }
   },
   "auth": {
@@ -251,13 +273,29 @@
   "firestore": {
     "structure": [
       {
+        "path": "/users/{adminId}/config/settings",
+        "definition": {
+          "entityName": "AppSettings",
+          "schema": {
+            "$ref": "#/backend/entities/AppSettings"
+          },
+          "description": "Stores individual user application settings like name and theme colors.",
+          "params": [
+            {
+              "name": "adminId",
+              "description": "The Firebase Authentication UID of the administrator."
+            }
+          ]
+        }
+      },
+      {
         "path": "/admins/{adminId}",
         "definition": {
           "entityName": "Admin",
           "schema": {
             "$ref": "#/backend/entities/Admin"
           },
-          "description": "Registers authorized administrators. The presence of a document for a specific `uid` in this collection grants administrative access. This acts as a database-backed access control (DBAC) mechanism. (Note: 'Admin' is a conceptual entity for authorization; its schema is minimal, typically just the 'id' field matching the 'uid').",
+          "description": "Registers authorized administrators. The presence of a document for a specific `uid` in this collection grants administrative access.",
           "params": [
             {
               "name": "adminId",
@@ -273,15 +311,15 @@
           "schema": {
             "$ref": "#/backend/entities/Client"
           },
-          "description": "Contains client profiles, privately owned by the administrator. Each document includes a denormalized `adminId` for authorization independence and simplified security rules.",
+          "description": "Contains client profiles, privately owned by the administrator.",
           "params": [
             {
               "name": "adminId",
-              "description": "The Firebase Authentication UID of the administrator who owns this client data."
+              "description": "The UID of the administrator who owns this client data."
             },
             {
               "name": "clientId",
-              "description": "The unique identifier for the Client entity, used as the document ID."
+              "description": "The unique identifier for the Client entity."
             }
           ]
         }
@@ -293,15 +331,15 @@
           "schema": {
             "$ref": "#/backend/entities/Product"
           },
-          "description": "Stores product catalog entries, privately owned by the administrator. Each document includes a denormalized `adminId` for authorization independence and simplified security rules.",
+          "description": "Stores product catalog entries, privately owned by the administrator.",
           "params": [
             {
               "name": "adminId",
-              "description": "The Firebase Authentication UID of the administrator who owns this product data."
+              "description": "The UID of the administrator who owns this product data."
             },
             {
               "name": "productId",
-              "description": "The unique identifier for the Product entity, used as the document ID."
+              "description": "The unique identifier for the Product entity."
             }
           ]
         }
@@ -313,15 +351,15 @@
           "schema": {
             "$ref": "#/backend/entities/Order"
           },
-          "description": "Manages sales transactions, privately owned by the administrator. Each document includes denormalized `adminId` for authorization independence and `clientId` to link to the respective client.",
+          "description": "Manages sales transactions, privately owned by the administrator.",
           "params": [
             {
               "name": "adminId",
-              "description": "The Firebase Authentication UID of the administrator who owns this order data."
+              "description": "The UID of the administrator who owns this order data."
             },
             {
               "name": "orderId",
-              "description": "The unique identifier for the Order (sale) entity, used as the document ID."
+              "description": "The unique identifier for the Order entity."
             }
           ]
         }
@@ -333,19 +371,19 @@
           "schema": {
             "$ref": "#/backend/entities/OrderItem"
           },
-          "description": "Details individual products sold within an order, privately owned by the administrator. Each document includes denormalized `adminId` and `orderId` for authorization independence, and `productId` for reference.",
+          "description": "Details individual products sold within an order.",
           "params": [
             {
               "name": "adminId",
-              "description": "The Firebase Authentication UID of the administrator who owns this order item data."
+              "description": "The UID of the administrator who owns this order item data."
             },
             {
               "name": "orderId",
-              "description": "The unique identifier of the parent Order, used as the subcollection ID."
+              "description": "The unique identifier of the parent Order."
             },
             {
               "name": "orderItemId",
-              "description": "The unique identifier for the OrderItem entity, used as the document ID."
+              "description": "The unique identifier for the OrderItem entity."
             }
           ]
         }
@@ -361,7 +399,7 @@
           "params": [
             {
               "name": "adminId",
-              "description": "The Firebase Authentication UID of the administrator who owns this category data."
+              "description": "The UID of the administrator who owns this category data."
             },
             {
               "name": "categoryId",
@@ -370,7 +408,6 @@
           ]
         }
       }
-    ],
-    "reasoning": "The Firestore structure for GlamGestão is designed around a single-administrator model, prioritizing security, simplicity, and debuggability. All application data is strictly scoped to the administrator's unique ID (UID) to ensure private access. \n\n**Authorization Independence (Denormalization Strategy):**\nTo achieve Authorization Independence, every document within the administrator's data collections (Clients, Products, Orders, OrderItems, Categories) will explicitly include an `adminId` field. This `adminId` field will store the Firebase Authentication UID of the administrator who owns the data, mirroring the `adminId` wildcard used in the document's path. For example, a Client document located at `/users/{adminId}/clients/{clientId}` will contain `adminId: \"{adminId}\"` within its data. This denormalization eliminates the need for `get()` calls in security rules to ascertain ownership, allowing rules to directly check `request.auth.uid == resource.data.adminId`. This design supports atomic operations (like transactions or batched writes) across related documents without compromising security or requiring complex rule evaluations.\n\nFor `OrderItem` documents, which are nested under `Order`, further denormalization includes both `adminId` and `orderId` within the document. This allows `OrderItem` documents to be authorized independently, verifying `request.auth.uid == resource.data.adminId` and `resource.data.orderId == orderId` (where `orderId` is the path wildcard), ensuring robust subcollection security.\n\n**QAPs (Rules are not Filters):**\nQuery-as-Permissions (QAPs) are naturally supported by the structural segregation. All core data is nested under `/users/{adminId}/...`. This means any `list` operation initiated by an authenticated user can only target collections within their specific `adminId` path. Security rules will enforce that `request.auth.uid` must match the `adminId` in the path and also the `adminId` field within the document. This inherently restricts data access to the owning administrator, making it impossible to query data belonging to other administrators (if they existed) or to retrieve unauthorized documents. The structure itself acts as the primary filter, ensuring that clients only receive data they are explicitly permitted to access.\n\n**DBAC (Database Access Control):**\nA dedicated top-level collection, `/admins/{adminId}`, is used to explicitly register and authorize administrators. The mere existence of a document for `request.auth.uid` in this collection confirms their administrative role. This acts as a simple yet powerful database-centric access control mechanism, validating the `adminId` before allowing access to any personal data collections. This setup ensures that only pre-approved UIDs can access the application's sensitive data, reinforcing the single-admin model."
+    ]
   }
 }

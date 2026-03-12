@@ -5,16 +5,25 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "./app-sidebar";
 import { MobileNav } from "./mobile-nav";
 import { Sparkles, ArrowLeft } from "lucide-react";
-import { useUser } from "@/firebase";
+import { useUser, useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { doc } from "firebase/firestore";
 import Link from "next/link";
 
 export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
   const { user, isUserLoading } = useUser();
+  const db = useFirestore();
   const pathname = usePathname();
   const router = useRouter();
+
+  const settingsRef = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return doc(db, "users", user.uid, "config", "settings");
+  }, [db, user]);
+
+  const { data: settings } = useDoc(settingsRef);
 
   useEffect(() => {
     if (!isUserLoading && !user && pathname !== '/login') {
@@ -23,6 +32,44 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
       router.push('/');
     }
   }, [user, isUserLoading, pathname, router]);
+
+  useEffect(() => {
+    if (settings) {
+      // Aplicar cor primária se existir
+      if (settings.primaryColor) {
+        // Converte Hex para HSL simplificado para o Tailwind
+        const hex = settings.primaryColor.replace('#', '');
+        const r = parseInt(hex.substring(0, 2), 16) / 255;
+        const g = parseInt(hex.substring(2, 4), 16) / 255;
+        const b = parseInt(hex.substring(4, 6), 16) / 255;
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
+        let h = 0, s, l = (max + min) / 2;
+        if (max === min) { h = s = 0; } else {
+          const d = max - min;
+          s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+          switch (max) {
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+          }
+          h /= 6;
+        }
+        const hDeg = Math.round(h * 360);
+        const sPct = Math.round(s * 100);
+        const lPct = Math.round(l * 100);
+        
+        document.documentElement.style.setProperty('--primary', `${hDeg} ${sPct}% ${lPct}%`);
+        document.documentElement.style.setProperty('--ring', `${hDeg} ${sPct}% ${lPct}%`);
+      }
+
+      // Aplicar modo escuro/claro
+      if (settings.themeMode === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+  }, [settings]);
 
   if (isUserLoading) {
     return (
@@ -42,6 +89,7 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
   if (!user) return null;
 
   const isDashboard = pathname === '/';
+  const appName = settings?.appName || "GlamGestão";
 
   // Lógica dinâmica para o botão de voltar
   let backHref = "/";
@@ -60,7 +108,7 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <AppSidebar />
+      <AppSidebar appName={appName} />
       <SidebarInset className="overflow-x-hidden bg-background">
         {/* Branding condicional exclusivo do Dashboard */}
         {isDashboard ? (
@@ -72,7 +120,7 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
             <div className="text-center px-4">
               {/* Título Aumentado */}
               <h1 className="text-6xl sm:text-8xl font-black tracking-tighter text-primary font-headline italic drop-shadow-xl leading-none whitespace-nowrap">
-                GlamGestão
+                {appName}
               </h1>
               {/* Subtítulo Aumentado */}
               <p className="text-xs sm:text-lg text-muted-foreground font-black uppercase tracking-[0.4em] mt-3 opacity-80">

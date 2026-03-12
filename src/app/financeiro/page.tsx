@@ -22,8 +22,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection } from "firebase/firestore";
+import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase";
+import { collection, doc } from "firebase/firestore";
 import { format, startOfMonth, endOfMonth, isWithinInterval, setDay, setMonth, setYear, getDate, getMonth, getYear } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -74,6 +74,13 @@ export default function FinanceiroPage() {
     from: startOfMonth(new Date()),
     to: endOfMonth(new Date()),
   });
+
+  const settingsRef = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return doc(db, "users", user.uid, "config", "settings");
+  }, [db, user]);
+  const { data: settings } = useDoc(settingsRef);
+  const appName = settings?.appName || "GlamGestão";
 
   const ordersQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -143,29 +150,12 @@ export default function FinanceiroPage() {
     const fromStr = format(date.from, "dd/MM/yyyy");
     const toStr = format(date.to, "dd/MM/yyyy");
 
-    let message = `📊 *RELATÓRIO FINANCEIRO ELITE - GlamGestão*\n`;
+    let message = `📊 *RELATÓRIO FINANCEIRO ELITE - ${appName}*\n`;
     message += `📅 *Período:* ${fromStr} - ${toStr}\n\n`;
     message += `💰 *RESUMO FINANCEIRO*\n`;
     message += `✅ Entradas: R$ ${financialStats.recebido.toFixed(2)}\n`;
     message += `⏳ Pendentes: R$ ${financialStats.pendente.toFixed(2)}\n`;
     message += `⚠️ Atrasados: R$ ${financialStats.atrasado.toFixed(2)}\n\n`;
-
-    if (proximosRecebimentos.length > 0) {
-      message += `📌 *PAGAMENTOS A RECEBER*\n`;
-      proximosRecebimentos.slice(0, 10).forEach(p => {
-        message += `• ${p.clientName}: R$ ${Number(p.finalAmount).toFixed(2)} (Vence: ${format(new Date(p.dueDate), "dd/MM")})\n`;
-      });
-      if (proximosRecebimentos.length > 10) message += `... e mais ${proximosRecebimentos.length - 10} itens.\n`;
-      message += `\n`;
-    }
-
-    if (entradasConfirmadas.length > 0) {
-      message += `💸 *ÚLTIMAS ENTRADAS*\n`;
-      entradasConfirmadas.slice(0, 10).forEach(p => {
-        message += `• ${p.clientName}: R$ ${Number(p.finalAmount).toFixed(2)} (${format(new Date(p.orderDate), "dd/MM")})\n`;
-      });
-      if (entradasConfirmadas.length > 10) message += `... e mais ${entradasConfirmadas.length - 10} itens.\n`;
-    }
 
     const encodedMessage = encodeURIComponent(message);
     window.open(`https://wa.me/?text=${encodedMessage}`, "_blank");
@@ -180,19 +170,14 @@ export default function FinanceiroPage() {
 
     // Estilo Elite
     doc.setFontSize(22);
-    doc.setTextColor(194, 24, 91); // Cor Primary
-    doc.text("GlamGestão - Relatório Financeiro", 14, 20);
+    doc.setTextColor(194, 24, 91);
+    doc.text(`${appName} - Relatório Financeiro`, 14, 20);
     
     doc.setFontSize(12);
     doc.setTextColor(100);
     doc.text(`Período: ${fromStr} - ${toStr}`, 14, 30);
     doc.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy HH:mm")}`, 14, 37);
 
-    // Resumo
-    doc.setFontSize(16);
-    doc.setTextColor(0);
-    doc.text("Resumo Financeiro", 14, 50);
-    
     autoTable(doc, {
       startY: 55,
       head: [['Descrição', 'Valor']],
@@ -205,41 +190,6 @@ export default function FinanceiroPage() {
       theme: 'striped',
       headStyles: { fillColor: [194, 24, 91] }
     });
-
-    // Pagamentos Pendentes
-    if (proximosRecebimentos.length > 0) {
-      doc.setFontSize(16);
-      doc.text("Pagamentos a Receber", 14, (doc as any).lastAutoTable.finalY + 15);
-      
-      autoTable(doc, {
-        startY: (doc as any).lastAutoTable.finalY + 20,
-        head: [['Cliente', 'Valor', 'Vencimento']],
-        body: proximosRecebimentos.map(p => [
-          p.clientName,
-          `R$ ${Number(p.finalAmount).toFixed(2)}`,
-          format(new Date(p.dueDate), "dd/MM/yyyy")
-        ]),
-        headStyles: { fillColor: [245, 158, 11] } // Orange
-      });
-    }
-
-    // Entradas Confirmadas
-    if (entradasConfirmadas.length > 0) {
-      doc.setFontSize(16);
-      doc.text("Entradas Confirmadas", 14, (doc as any).lastAutoTable.finalY + 15);
-      
-      autoTable(doc, {
-        startY: (doc as any).lastAutoTable.finalY + 20,
-        head: [['Cliente', 'Valor', 'Data', 'Método']],
-        body: entradasConfirmadas.map(p => [
-          p.clientName,
-          `R$ ${Number(p.finalAmount).toFixed(2)}`,
-          format(new Date(p.orderDate), "dd/MM/yyyy"),
-          p.paymentMethod?.toUpperCase()
-        ]),
-        headStyles: { fillColor: [22, 163, 74] } // Green
-      });
-    }
 
     doc.save(`Relatorio_Financeiro_${fromStr.replace(/\//g, '-')}.pdf`);
   };
@@ -293,58 +243,33 @@ export default function FinanceiroPage() {
                   <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 px-2">Início do Período</p>
                   <div className="grid grid-cols-3 gap-3">
                     <Select value={date?.from ? getDate(date.from).toString() : ""} onValueChange={(v) => updateDatePart('from', 'day', v)}>
-                      <SelectTrigger className="h-14 font-black rounded-xl border-2">
-                        <SelectValue placeholder="Dia" />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-xl font-bold">
-                        {DAYS.map(d => <SelectItem key={d} value={d}>{d.padStart(2, '0')}</SelectItem>)}
-                      </SelectContent>
+                      <SelectTrigger className="h-14 font-black rounded-xl border-2"><SelectValue placeholder="Dia" /></SelectTrigger>
+                      <SelectContent className="rounded-xl font-bold">{DAYS.map(d => <SelectItem key={d} value={d}>{d.padStart(2, '0')}</SelectItem>)}</SelectContent>
                     </Select>
                     <Select value={date?.from ? getMonth(date.from).toString() : ""} onValueChange={(v) => updateDatePart('from', 'month', v)}>
-                      <SelectTrigger className="h-14 font-black rounded-xl border-2">
-                        <SelectValue placeholder="Mês" />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-xl font-bold">
-                        {MONTHS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
-                      </SelectContent>
+                      <SelectTrigger className="h-14 font-black rounded-xl border-2"><SelectValue placeholder="Mês" /></SelectTrigger>
+                      <SelectContent className="rounded-xl font-bold">{MONTHS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
                     </Select>
                     <Select value={date?.from ? getYear(date.from).toString() : ""} onValueChange={(v) => updateDatePart('from', 'year', v)}>
-                      <SelectTrigger className="h-14 font-black rounded-xl border-2">
-                        <SelectValue placeholder="Ano" />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-xl font-bold">
-                        {YEARS.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
-                      </SelectContent>
+                      <SelectTrigger className="h-14 font-black rounded-xl border-2"><SelectValue placeholder="Ano" /></SelectTrigger>
+                      <SelectContent className="rounded-xl font-bold">{YEARS.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                 </div>
-
                 <div className="space-y-3">
                   <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 px-2">Fim do Período</p>
                   <div className="grid grid-cols-3 gap-3">
                     <Select value={date?.to ? getDate(date.to).toString() : ""} onValueChange={(v) => updateDatePart('to', 'day', v)}>
-                      <SelectTrigger className="h-14 font-black rounded-xl border-2">
-                        <SelectValue placeholder="Dia" />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-xl font-bold">
-                        {DAYS.map(d => <SelectItem key={d} value={d}>{d.padStart(2, '0')}</SelectItem>)}
-                      </SelectContent>
+                      <SelectTrigger className="h-14 font-black rounded-xl border-2"><SelectValue placeholder="Dia" /></SelectTrigger>
+                      <SelectContent className="rounded-xl font-bold">{DAYS.map(d => <SelectItem key={d} value={d}>{d.padStart(2, '0')}</SelectItem>)}</SelectContent>
                     </Select>
                     <Select value={date?.to ? getMonth(date.to).toString() : ""} onValueChange={(v) => updateDatePart('to', 'month', v)}>
-                      <SelectTrigger className="h-14 font-black rounded-xl border-2">
-                        <SelectValue placeholder="Mês" />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-xl font-bold">
-                        {MONTHS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
-                      </SelectContent>
+                      <SelectTrigger className="h-14 font-black rounded-xl border-2"><SelectValue placeholder="Mês" /></SelectTrigger>
+                      <SelectContent className="rounded-xl font-bold">{MONTHS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
                     </Select>
                     <Select value={date?.to ? getYear(date.to).toString() : ""} onValueChange={(v) => updateDatePart('to', 'year', v)}>
-                      <SelectTrigger className="h-14 font-black rounded-xl border-2">
-                        <SelectValue placeholder="Ano" />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-xl font-bold">
-                        {YEARS.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
-                      </SelectContent>
+                      <SelectTrigger className="h-14 font-black rounded-xl border-2"><SelectValue placeholder="Ano" /></SelectTrigger>
+                      <SelectContent className="rounded-xl font-bold">{YEARS.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
                 </div>
@@ -353,7 +278,6 @@ export default function FinanceiroPage() {
             </PopoverContent>
           </Popover>
 
-          {/* Botão de Exportar Elite */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="default" className="w-full sm:w-[400px] h-14 sm:h-16 text-sm sm:text-xl font-black rounded-2xl bg-accent hover:bg-accent/90 shadow-xl transition-all active:scale-95 uppercase tracking-widest gap-3">
@@ -363,12 +287,10 @@ export default function FinanceiroPage() {
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[300px] sm:w-[400px] p-4 rounded-2xl border-4 border-accent/10 shadow-2xl bg-background" align="center">
               <DropdownMenuItem onClick={handleShareText} className="h-16 rounded-xl font-black text-lg gap-4 cursor-pointer focus:bg-accent/5 focus:text-accent">
-                <Share2 className="size-6 text-accent" />
-                COMPARTILHAR TEXTO (WA)
+                <Share2 className="size-6 text-accent" /> COMPARTILHAR TEXTO (WA)
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleGeneratePDF} className="h-16 rounded-xl font-black text-lg gap-4 cursor-pointer focus:bg-primary/5 focus:text-primary">
-                <FileText className="size-6 text-primary" />
-                BAIXAR RELATÓRIO PDF
+                <FileText className="size-6 text-primary" /> BAIXAR RELATÓRIO PDF
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -381,9 +303,7 @@ export default function FinanceiroPage() {
             <div className={`h-3 w-full ${item.stripe} opacity-80 group-hover:opacity-100 transition-opacity`} />
             <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 px-8 pt-8">
               <CardTitle className="text-xs font-black text-muted-foreground uppercase tracking-[0.2em] px-2">{item.title}</CardTitle>
-              <div className={`${item.bg} ${item.color} p-4 rounded-2xl shadow-inner`}>
-                <item.icon className="h-7 w-7" />
-              </div>
+              <div className={`${item.bg} ${item.color} p-4 rounded-2xl shadow-inner`}><item.icon className="h-7 w-7" /></div>
             </CardHeader>
             <CardContent className="px-8 pb-10">
               <div className="text-4xl sm:text-5xl font-black text-foreground px-2 tracking-tighter italic">{item.value}</div>
@@ -393,73 +313,50 @@ export default function FinanceiroPage() {
       </div>
 
       <div className="grid gap-8 md:grid-cols-2">
-        {/* Pagamentos para Receber */}
         <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-background/50 backdrop-blur-sm">
           <CardHeader className="bg-muted/30 pb-8 p-8 border-b-2">
             <CardTitle className="text-2xl font-black px-2 uppercase tracking-tight italic flex items-center gap-3">
               <Clock className="text-orange-500" /> Pagamentos para Receber
             </CardTitle>
-            <CardDescription className="text-sm font-bold uppercase tracking-widest opacity-60">Vendas "A PRAZO" com vencimento no período</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 p-4 sm:p-8">
             {proximosRecebimentos.map((p, i) => (
-              <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-6 rounded-[1.5rem] border-4 border-muted bg-background shadow-sm hover:shadow-xl hover:border-primary/10 transition-all group gap-4 overflow-hidden">
+              <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-6 rounded-[1.5rem] border-4 border-muted bg-background shadow-sm hover:shadow-xl hover:border-primary/10 transition-all group gap-4">
                 <div className="flex-1 min-w-0">
                   <p className="font-black text-lg sm:text-xl px-1 uppercase italic text-primary truncate">{p.clientName}</p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground font-black flex items-center gap-2 mt-1 sm:mt-2 uppercase tracking-widest">
-                    <CalendarIcon className="size-3 sm:size-4 text-primary" /> Vence em: {new Date(p.dueDate).toLocaleDateString()}
+                  <p className="text-[10px] sm:text-xs text-muted-foreground font-black flex items-center gap-2 mt-1 uppercase tracking-widest">
+                    <CalendarIcon className="size-3" /> Vence em: {new Date(p.dueDate).toLocaleDateString()}
                   </p>
                 </div>
-                <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 sm:gap-0 shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-muted/30 w-full sm:w-auto">
+                <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 sm:gap-0 shrink-0 border-t sm:border-t-0 pt-2 w-full sm:w-auto">
                   <p className="text-xl sm:text-2xl font-black text-green-600 px-1 italic">R$ {Number(p.finalAmount).toFixed(2)}</p>
-                  <Badge variant="outline" className="text-orange-600 border-orange-200 bg-orange-50 font-black px-2 py-0.5 sm:py-1 sm:mt-3 rounded-lg text-[8px] sm:text-[10px] uppercase tracking-widest whitespace-nowrap">
-                    Aguardando
-                  </Badge>
                 </div>
               </div>
             ))}
-            {proximosRecebimentos.length === 0 && (
-              <div className="text-center py-20 bg-muted/10 rounded-[2rem] border-4 border-dashed border-muted">
-                <CalendarIcon className="size-16 text-muted-foreground/20 mx-auto mb-4" />
-                <p className="text-muted-foreground text-lg font-black uppercase tracking-tighter opacity-40 italic px-4">Nenhum recebimento pendente para este período.</p>
-              </div>
-            )}
           </CardContent>
         </Card>
 
-        {/* Entradas Confirmadas */}
         <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-background/50 backdrop-blur-sm">
           <CardHeader className="bg-green-50/50 pb-8 p-8 border-b-2 border-green-100">
             <CardTitle className="text-2xl font-black px-2 uppercase tracking-tight italic flex items-center gap-3 text-green-700">
               <ArrowDownCircle className="text-green-600" /> Entradas Confirmadas
             </CardTitle>
-            <CardDescription className="text-sm font-bold uppercase tracking-widest text-green-600/60">Últimos pagamentos liquidados com sucesso</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 p-4 sm:p-8">
             {entradasConfirmadas.map((p, i) => (
-              <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-6 rounded-[1.5rem] bg-green-50/40 border-4 border-green-100 shadow-sm hover:shadow-xl hover:bg-green-100/50 transition-all group gap-4 overflow-hidden">
+              <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-6 rounded-[1.5rem] bg-green-50/40 border-4 border-green-100 shadow-sm hover:shadow-xl hover:bg-green-100/50 transition-all group gap-4">
                 <div className="flex items-center gap-3 sm:gap-5 flex-1 min-w-0">
-                  <div className="size-10 sm:size-16 rounded-[1.2rem] bg-green-100 flex items-center justify-center text-green-700 shadow-inner group-hover:scale-110 transition-transform shrink-0">
-                    <ArrowDownCircle className="size-5 sm:size-8" />
-                  </div>
+                  <div className="size-10 sm:size-16 rounded-[1.2rem] bg-green-100 flex items-center justify-center text-green-700 shadow-inner shrink-0"><ArrowDownCircle className="size-5 sm:size-8" /></div>
                   <div className="min-w-0 flex-1">
                     <p className="font-black text-lg sm:text-xl px-1 uppercase italic text-green-800 truncate">{p.clientName}</p>
-                    <p className="text-[10px] sm:text-xs text-green-600/60 font-black flex items-center gap-2 mt-1 sm:mt-2 uppercase tracking-widest">
-                      <CalendarIcon className="size-3 sm:size-4" /> {new Date(p.orderDate).toLocaleDateString()}
-                    </p>
+                    <p className="text-[10px] sm:text-xs text-green-600/60 font-black flex items-center gap-2 mt-1 uppercase tracking-widest"><CalendarIcon className="size-3" /> {new Date(p.orderDate).toLocaleDateString()}</p>
                   </div>
                 </div>
-                <div className="sm:text-right text-left shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-green-200/50 w-full sm:w-auto">
+                <div className="sm:text-right text-left shrink-0 border-t sm:border-t-0 pt-2 w-full sm:w-auto">
                   <p className="text-xl sm:text-3xl font-black text-green-700 px-1 italic tracking-tighter">+ R$ {Number(p.finalAmount).toFixed(2)}</p>
                 </div>
               </div>
             ))}
-            {entradasConfirmadas.length === 0 && (
-              <div className="text-center py-20 bg-muted/10 rounded-[2rem] border-4 border-dashed border-muted">
-                <Wallet className="size-16 text-muted-foreground/20 mx-auto mb-4" />
-                <p className="text-muted-foreground text-lg font-black uppercase tracking-tighter opacity-40 italic px-4">Nenhuma entrada registrada no período selecionado.</p>
-              </div>
-            )}
           </CardContent>
         </Card>
       </div>

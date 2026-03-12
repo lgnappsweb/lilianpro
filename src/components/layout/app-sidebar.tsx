@@ -43,10 +43,10 @@ const navItems = [
   { name: "Pedidos", icon: ClipboardList, href: "/pedidos" },
   { name: "Financeiro", icon: Wallet, href: "/financeiro" },
   { name: "Relatórios", icon: BarChart3, href: "/relatorios" },
-  { name: "Configurações", icon: Settings, href: "/configuracoes" },
+  { name: "Ajustes", icon: Settings, href: "/configuracoes" },
 ];
 
-export function AppSidebar() {
+export function AppSidebar({ appName }: { appName?: string }) {
   const pathname = usePathname();
   const auth = useAuth();
   const { user } = useUser();
@@ -59,7 +59,7 @@ export function AppSidebar() {
             <Sparkles className="size-8" />
           </div>
           <span className="font-headline font-black text-2xl tracking-tighter text-primary group-data-[collapsible=icon]:hidden italic">
-            GlamGestão
+            {appName || "GlamGestão"}
           </span>
         </div>
       </SidebarHeader>
