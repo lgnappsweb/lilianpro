@@ -143,7 +143,7 @@ export default function NovaVendaPage() {
 
   return (
     <div className="space-y-10 max-w-5xl mx-auto w-full animate-in fade-in duration-500 pb-32">
-      <div className="px-2">
+      <div className="px-2 text-center">
         <h1 className="text-4xl md:text-5xl font-black tracking-tight text-primary font-headline uppercase">Nova Venda</h1>
         <p className="text-xl text-muted-foreground mt-2 font-bold opacity-60">Cadastre uma venda rapidamente no seu sistema.</p>
       </div>

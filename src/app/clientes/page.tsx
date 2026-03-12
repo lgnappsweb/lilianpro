@@ -86,7 +86,7 @@ export default function ClientesPage() {
 
   return (
     <div className="space-y-10 animate-in fade-in duration-500">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 px-2">
+      <div className="flex flex-col items-center text-center gap-6 px-2">
         <div>
           <h1 className="text-4xl md:text-5xl font-black tracking-tight text-primary font-headline uppercase">Minhas Clientes</h1>
           <p className="text-xl text-muted-foreground mt-2 font-bold opacity-60">Gerencie seu catálogo de contatos e histórico.</p>

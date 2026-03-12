@@ -143,7 +143,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-12 animate-in fade-in duration-500 w-full overflow-hidden">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 px-2">
+      <div className="flex flex-col items-center text-center gap-6 px-2">
         <div>
           <h1 className="text-3xl md:text-4xl font-black tracking-tight text-primary font-headline uppercase">Olá, {user?.displayName || 'Administradora'}!</h1>
           <p className="text-xl text-muted-foreground mt-2 font-bold opacity-80">Veja como está o seu negócio hoje.</p>
@@ -156,7 +156,6 @@ export default function DashboardPage() {
         </Button>
       </div>
 
-      {/* Stats em Lista Vertical Clicável - MANTIDO E ESTABILIZADO */}
       <div className="grid gap-6 grid-cols-1">
         {stats.map((stat, i) => (
           <Link href={stat.href} key={i} className="block group">
