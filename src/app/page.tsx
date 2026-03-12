@@ -145,8 +145,8 @@ export default function DashboardPage() {
     <div className="space-y-12 animate-in fade-in duration-500 w-full overflow-hidden">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 px-2">
         <div>
-          <h1 className="text-4xl md:text-5xl font-black tracking-tight text-primary font-headline">Olá, {user?.displayName || 'Administradora'}!</h1>
-          <p className="text-lg md:text-xl text-muted-foreground mt-2 font-bold">Veja como está o seu negócio hoje.</p>
+          <h1 className="text-4xl md:text-5xl font-black tracking-tight text-primary font-headline uppercase">Olá, {user?.displayName || 'Administradora'}!</h1>
+          <p className="text-xl text-muted-foreground mt-2 font-bold opacity-60">Veja como está o seu negócio hoje.</p>
         </div>
         <Button asChild className="h-16 px-10 text-xl font-black shadow-xl rounded-2xl bg-primary hover:bg-primary/90 transition-all hover:scale-105">
           <Link href="/vendas/nova">
@@ -156,7 +156,7 @@ export default function DashboardPage() {
         </Button>
       </div>
 
-      {/* Stats em Lista Vertical Clicável */}
+      {/* Stats em Lista Vertical Clicável - MANTIDO E ESTABILIZADO */}
       <div className="grid gap-6 grid-cols-1">
         {stats.map((stat, i) => (
           <Link href={stat.href} key={i} className="block group">
@@ -168,7 +168,7 @@ export default function DashboardPage() {
                 </div>
               </CardHeader>
               <CardContent className="px-8 pb-10">
-                <div className="text-4xl md:text-6xl font-black truncate text-primary">{stat.value}</div>
+                <div className="text-4xl md:text-6xl font-black truncate text-primary tracking-tighter">{stat.value}</div>
                 <div className="flex items-center justify-between mt-4">
                   <p className="text-sm font-black text-muted-foreground uppercase tracking-widest opacity-60">{stat.description}</p>
                   <ChevronRight className="size-8 text-primary opacity-0 group-hover:opacity-100 transition-all -translate-x-4 group-hover:translate-x-0" />
@@ -190,7 +190,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="p-8 pt-0">
             <div className="bg-white/80 dark:bg-black/60 backdrop-blur-md p-8 rounded-[2rem] border-2 border-primary/10 shadow-inner">
-              <p className="leading-relaxed text-lg md:text-xl text-foreground font-semibold">
+              <p className="leading-relaxed text-lg md:text-xl text-foreground font-semibold italic opacity-80">
                 {aiSummaryText}
               </p>
             </div>
@@ -211,8 +211,8 @@ export default function DashboardPage() {
                   <Package className="size-8" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xl font-black truncate">Produtos</p>
-                  <p className="text-sm text-muted-foreground font-bold">{products?.length || 0} itens registrados</p>
+                  <p className="text-xl font-black truncate uppercase tracking-tight">Produtos</p>
+                  <p className="text-sm text-muted-foreground font-bold">{products?.length || 0} itens</p>
                 </div>
                 <Badge variant="secondary" className="text-xs font-black px-3 py-1 bg-primary/5 text-primary border-none">Ver</Badge>
               </div>
@@ -223,8 +223,8 @@ export default function DashboardPage() {
                   <Users className="size-8" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xl font-black truncate">Clientes</p>
-                  <p className="text-sm text-muted-foreground font-bold">{clients?.length || 0} contatos ativos</p>
+                  <p className="text-xl font-black truncate uppercase tracking-tight">Clientes</p>
+                  <p className="text-sm text-muted-foreground font-bold">{clients?.length || 0} contatos</p>
                 </div>
                 <Badge variant="secondary" className="text-xs font-black px-3 py-1 bg-accent/5 text-accent border-none">Ver</Badge>
               </div>
@@ -237,7 +237,7 @@ export default function DashboardPage() {
         <CardHeader className="flex flex-row items-center justify-between px-10 py-8 bg-muted/30">
           <CardTitle className="text-2xl md:text-3xl font-black">Vendas Recentes</CardTitle>
           <Button variant="ghost" size="lg" className="text-base font-black text-primary hover:bg-primary/10 rounded-xl" asChild>
-            <Link href="/pedidos">Ver Histórico Completo</Link>
+            <Link href="/pedidos">Ver Histórico</Link>
           </Button>
         </CardHeader>
         <CardContent className="p-0">
@@ -255,14 +255,14 @@ export default function DashboardPage() {
                 {recentOrders.map((order) => (
                   <tr key={order.id} className="hover:bg-muted/50 transition-colors group">
                     <td className="px-10 py-6 text-foreground font-bold">{new Date(order.orderDate).toLocaleDateString()}</td>
-                    <td className="px-10 py-6 font-black text-primary text-xl">R$ {Number(order.finalAmount).toFixed(2)}</td>
+                    <td className="px-10 py-6 font-black text-primary text-xl tracking-tighter">R$ {Number(order.finalAmount).toFixed(2)}</td>
                     <td className="px-10 py-6">
-                      <Badge variant={order.paymentStatus === "Pago" ? "default" : "secondary"} className={`text-xs font-black px-4 py-1.5 rounded-xl shadow-sm ${order.paymentStatus === "Pago" ? "bg-green-600" : "bg-orange-500 text-white"}`}>
-                        {order.paymentStatus}
+                      <Badge variant={order.paymentStatus === "Pago" ? "default" : "secondary"} className={`text-[10px] font-black px-4 py-1.5 rounded-xl shadow-sm ${order.paymentStatus === "Pago" ? "bg-green-600" : "bg-orange-500 text-white"}`}>
+                        {order.paymentStatus?.toUpperCase()}
                       </Badge>
                     </td>
                     <td className="px-10 py-6 text-right">
-                      <Button variant="outline" size="sm" className="h-10 text-xs font-black text-primary border-primary/20 rounded-xl" asChild>
+                      <Button variant="outline" size="sm" className="h-10 text-[10px] font-black text-primary border-primary/20 rounded-xl" asChild>
                         <Link href={`/pedidos/${order.id}`}>DETALHES</Link>
                       </Button>
                     </td>

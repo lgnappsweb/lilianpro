@@ -50,21 +50,21 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
         {/* Branding condicional exclusivo do Dashboard */}
         {isDashboard ? (
           <div className="flex flex-col items-center justify-center pt-10 pb-6 gap-4 animate-in fade-in slide-in-from-top-4 duration-700">
-            <div className="bg-primary p-4 sm:p-5 rounded-[2rem] text-primary-foreground shadow-xl border-4 border-white transition-all">
-              <Sparkles className="size-12 sm:size-16" />
+            <div className="bg-primary p-4 sm:p-5 rounded-[2rem] text-primary-foreground shadow-xl border-4 border-white transition-all scale-110 sm:scale-125">
+              <Sparkles className="size-16 sm:size-20" />
             </div>
             <div className="text-center px-4">
-              <h1 className="text-6xl sm:text-8xl font-black tracking-tighter text-primary font-headline italic drop-shadow-md">
+              <h1 className="text-5xl sm:text-7xl font-black tracking-tighter text-primary font-headline italic drop-shadow-md">
                 GlamGestão
               </h1>
-              <p className="text-xs sm:text-base text-muted-foreground font-black uppercase tracking-[0.3em] mt-2 opacity-70">
+              <p className="text-[10px] sm:text-sm text-muted-foreground font-black uppercase tracking-[0.3em] mt-2 opacity-70">
                 LINHAS ROSA VERDE E MARROM
               </p>
             </div>
           </div>
         ) : (
           <div className="flex items-center px-4 sm:px-8 pt-6 pb-2 animate-in fade-in duration-500">
-            <Button asChild variant="ghost" className="h-10 px-3 rounded-xl font-bold gap-2 text-primary hover:bg-primary/5 border border-primary/10">
+            <Button asChild variant="ghost" className="h-10 px-3 rounded-xl font-black gap-2 text-primary hover:bg-primary/5 border border-primary/10">
               <Link href="/">
                 <ArrowLeft className="size-5" />
                 <span className="text-xs uppercase tracking-wider">Início</span>
