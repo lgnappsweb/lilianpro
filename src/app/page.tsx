@@ -21,12 +21,16 @@ import {
   PlusCircle,
   Loader2,
   LayoutDashboard,
+  AlertTriangle,
+  CheckCircle2,
+  Activity,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection } from "firebase/firestore";
+import { cn } from "@/lib/utils";
 
 export default function DashboardPage() {
   const { user } = useUser();
@@ -95,6 +99,45 @@ export default function DashboardPage() {
     ];
   }, [orders, clients]);
 
+  // Lógica do Card de Monitoramento de Saúde Financeira
+  const healthStatus = useMemo(() => {
+    if (!orders || orders.length === 0) return null;
+
+    const counts = {
+      pago: orders.filter(o => o.paymentStatus === "Pago").length,
+      pendente: orders.filter(o => o.paymentStatus === "Pendente").length,
+      atrasado: orders.filter(o => o.paymentStatus === "Atrasado").length,
+    };
+
+    let theme = {
+      bg: "bg-green-50 border-green-200",
+      iconColor: "text-green-600",
+      title: "TUDO EM DIA",
+      desc: "Excelente! Todas as suas vendas estão liquidadas.",
+      icon: CheckCircle2,
+    };
+
+    if (counts.atrasado > 0) {
+      theme = {
+        bg: "bg-red-50 border-red-200",
+        iconColor: "text-red-600",
+        title: "ALERTA DE ATRASOS",
+        desc: "Atenção! Existem pagamentos vencidos que precisam de cobrança.",
+        icon: AlertTriangle,
+      };
+    } else if (counts.pendente > 0) {
+      theme = {
+        bg: "bg-orange-50 border-orange-200",
+        iconColor: "text-orange-600",
+        title: "PAGAMENTOS PENDENTES",
+        desc: "Você tem valores a receber dentro do prazo.",
+        icon: Clock,
+      };
+    }
+
+    return { counts, ...theme };
+  }, [orders]);
+
   const recentOrders = useMemo(() => {
     if (!orders) return [];
     return [...orders].sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()).slice(0, 5);
@@ -149,6 +192,45 @@ export default function DashboardPage() {
         ))}
       </div>
 
+      {/* MONITOR DE SAÚDE FINANCEIRA DINÂMICO */}
+      {healthStatus && (
+        <Card className={cn("border-4 shadow-2xl rounded-[2.5rem] overflow-hidden transition-all duration-700", healthStatus.bg)}>
+          <CardHeader className="p-8 pb-4">
+            <div className="flex items-center gap-4">
+              <div className={cn("p-3 rounded-2xl bg-white shadow-sm", healthStatus.iconColor)}>
+                <healthStatus.icon className="size-8" />
+              </div>
+              <div>
+                <CardTitle className={cn("text-2xl font-black uppercase tracking-tighter italic", healthStatus.iconColor)}>
+                  {healthStatus.title}
+                </CardTitle>
+                <CardDescription className="font-bold opacity-70">Monitoramento automático de cobranças</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-8 pt-4">
+            <div className="grid grid-cols-3 gap-4 mb-6">
+              <div className="bg-white/60 p-4 rounded-2xl text-center shadow-inner border border-white">
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Pagos</p>
+                <p className="text-3xl font-black text-green-600">{healthStatus.counts.pago}</p>
+              </div>
+              <div className="bg-white/60 p-4 rounded-2xl text-center shadow-inner border border-white">
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">A Prazo</p>
+                <p className="text-3xl font-black text-orange-500">{healthStatus.counts.pendente}</p>
+              </div>
+              <div className="bg-white/60 p-4 rounded-2xl text-center shadow-inner border border-white">
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Atrasados</p>
+                <p className="text-3xl font-black text-red-600">{healthStatus.counts.atrasado}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-4 bg-white/40 rounded-2xl border border-white/50">
+              <Activity className={cn("size-5 shrink-0", healthStatus.iconColor)} />
+              <p className="text-sm font-bold leading-tight opacity-80">{healthStatus.desc}</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="w-full">
         <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden">
           <CardHeader className="p-8 pb-4 bg-muted/20">
@@ -158,28 +240,28 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-8 space-y-6">
-            <Link href="/produtos" className="block">
-              <div className="flex items-center gap-5 p-5 rounded-[1.5rem] bg-background border-2 border-muted shadow-sm hover:border-primary/20 transition-colors relative group/item">
+            <Link href="/produtos" className="block group/card">
+              <div className="flex items-center gap-5 p-5 rounded-[1.5rem] bg-background border-2 border-muted shadow-sm hover:border-primary/20 transition-all relative overflow-hidden">
                 <div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
                   <Package className="size-8" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xl font-black uppercase tracking-tight px-2">Produtos</p>
+                  <p className="text-xl font-black uppercase tracking-tight px-2 whitespace-nowrap">Produtos</p>
                   <p className="text-sm text-muted-foreground font-bold">{products?.length || 0} itens</p>
                 </div>
-                <Badge variant="secondary" className="absolute bottom-3 right-4 text-[10px] font-black px-3 py-1 bg-primary/5 text-primary border-none shadow-sm group-hover/item:bg-primary group-hover/item:text-white transition-all">Ver</Badge>
+                <Badge variant="secondary" className="absolute bottom-3 right-4 text-[10px] font-black px-3 py-1 bg-primary/5 text-primary border-none shadow-sm group-hover/card:bg-primary group-hover/card:text-white transition-all">Ver</Badge>
               </div>
             </Link>
-            <Link href="/clientes" className="block">
-              <div className="flex items-center gap-5 p-5 rounded-[1.5rem] bg-background border-2 border-muted shadow-sm hover:border-accent/20 transition-colors relative group/item">
+            <Link href="/clientes" className="block group/card">
+              <div className="flex items-center gap-5 p-5 rounded-[1.5rem] bg-background border-2 border-muted shadow-sm hover:border-accent/20 transition-all relative overflow-hidden">
                 <div className="size-14 rounded-2xl bg-accent/10 flex items-center justify-center text-accent shadow-inner">
                   <Users className="size-8" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xl font-black uppercase tracking-tight px-2">Clientes</p>
+                  <p className="text-xl font-black uppercase tracking-tight px-2 whitespace-nowrap">Clientes</p>
                   <p className="text-sm text-muted-foreground font-bold">{clients?.length || 0} contatos</p>
                 </div>
-                <Badge variant="secondary" className="absolute bottom-3 right-4 text-[10px] font-black px-3 py-1 bg-accent/5 text-accent border-none shadow-sm group-hover/item:bg-accent group-hover/item:text-white transition-all">Ver</Badge>
+                <Badge variant="secondary" className="absolute bottom-3 right-4 text-[10px] font-black px-3 py-1 bg-accent/5 text-accent border-none shadow-sm group-hover/card:bg-accent group-hover/card:text-white transition-all">Ver</Badge>
               </div>
             </Link>
           </CardContent>
