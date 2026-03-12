@@ -37,6 +37,7 @@ import {
   CreditCard,
   Calendar as CalendarIcon,
   Plus,
+  Minus,
   Trash2,
   Smartphone,
   Banknote,
@@ -194,6 +195,18 @@ export default function NovaVendaPage() {
 
   const hasItems = selectedItems.some(item => !!item.productId);
 
+  const incrementQuantity = (index: number) => {
+    const newItems = [...selectedItems];
+    newItems[index].quantity = (newItems[index].quantity || 0) + 1;
+    setSelectedItems(newItems);
+  };
+
+  const decrementQuantity = (index: number) => {
+    const newItems = [...selectedItems];
+    newItems[index].quantity = Math.max(1, (newItems[index].quantity || 1) - 1);
+    setSelectedItems(newItems);
+  };
+
   return (
     <div className="space-y-6 sm:space-y-10 w-full animate-in fade-in duration-500 pb-32">
       <div className="flex flex-col items-center text-center gap-6 px-2 mb-10">
@@ -287,20 +300,32 @@ export default function NovaVendaPage() {
                 </div>
                 
                 {item.productId && (
-                  <div className="grid grid-cols-2 gap-4 sm:gap-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
                     <div className="space-y-2 text-left">
                       <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Quantidade</Label>
-                      <Input
-                        type="number"
-                        min="1"
-                        className="h-14 sm:h-16 text-center text-xl sm:text-2xl font-black rounded-xl sm:rounded-2xl border-2 border-border bg-background"
-                        value={item.quantity}
-                        onChange={(e) => {
-                          const newItems = [...selectedItems];
-                          newItems[index].quantity = parseInt(e.target.value) || 1;
-                          setSelectedItems(newItems);
-                        }}
-                      />
+                      <div className="flex items-center gap-3">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="h-14 sm:h-16 w-14 sm:w-16 rounded-xl sm:rounded-2xl border-2 border-border bg-background hover:bg-primary/5 text-primary shadow-sm"
+                          onClick={() => decrementQuantity(index)}
+                        >
+                          <Minus className="size-6 sm:size-8" />
+                        </Button>
+                        <div className="flex-1 h-14 sm:h-16 flex items-center justify-center text-xl sm:text-2xl font-black rounded-xl sm:rounded-2xl border-2 border-border bg-background shadow-inner min-w-[60px]">
+                          {item.quantity}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="h-14 sm:h-16 w-14 sm:w-16 rounded-xl sm:rounded-2xl border-2 border-border bg-background hover:bg-primary/5 text-primary shadow-sm"
+                          onClick={() => incrementQuantity(index)}
+                        >
+                          <Plus className="size-6 sm:size-8" />
+                        </Button>
+                      </div>
                     </div>
                     <div className="space-y-2 text-left">
                       <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Subtotal</Label>
