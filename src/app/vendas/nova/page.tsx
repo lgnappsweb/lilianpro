@@ -198,9 +198,9 @@ export default function NovaVendaPage() {
                 <SelectTrigger className="h-14 sm:h-20 text-lg sm:text-2xl font-black rounded-xl sm:rounded-3xl border-4 border-muted bg-background text-primary">
                   <SelectValue placeholder="Busque pelo nome..." />
                 </SelectTrigger>
-                <SelectContent className="rounded-2xl shadow-2xl border-2">
+                <SelectContent className="rounded-2xl shadow-2xl border-2 bg-white">
                   {clients?.map(c => (
-                    <SelectItem key={c.id} value={c.id} className="text-base sm:text-xl font-bold p-3 sm:p-4 focus:bg-primary/5 text-foreground">
+                    <SelectItem key={c.id} value={c.id} className="text-base sm:text-xl font-bold p-3 sm:p-4 focus:bg-primary/5 text-slate-950">
                       {c.fullName}
                     </SelectItem>
                   ))}
@@ -252,9 +252,9 @@ export default function NovaVendaPage() {
                     <SelectTrigger className="h-14 sm:h-16 text-sm sm:text-xl font-black rounded-xl sm:rounded-2xl bg-background border-2 border-border shadow-sm group-hover:border-primary/20 transition-all text-primary">
                       <SelectValue placeholder="Selecione o item..." />
                     </SelectTrigger>
-                    <SelectContent className="rounded-xl shadow-xl">
+                    <SelectContent className="rounded-xl shadow-xl bg-white">
                       {products?.map(p => (
-                        <SelectItem key={p.id} value={p.id} className="text-sm sm:text-lg font-bold p-3 text-foreground">
+                        <SelectItem key={p.id} value={p.id} className="text-sm sm:text-lg font-bold p-3 text-slate-950">
                           {p.name}
                         </SelectItem>
                       ))}
