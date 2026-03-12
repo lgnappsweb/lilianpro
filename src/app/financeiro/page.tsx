@@ -254,7 +254,7 @@ export default function FinanceiroPage() {
   }
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-500">
+    <div className="space-y-10 animate-in fade-in duration-500 w-full overflow-x-hidden">
       <div className="flex flex-col items-center text-center gap-6 px-2 mb-10">
         <div className="w-full">
           <div className="flex flex-col items-center justify-center gap-6">
@@ -393,6 +393,7 @@ export default function FinanceiroPage() {
       </div>
 
       <div className="grid gap-8 md:grid-cols-2">
+        {/* Pagamentos para Receber */}
         <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-background/50 backdrop-blur-sm">
           <CardHeader className="bg-muted/30 pb-8 p-8 border-b-2">
             <CardTitle className="text-2xl font-black px-2 uppercase tracking-tight italic flex items-center gap-3">
@@ -402,16 +403,16 @@ export default function FinanceiroPage() {
           </CardHeader>
           <CardContent className="space-y-4 p-4 sm:p-8">
             {proximosRecebimentos.map((p, i) => (
-              <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-6 rounded-[1.5rem] border-4 border-muted bg-background shadow-sm hover:shadow-xl hover:border-primary/10 transition-all group gap-4">
-                <div className="min-w-0">
-                  <p className="font-black text-xl px-2 uppercase italic text-primary truncate">{p.clientName}</p>
-                  <p className="text-xs text-muted-foreground font-black flex items-center gap-2 mt-2 uppercase tracking-widest">
-                    <CalendarIcon className="size-4 text-primary" /> Vence em: {new Date(p.dueDate).toLocaleDateString()}
+              <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-6 rounded-[1.5rem] border-4 border-muted bg-background shadow-sm hover:shadow-xl hover:border-primary/10 transition-all group gap-4 overflow-hidden">
+                <div className="flex-1 min-w-0">
+                  <p className="font-black text-lg sm:text-xl px-1 uppercase italic text-primary truncate">{p.clientName}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground font-black flex items-center gap-2 mt-1 sm:mt-2 uppercase tracking-widest">
+                    <CalendarIcon className="size-3 sm:size-4 text-primary" /> Vence em: {new Date(p.dueDate).toLocaleDateString()}
                   </p>
                 </div>
-                <div className="sm:text-right text-left shrink-0">
-                  <p className="text-2xl font-black text-green-600 px-2 italic">R$ {Number(p.finalAmount).toFixed(2)}</p>
-                  <Badge variant="outline" className="text-orange-600 border-orange-200 bg-orange-50 font-black px-3 py-1 mt-3 rounded-lg text-[10px] uppercase tracking-widest">
+                <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 sm:gap-0 shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-muted/30 w-full sm:w-auto">
+                  <p className="text-xl sm:text-2xl font-black text-green-600 px-1 italic">R$ {Number(p.finalAmount).toFixed(2)}</p>
+                  <Badge variant="outline" className="text-orange-600 border-orange-200 bg-orange-50 font-black px-2 py-0.5 sm:py-1 sm:mt-3 rounded-lg text-[8px] sm:text-[10px] uppercase tracking-widest whitespace-nowrap">
                     Aguardando
                   </Badge>
                 </div>
@@ -420,12 +421,13 @@ export default function FinanceiroPage() {
             {proximosRecebimentos.length === 0 && (
               <div className="text-center py-20 bg-muted/10 rounded-[2rem] border-4 border-dashed border-muted">
                 <CalendarIcon className="size-16 text-muted-foreground/20 mx-auto mb-4" />
-                <p className="text-muted-foreground text-lg font-black uppercase tracking-tighter opacity-40 italic">Nenhum recebimento pendente para este período.</p>
+                <p className="text-muted-foreground text-lg font-black uppercase tracking-tighter opacity-40 italic px-4">Nenhum recebimento pendente para este período.</p>
               </div>
             )}
           </CardContent>
         </Card>
 
+        {/* Entradas Confirmadas */}
         <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-background/50 backdrop-blur-sm">
           <CardHeader className="bg-green-50/50 pb-8 p-8 border-b-2 border-green-100">
             <CardTitle className="text-2xl font-black px-2 uppercase tracking-tight italic flex items-center gap-3 text-green-700">
@@ -435,27 +437,27 @@ export default function FinanceiroPage() {
           </CardHeader>
           <CardContent className="space-y-4 p-4 sm:p-8">
             {entradasConfirmadas.map((p, i) => (
-              <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-6 rounded-[1.5rem] bg-green-50/40 border-4 border-green-100 shadow-sm hover:shadow-xl hover:bg-green-100/50 transition-all group gap-4">
-                <div className="flex items-center gap-5 min-w-0">
-                  <div className="size-12 sm:size-16 rounded-[1.2rem] bg-green-100 flex items-center justify-center text-green-700 shadow-inner group-hover:scale-110 transition-transform shrink-0">
-                    <ArrowDownCircle className="size-6 sm:size-8" />
+              <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-6 rounded-[1.5rem] bg-green-50/40 border-4 border-green-100 shadow-sm hover:shadow-xl hover:bg-green-100/50 transition-all group gap-4 overflow-hidden">
+                <div className="flex items-center gap-3 sm:gap-5 flex-1 min-w-0">
+                  <div className="size-10 sm:size-16 rounded-[1.2rem] bg-green-100 flex items-center justify-center text-green-700 shadow-inner group-hover:scale-110 transition-transform shrink-0">
+                    <ArrowDownCircle className="size-5 sm:size-8" />
                   </div>
-                  <div className="min-w-0">
-                    <p className="font-black text-xl px-2 uppercase italic text-green-800 truncate">{p.clientName}</p>
-                    <p className="text-xs text-green-600/60 font-black flex items-center gap-2 mt-2 uppercase tracking-widest">
-                      <CalendarIcon className="size-4" /> {new Date(p.orderDate).toLocaleDateString()}
+                  <div className="min-w-0 flex-1">
+                    <p className="font-black text-lg sm:text-xl px-1 uppercase italic text-green-800 truncate">{p.clientName}</p>
+                    <p className="text-[10px] sm:text-xs text-green-600/60 font-black flex items-center gap-2 mt-1 sm:mt-2 uppercase tracking-widest">
+                      <CalendarIcon className="size-3 sm:size-4" /> {new Date(p.orderDate).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
-                <div className="sm:text-right text-left shrink-0">
-                  <p className="text-2xl sm:text-3xl font-black text-green-700 px-2 italic tracking-tighter">+ R$ {Number(p.finalAmount).toFixed(2)}</p>
+                <div className="sm:text-right text-left shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-green-200/50 w-full sm:w-auto">
+                  <p className="text-xl sm:text-3xl font-black text-green-700 px-1 italic tracking-tighter">+ R$ {Number(p.finalAmount).toFixed(2)}</p>
                 </div>
               </div>
             ))}
             {entradasConfirmadas.length === 0 && (
               <div className="text-center py-20 bg-muted/10 rounded-[2rem] border-4 border-dashed border-muted">
                 <Wallet className="size-16 text-muted-foreground/20 mx-auto mb-4" />
-                <p className="text-muted-foreground text-lg font-black uppercase tracking-tighter opacity-40 italic">Nenhuma entrada registrada no período selecionado.</p>
+                <p className="text-muted-foreground text-lg font-black uppercase tracking-tighter opacity-40 italic px-4">Nenhuma entrada registrada no período selecionado.</p>
               </div>
             )}
           </CardContent>
