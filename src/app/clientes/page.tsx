@@ -82,7 +82,7 @@ export default function ClientesPage() {
             <Users className="size-10 sm:size-16 text-primary" />
             <h1 className="text-4xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm text-center">CLIENTES</h1>
           </div>
-          <p className="text-[10px] sm:text-lg text-muted-foreground mt-2 font-bold opacity-60 uppercase tracking-widest text-center">Gerencie seu catálogo de contatos e histórico.</p>
+          <p className="text-[10px] sm:text-base text-muted-foreground mt-2 font-bold opacity-60 uppercase tracking-widest text-center">Gerencie seu catálogo de contatos e histórico.</p>
         </div>
         <Button asChild className="w-full h-16 px-10 text-xl font-black rounded-2xl shadow-xl bg-primary hover:bg-primary/90 transition-transform hover:scale-105">
           <Link href="/clientes/novo">
@@ -119,23 +119,23 @@ export default function ClientesPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <Button variant="outline" asChild className="h-12 sm:h-16 font-black text-xs uppercase tracking-widest rounded-xl border-2 hover:bg-primary/5">
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button variant="outline" asChild className="h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2">
                       <Link href={`/clientes/${cliente.id}`}>
-                        <FileText className="mr-2 size-5" />
+                        <FileText className="mr-1 size-4" />
                         Detalhes
                       </Link>
                     </Button>
-                    <Button variant="outline" className="h-12 sm:h-16 font-black text-xs uppercase tracking-widest rounded-xl border-2 hover:bg-primary/5">
-                      <Edit className="mr-2 size-5" />
+                    <Button variant="outline" className="h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2">
+                      <Edit className="mr-1 size-4" />
                       Editar
                     </Button>
                     <Button 
                       variant="outline" 
-                      className="h-12 sm:h-16 font-black text-xs uppercase tracking-widest rounded-xl border-2 text-destructive border-destructive/20 hover:bg-destructive/5 hover:border-destructive"
+                      className="h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 text-destructive border-destructive/20 hover:bg-destructive/5 hover:border-destructive px-2"
                       onClick={() => setClientToDelete(cliente)}
                     >
-                      <Trash2 className="mr-2 size-5" />
+                      <Trash2 className="mr-1 size-4" />
                       Excluir
                     </Button>
                   </div>
