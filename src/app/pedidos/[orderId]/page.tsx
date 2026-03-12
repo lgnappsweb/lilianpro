@@ -276,9 +276,9 @@ export default function DetalhesPedidoPage() {
                   </div>
                 </div>
 
-                <div className="bg-white text-primary p-8 rounded-[2.5rem] shadow-2xl text-center border-8 border-white animate-in zoom-in duration-500">
-                  <p className="text-[10px] font-black uppercase tracking-[0.4em] mb-2 opacity-60">Valor Final Recebido</p>
-                  <p className="text-5xl sm:text-7xl font-black tracking-tighter leading-none italic px-2">
+                <div className="bg-white p-8 rounded-[2.5rem] shadow-2xl text-center border-8 border-white animate-in zoom-in duration-500">
+                  <p className="text-[10px] font-black uppercase tracking-[0.4em] mb-2 opacity-60 text-primary">Valor Final Recebido</p>
+                  <p className="text-5xl sm:text-7xl font-black tracking-tighter leading-none italic px-2 text-green-600">
                     R$ {Number(order.finalAmount).toFixed(2)}
                   </p>
                 </div>

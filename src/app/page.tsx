@@ -258,7 +258,7 @@ export default function DashboardPage() {
                 {recentOrders.map((order) => (
                   <tr key={order.id} className="hover:bg-muted/50 transition-colors group">
                     <td className="px-10 py-6 text-foreground font-bold">{new Date(order.orderDate).toLocaleDateString()}</td>
-                    <td className="px-10 py-6 font-black text-primary text-xl tracking-tighter px-2">R$ {Number(order.finalAmount).toFixed(2)}</td>
+                    <td className="px-10 py-6 font-black text-green-600 text-xl tracking-tighter px-2">R$ {Number(order.finalAmount).toFixed(2)}</td>
                     <td className="px-10 py-6">
                       <Badge variant={order.paymentStatus === "Pago" ? "default" : "secondary"} className={`text-[10px] font-black px-4 py-1.5 rounded-xl shadow-sm ${order.paymentStatus === "Pago" ? "bg-green-600" : "bg-orange-500 text-white"}`}>
                         {order.paymentStatus?.toUpperCase()}

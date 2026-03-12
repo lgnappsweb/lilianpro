@@ -204,7 +204,7 @@ export default function PedidosPage() {
               {/* LINHA DE VALOR E STATUS */}
               <div className="flex items-center justify-between w-full mb-6 px-1">
                 <div className="flex flex-col">
-                  <p className="text-2xl sm:text-4xl font-black text-primary tracking-tighter leading-none italic">
+                  <p className="text-2xl sm:text-4xl font-black text-green-600 tracking-tighter leading-none italic">
                     R$ {Number(order.finalAmount).toFixed(2)}
                   </p>
                   <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] opacity-40 mt-1">
