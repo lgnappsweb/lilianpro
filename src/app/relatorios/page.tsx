@@ -37,6 +37,7 @@ import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval } from "d
 import { ptBR } from "date-fns/locale";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import { cn } from "@/lib/utils";
 
 // Cores Elite para as Marcas: Verde (N), Rosa (A - Primary), Marrom (C&E)
 const COLORS = ["#16a34a", "#C2185B", "#78350f"];
@@ -355,25 +356,33 @@ export default function RelatoriosPage() {
             <CardDescription className="text-base font-bold uppercase tracking-widest opacity-60">Ranking por volume total de compras</CardDescription>
           </CardHeader>
           <CardContent className="p-4 sm:p-8 space-y-6">
-            {topClients.map((client, i) => (
-              <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-6 rounded-[2rem] border-4 border-muted bg-background hover:border-primary/20 transition-all group gap-4">
-                <div className="flex items-center gap-5 w-full sm:w-auto">
-                  <div className="size-14 sm:size-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black text-2xl shadow-inner shrink-0 group-hover:scale-110 transition-transform">
-                    {i + 1}
+            {topClients.map((client, i) => {
+              const nameParts = client.name?.trim().split(/\s+/) || [];
+              const isShortName = nameParts.length <= 2;
+
+              return (
+                <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-6 rounded-[2rem] border-4 border-muted bg-background hover:border-primary/20 transition-all group gap-4">
+                  <div className="flex items-center gap-5 w-full sm:w-auto">
+                    <div className="size-10 sm:size-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-black text-xl shadow-inner shrink-0 group-hover:scale-110 transition-transform">
+                      {i + 1}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className={cn(
+                        "text-xl sm:text-3xl font-black text-foreground leading-tight px-2 uppercase italic",
+                        isShortName && "whitespace-nowrap"
+                      )}>
+                        {client.name}
+                      </p>
+                      <p className="text-[10px] sm:text-xs font-black text-muted-foreground mt-1 uppercase tracking-widest px-2">{client.count} pedidos realizados</p>
+                    </div>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xl sm:text-3xl font-black text-foreground leading-tight px-2 uppercase italic">
-                      {client.name}
-                    </p>
-                    <p className="text-[10px] sm:text-xs font-black text-muted-foreground mt-1 uppercase tracking-widest px-2">{client.count} pedidos realizados</p>
+                  <div className="text-center sm:text-right w-full sm:w-auto border-t sm:border-t-0 pt-4 sm:pt-0 border-muted">
+                    <p className="text-3xl sm:text-4xl font-black text-green-600 leading-tight px-2 italic tracking-tighter">R$ {client.total.toFixed(2)}</p>
+                    <p className="text-[8px] sm:text-[10px] font-black text-white bg-green-600 px-3 py-1 rounded-full mt-2 inline-block uppercase tracking-[0.2em] shadow-lg">Cliente Diamante</p>
                   </div>
                 </div>
-                <div className="text-center sm:text-right w-full sm:w-auto border-t sm:border-t-0 pt-4 sm:pt-0 border-muted">
-                  <p className="text-3xl sm:text-4xl font-black text-green-600 leading-tight px-2 italic tracking-tighter">R$ {client.total.toFixed(2)}</p>
-                  <p className="text-[8px] sm:text-[10px] font-black text-white bg-green-600 px-3 py-1 rounded-full mt-2 inline-block uppercase tracking-[0.2em] shadow-lg">Cliente Diamante</p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
             {topClients.length === 0 && (
               <div className="text-center py-20 bg-muted/10 rounded-[2rem] border-4 border-dashed border-muted">
                 <Users className="size-16 text-muted-foreground/20 mx-auto mb-4" />
