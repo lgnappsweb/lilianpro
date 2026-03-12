@@ -70,14 +70,14 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
             <Button asChild variant="ghost" className="h-10 px-3 rounded-xl font-black gap-2 text-primary hover:bg-primary/5 border border-primary/10">
               <Link href="/">
                 <ArrowLeft className="size-5" />
-                <span className="text-xs uppercase tracking-wider">Início</span>
+                <span className="text-xs uppercase tracking-wider">Voltar ao início</span>
               </Link>
             </Button>
           </div>
         )}
 
         <main className="flex-1 p-3 sm:p-6 pb-24 md:pb-12 overflow-x-hidden">
-          <div className="max-w-7xl mx-auto border-[4px] border-primary rounded-[2.5rem] sm:rounded-[3.5rem] p-4 sm:p-8 bg-card/60 backdrop-blur-xl shadow-2xl overflow-x-hidden relative min-h-[calc(100vh-16rem)] w-full">
+          <div className="max-w-none mx-auto border-[4px] border-primary rounded-[2.5rem] sm:rounded-[3.5rem] p-4 sm:p-8 bg-card/60 backdrop-blur-xl shadow-2xl overflow-x-hidden relative min-h-[calc(100vh-16rem)] w-full">
             {children}
           </div>
         </main>
