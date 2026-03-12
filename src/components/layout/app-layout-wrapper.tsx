@@ -43,6 +43,21 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
 
   const isDashboard = pathname === '/';
 
+  // Lógica dinâmica para o botão de voltar
+  let backHref = "/";
+  let backLabel = "Voltar ao início";
+
+  if (pathname.includes('/clientes/')) {
+    backHref = "/clientes";
+    backLabel = "Voltar aos clientes";
+  } else if (pathname.includes('/produtos/')) {
+    backHref = "/produtos";
+    backLabel = "Voltar aos produtos";
+  } else if (pathname.includes('/pedidos/') || pathname.includes('/vendas/')) {
+    backHref = "/pedidos";
+    backLabel = "Voltar aos pedidos";
+  }
+
   return (
     <SidebarProvider defaultOpen={true}>
       <AppSidebar />
@@ -56,7 +71,7 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
             </div>
             <div className="text-center px-4">
               {/* Título Aumentado */}
-              <h1 className="text-6xl sm:text-8xl font-black tracking-tighter text-primary font-headline italic drop-shadow-xl leading-none">
+              <h1 className="text-6xl sm:text-8xl font-black tracking-tighter text-primary font-headline italic drop-shadow-xl leading-none whitespace-nowrap">
                 GlamGestão
               </h1>
               {/* Subtítulo Aumentado */}
@@ -68,9 +83,9 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
         ) : (
           <div className="flex items-center px-4 sm:px-8 pt-6 pb-2 animate-in fade-in duration-500">
             <Button asChild variant="ghost" className="h-10 px-3 rounded-xl font-black gap-2 text-primary hover:bg-primary/5 border border-primary/10">
-              <Link href="/">
+              <Link href={backHref}>
                 <ArrowLeft className="size-5" />
-                <span className="text-xs uppercase tracking-wider">Voltar ao início</span>
+                <span className="text-xs uppercase tracking-wider">{backLabel}</span>
               </Link>
             </Button>
           </div>
