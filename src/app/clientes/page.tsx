@@ -109,10 +109,10 @@ export default function ClientesPage() {
             <p className="text-2xl font-black animate-pulse uppercase tracking-widest">Sincronizando clientes...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 w-full">
             {filteredClientes.map((cliente) => (
-              <Card key={cliente.id} className="bg-background border-4 border-muted rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl hover:border-primary/20 transition-all flex flex-col justify-between h-full min-h-[350px]">
-                <div className="space-y-6">
+              <Card key={cliente.id} className="bg-background border-4 border-muted rounded-2xl p-6 sm:p-8 shadow-xl hover:border-primary/20 transition-all flex flex-col justify-between w-full min-h-[220px]">
+                <div className="mb-4">
                   <h3 className="font-black text-2xl sm:text-4xl break-words leading-tight uppercase tracking-tighter text-primary italic">
                     {cliente.fullName}
                   </h3>
@@ -156,7 +156,7 @@ export default function ClientesPage() {
         )}
 
         {!isLoading && filteredClientes.length === 0 && (
-          <div className="text-center py-32 bg-muted/10 rounded-[2.5rem] border-4 border-dashed border-muted">
+          <div className="text-center py-32 bg-muted/10 rounded-[2.5rem] border-4 border-dashed border-muted w-full">
             <Search className="size-24 text-muted-foreground/20 mx-auto mb-6" />
             <h3 className="font-black text-3xl text-muted-foreground uppercase tracking-tighter">Nenhuma cliente encontrada</h3>
             <p className="text-xl text-muted-foreground mt-4 font-bold italic opacity-60">Refine sua pesquisa ou cadastre uma nova cliente no botão acima.</p>
