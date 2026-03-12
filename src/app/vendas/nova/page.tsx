@@ -44,6 +44,7 @@ import {
   CheckCircle2,
   Circle,
   ShoppingBag,
+  BookOpen,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from "@/firebase";
@@ -67,6 +68,7 @@ export default function NovaVendaPage() {
   const [discount, setDiscount] = useState(0);
   const [additionalFee, setAdditionalFee] = useState(0);
   const [applyMarginDiscount, setApplyMarginDiscount] = useState(false);
+  const [useCatalogPrice, setUseCatalogPrice] = useState(false);
   const [itemToDeleteId, setItemToDeleteId] = useState<string | null>(null);
 
   const clientsQuery = useMemoFirebase(() => {
@@ -95,6 +97,25 @@ export default function NovaVendaPage() {
       setSelectedItems(selectedItems.filter(item => item.id !== itemToDeleteId));
       setItemToDeleteId(null);
     }
+  };
+
+  const handleToggleCatalogPrice = (checked: boolean) => {
+    setUseCatalogPrice(checked);
+    // Atualiza os preços dos itens já selecionados
+    setSelectedItems(prev => prev.map(item => {
+      if (!item.productId) return item;
+      const product = products?.find(p => p.id === item.productId);
+      if (!product) return item;
+      return {
+        ...item,
+        price: checked ? (Number(product.catalogPrice) || 0) : (Number(product.salePrice) || 0)
+      };
+    }));
+    
+    toast({
+      title: checked ? "Preço de Revista Ativado" : "Preço de Revendedora Ativado",
+      description: checked ? "Os valores foram ajustados para o preço cheio da revista." : "Os valores retornaram ao seu preço personalizado.",
+    });
   };
 
   const subtotal = useMemo(() => {
@@ -246,7 +267,7 @@ export default function NovaVendaPage() {
                     if (product) {
                       const newItems = [...selectedItems];
                       newItems[index].productId = val;
-                      newItems[index].price = Number(product.salePrice) || 0;
+                      newItems[index].price = useCatalogPrice ? (Number(product.catalogPrice) || 0) : (Number(product.salePrice) || 0);
                       newItems[index].costPrice = Number(product.costPrice) || 0;
                       newItems[index].name = product.name;
                       setSelectedItems(newItems);
@@ -432,6 +453,22 @@ export default function NovaVendaPage() {
                         <span className="text-[10px] font-bold opacity-40 italic">Diferença entre custo e venda</span>
                       </div>
                       <span className="text-xl sm:text-2xl font-black text-green-300">R$ {margin.toFixed(2)}</span>
+                    </div>
+
+                    {/* Novo Controle: Preço de Revista */}
+                    <div className="flex justify-between items-center pt-2 border-b border-white/10 pb-4">
+                      <div className="flex flex-col">
+                        <Label htmlFor="catalog-toggle" className="text-xs sm:text-sm font-black uppercase tracking-widest cursor-pointer flex items-center gap-2">
+                          <BookOpen className="size-4" /> Usar Preço de Revista?
+                        </Label>
+                        <span className="text-[10px] font-bold opacity-40">Ignorar preço de revendedora</span>
+                      </div>
+                      <Switch 
+                        id="catalog-toggle"
+                        checked={useCatalogPrice}
+                        onCheckedChange={handleToggleCatalogPrice}
+                        className="data-[state=checked]:bg-amber-400"
+                      />
                     </div>
 
                     <div className="flex justify-between items-center pt-2">
