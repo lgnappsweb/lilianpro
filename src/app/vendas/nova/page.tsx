@@ -86,19 +86,12 @@ export default function NovaVendaPage() {
 
   const removeItem = () => {
     if (itemToDeleteId) {
-      if (selectedItems.length > 1) {
-        setSelectedItems(selectedItems.filter(item => item.id !== itemToDeleteId));
-        toast({
-          title: "Item removido",
-          description: "O produto foi retirado da lista de venda.",
-        });
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Não é possível remover",
-          description: "A venda deve conter pelo menos um produto.",
-        });
-      }
+      // Remove o item do estado, apagando o card correspondente na interface
+      setSelectedItems(selectedItems.filter(item => item.id !== itemToDeleteId));
+      toast({
+        title: "Item removido",
+        description: "O produto foi retirado da lista de venda.",
+      });
       setItemToDeleteId(null);
     }
   };
@@ -167,12 +160,13 @@ export default function NovaVendaPage() {
 
   return (
     <div className="space-y-6 sm:space-y-10 max-w-5xl mx-auto w-full animate-in fade-in duration-500 pb-32">
-      <div className="px-2 text-center">
-        <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tighter text-primary font-headline uppercase leading-none">Nova Venda</h1>
-        <p className="text-sm sm:text-xl text-muted-foreground mt-3 font-bold opacity-80 uppercase tracking-widest">Cadastre uma venda rapidamente no seu sistema.</p>
+      <div className="px-2 text-left sm:text-center">
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tighter text-primary font-headline uppercase leading-none text-left sm:text-center">Nova Venda</h1>
+        <p className="text-sm sm:text-xl text-muted-foreground mt-3 font-bold opacity-80 uppercase tracking-widest text-left sm:text-center">Cadastre uma venda rapidamente no seu sistema.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6 sm:gap-10">
+        {/* 1. Cliente */}
         <Card className="border-none shadow-xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
           <CardHeader className="bg-muted/30 p-6 sm:p-8 border-b-2">
             <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left">
@@ -197,6 +191,7 @@ export default function NovaVendaPage() {
           </CardContent>
         </Card>
 
+        {/* 2. Produtos */}
         <Card className="border-none shadow-xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
           <CardHeader className="bg-muted/30 p-6 sm:p-8 border-b-2">
             <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left">
@@ -214,6 +209,7 @@ export default function NovaVendaPage() {
 
             {selectedItems.map((item, index) => (
               <div key={item.id} className="flex flex-col gap-4 animate-in slide-in-from-left-4 duration-500 bg-muted/10 p-5 sm:p-10 rounded-[1.5rem] sm:rounded-[3rem] border-4 border-border/30 relative group">
+                {/* Botão para apagar o card inteiro da escolha do produto */}
                 <Button 
                   type="button" 
                   variant="ghost" 
@@ -276,6 +272,7 @@ export default function NovaVendaPage() {
           </CardContent>
         </Card>
 
+        {/* 3. Pagamento */}
         <Card className="border-none shadow-xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
           <CardHeader className="bg-muted/30 p-6 sm:p-8 border-b-2">
             <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left">
@@ -319,6 +316,7 @@ export default function NovaVendaPage() {
           </CardContent>
         </Card>
 
+        {/* Check-in Final */}
         <Card className={cn(
           "border-none shadow-2xl rounded-[1.5rem] sm:rounded-[4rem] overflow-hidden transition-all duration-700 transform",
           isReady ? "bg-primary text-primary-foreground scale-[1.02]" : "bg-muted/50 text-muted-foreground opacity-50"
@@ -414,6 +412,7 @@ export default function NovaVendaPage() {
         </Card>
       </form>
 
+      {/* Alerta de Confirmação para Remover Item */}
       <AlertDialog open={!!itemToDeleteId} onOpenChange={(open) => !open && setItemToDeleteId(null)}>
         <AlertDialogContent className="rounded-[2rem] sm:rounded-[3rem] p-8 sm:p-12 border-4 shadow-2xl">
           <AlertDialogHeader>
