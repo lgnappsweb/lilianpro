@@ -70,11 +70,14 @@ export function MobileNav() {
           href={item.href}
           className={cn(
             "flex flex-col items-center justify-center gap-1 transition-all px-2",
-            pathname === item.href ? "text-primary scale-110" : "text-muted-foreground"
+            pathname === item.href ? "scale-110" : "opacity-90"
           )}
         >
-          <item.icon className={cn("size-6", pathname === item.href ? "text-primary" : "opacity-70")} />
-          <span className={cn("text-[10px] font-black uppercase", pathname === item.href && "text-primary")}>{item.name}</span>
+          <item.icon className={cn("size-6", pathname === item.href ? "text-primary" : item.color)} />
+          <span className={cn(
+            "text-[10px] font-black uppercase", 
+            pathname === item.href ? "text-primary" : "text-foreground"
+          )}>{item.name}</span>
         </Link>
       ))}
 
