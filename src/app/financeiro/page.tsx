@@ -107,9 +107,9 @@ export default function FinanceiroPage() {
   const stats = useMemo(() => {
     const { recebido, pendente, atrasado } = financialStats;
     return [
-      { title: "Entradas Totais", value: `R$ ${recebido.toFixed(2)}`, icon: ArrowDownCircle, color: "text-green-600", bg: "bg-green-100" },
-      { title: "Pendentes", value: `R$ ${pendente.toFixed(2)}`, icon: Clock, color: "text-orange-600", bg: "bg-orange-100" },
-      { title: "Atrasados", value: `R$ ${atrasado.toFixed(2)}`, icon: AlertCircle, color: "text-red-600", bg: "bg-red-100" },
+      { title: "Entradas Totais", value: `R$ ${recebido.toFixed(2)}`, icon: ArrowDownCircle, color: "text-green-600", bg: "bg-green-100", stripe: "bg-green-600" },
+      { title: "Pendentes", value: `R$ ${pendente.toFixed(2)}`, icon: Clock, color: "text-orange-600", bg: "bg-orange-100", stripe: "bg-orange-500" },
+      { title: "Atrasados", value: `R$ ${atrasado.toFixed(2)}`, icon: AlertCircle, color: "text-red-600", bg: "bg-red-100", stripe: "bg-red-600" },
     ];
   }, [financialStats]);
 
@@ -378,7 +378,7 @@ export default function FinanceiroPage() {
       <div className="grid gap-6 md:grid-cols-3">
         {stats.map((item, i) => (
           <Card key={i} className="border-none shadow-lg overflow-hidden rounded-[2rem] group">
-            <div className={`h-3 w-full ${item.bg.replace('100', '500')} opacity-80 group-hover:opacity-100 transition-opacity`} />
+            <div className={`h-3 w-full ${item.stripe} opacity-80 group-hover:opacity-100 transition-opacity`} />
             <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 px-8 pt-8">
               <CardTitle className="text-xs font-black text-muted-foreground uppercase tracking-[0.2em] px-2">{item.title}</CardTitle>
               <div className={`${item.bg} ${item.color} p-4 rounded-2xl shadow-inner`}>
