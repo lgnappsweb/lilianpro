@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview Este arquivo implementa um fluxo Genkit para gerar um resumo de vendas mensal em linguagem natural.
@@ -47,20 +46,22 @@ export type GenerateMonthlySalesSummaryOutput = z.infer<
 export async function generateMonthlySalesSummary(
   input: GenerateMonthlySalesSummaryInput
 ): Promise<GenerateMonthlySalesSummaryOutput> {
+  // Verificação manual de segurança antes de chamar o fluxo Genkit
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENAI_API_KEY || "";
   
-  // Verificação de segurança: se a chave for placeholder ou vazia, não tenta chamar a IA
+  // Se a chave for placeholder, vazia ou muito curta, não tenta chamar a IA para evitar crash
   if (!apiKey || apiKey.includes("SUA_CHAVE") || apiKey.length < 10) {
     return {
-      summary: "O resumo inteligente está aguardando a configuração de uma GEMINI_API_KEY válida no arquivo .env para ser ativado."
+      summary: "O resumo inteligente está aguardando a configuração de uma GEMINI_API_KEY válida no arquivo .env para ser ativado e analisar suas vendas."
     };
   }
 
   try {
+    // Tenta chamar o fluxo, mas com proteção adicional
     const result = await generateMonthlySalesSummaryFlow(input);
     return result;
   } catch (error: any) {
-    console.warn("Aviso: Falha capturada ao chamar o fluxo de IA:", error.message || "Erro desconhecido");
+    console.error("Falha ao processar fluxo de IA:", error.message || error);
     return {
       summary: "Não foi possível gerar os insights automáticos agora. Verifique a validade da sua chave de API do Google Gemini."
     };
@@ -108,11 +109,12 @@ const generateMonthlySalesSummaryFlow = ai.defineFlow(
   },
   async input => {
     try {
+      // Tenta gerar a resposta da IA. Se a API Key estiver ausente, o Genkit lançará um erro aqui.
       const {output} = await prompt(input);
       
       if (!output || !output.summary) {
         return {
-          summary: "A IA processou os dados, mas retornou um formato inesperado. Verifique os logs."
+          summary: "A IA processou os dados, mas retornou um formato inesperado."
         };
       }
       
@@ -121,7 +123,7 @@ const generateMonthlySalesSummaryFlow = ai.defineFlow(
       // Captura erros de cota, autenticação ou rede da API do Google
       console.error("Erro interno no prompt de IA:", error.message || error);
       return {
-        summary: "Os insights automáticos do mês estão temporariamente indisponíveis devido a um erro na API de Inteligência Artificial."
+        summary: "Os insights automáticos do mês estão temporariamente indisponíveis devido a uma falha na API de Inteligência Artificial."
       };
     }
   }

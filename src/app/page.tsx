@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   Card,
@@ -94,7 +93,7 @@ export default async function DashboardPage() {
     aiSummaryText = aiSummary?.summary || "Não foi possível carregar o resumo inteligente neste momento.";
   } catch (error) {
     // Falha silenciosa para garantir que a dashboard carregue o resto dos dados
-    console.error("DashboardPage: Falha controlada ao obter resumo de IA:", error);
+    console.error("DashboardPage: Falha ao obter resumo de IA:", error);
     aiSummaryText = "O resumo de IA está temporariamente indisponível. O restante dos seus dados está visível abaixo.";
   }
 
