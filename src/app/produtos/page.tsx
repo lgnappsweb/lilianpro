@@ -162,12 +162,12 @@ export default function ProdutosPage() {
                 </Badge>
               </div>
 
-              {/* CONTEÚDO CENTRAL: NOME E CÓDIGO */}
-              <div className="flex flex-col gap-0.5 mb-4 sm:mb-5 text-left">
-                <h3 className="font-black text-xl sm:text-3xl text-primary uppercase tracking-tighter italic leading-tight px-1 line-clamp-1 drop-shadow-sm">
+              {/* CONTEÚDO CENTRAL: NOME E CÓDIGO (DESTACADOS) */}
+              <div className="flex flex-col gap-0.5 mb-3 sm:mb-4 text-left">
+                <h3 className="font-black text-2xl sm:text-4xl text-primary uppercase tracking-tighter italic leading-none px-1 line-clamp-1 drop-shadow-md">
                   {product.name}
                 </h3>
-                <p className="text-[9px] sm:text-[11px] text-muted-foreground font-black opacity-40 uppercase tracking-[0.2em] px-1">
+                <p className="text-[11px] sm:text-[14px] text-muted-foreground font-black opacity-70 uppercase tracking-[0.1em] px-1">
                   REF: {product.productCode}
                 </p>
               </div>
