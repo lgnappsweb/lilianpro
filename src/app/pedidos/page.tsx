@@ -19,6 +19,11 @@ import {
   Calendar,
   Loader2,
   ClipboardList,
+  User,
+  Smartphone,
+  Banknote,
+  CreditCard,
+  HandCoins,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -60,14 +65,27 @@ export default function PedidosPage() {
       case "Pago": return "bg-green-100 text-green-700";
       case "Pendente": return "bg-orange-100 text-orange-700";
       case "Atrasado": return "bg-red-100 text-red-700";
-      default: return "";
+      default: return "bg-muted text-muted-foreground";
+    }
+  };
+
+  const getPaymentIcon = (method: string) => {
+    switch (method?.toLowerCase()) {
+      case "pix": return <Smartphone className="size-3" />;
+      case "dinheiro": return <Banknote className="size-3" />;
+      case "cartao": return <CreditCard className="size-3" />;
+      case "fiado": return <HandCoins className="size-3" />;
+      default: return null;
     }
   };
 
   const filteredOrders = useMemo(() => {
     if (!orders) return [];
     return orders.filter(o => {
-      const matchesSearch = o.id?.toLowerCase().includes(searchTerm.toLowerCase());
+      const searchStr = searchTerm.toLowerCase();
+      const matchesSearch = 
+        o.id?.toLowerCase().includes(searchStr) || 
+        o.clientName?.toLowerCase().includes(searchStr);
       const matchesFilter = activeFilter === "todos" || o.paymentStatus?.toLowerCase() === activeFilter;
       return matchesSearch && matchesFilter;
     }).sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
@@ -103,7 +121,7 @@ export default function PedidosPage() {
         <div className="relative flex-1 w-full">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-6 text-muted-foreground" />
           <Input 
-            placeholder="Buscar ID do pedido..." 
+            placeholder="Buscar por ID ou nome da cliente..." 
             className="pl-14 h-14 bg-background rounded-2xl border-muted shadow-inner font-black text-lg" 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -112,14 +130,17 @@ export default function PedidosPage() {
         
         <div className="grid grid-cols-2 sm:flex sm:flex-row gap-3 w-full md:w-auto">
           {["todos", "pago", "pendente", "atrasado"].map((filter) => (
-            <Button
+            <button
               key={filter}
-              variant={activeFilter === filter ? "default" : "outline"}
               onClick={() => setActiveFilter(filter)}
-              className={`capitalize h-12 sm:h-14 px-4 sm:px-8 text-sm sm:text-base font-black rounded-xl sm:rounded-2xl transition-all ${activeFilter === filter ? "shadow-lg scale-105" : "border-muted opacity-60"}`}
+              className={`capitalize h-12 sm:h-14 px-4 sm:px-8 text-xs sm:text-sm font-black rounded-xl sm:rounded-2xl transition-all border-2 ${
+                activeFilter === filter 
+                  ? "bg-primary text-white border-primary shadow-lg scale-105" 
+                  : "bg-background text-muted-foreground border-muted hover:border-primary/20"
+              }`}
             >
               {filter}
-            </Button>
+            </button>
           ))}
         </div>
       </div>
@@ -136,8 +157,10 @@ export default function PedidosPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b text-muted-foreground bg-muted/10 uppercase text-[10px] tracking-[0.2em] font-black">
-                    <th className="h-16 px-8 text-left">Pedido</th>
+                    <th className="h-16 px-8 text-left">Pedido/ID</th>
+                    <th className="h-16 px-8 text-left">Cliente</th>
                     <th className="h-16 px-8 text-left">Data</th>
+                    <th className="h-16 px-8 text-left">Pagamento</th>
                     <th className="h-16 px-8 text-left">Total</th>
                     <th className="h-16 px-8 text-left">Status</th>
                     <th className="h-16 px-8 text-right">Ações</th>
@@ -146,34 +169,61 @@ export default function PedidosPage() {
                 <tbody className="divide-y-2">
                   {filteredOrders.map((order) => (
                     <tr key={order.id} className="hover:bg-muted/30 transition-colors group">
-                      <td className="px-8 py-6 font-mono text-xs font-black text-primary/80">#{order.id?.slice(-6)}</td>
                       <td className="px-8 py-6">
-                        <div className="flex items-center gap-2 text-foreground font-bold px-2">
-                          <Calendar className="size-4 opacity-40 text-primary" />
+                        <span className="font-mono text-[10px] font-black text-primary/60 bg-primary/5 px-2 py-1 rounded">#{order.id?.slice(-6)}</span>
+                      </td>
+                      <td className="px-8 py-6">
+                        <div className="flex items-center gap-3">
+                          <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                            <User className="size-4" />
+                          </div>
+                          <span className="font-black text-base text-foreground tracking-tight line-clamp-1">{order.clientName}</span>
+                        </div>
+                      </td>
+                      <td className="px-8 py-6">
+                        <div className="flex items-center gap-2 text-muted-foreground font-bold whitespace-nowrap">
+                          <Calendar className="size-4 opacity-40" />
                           {new Date(order.orderDate).toLocaleDateString()}
                         </div>
                       </td>
-                      <td className="px-8 py-6 font-black text-lg text-primary tracking-tighter px-2">R$ {Number(order.finalAmount).toFixed(2)}</td>
                       <td className="px-8 py-6">
-                        <Badge className={`flex items-center gap-1 w-fit px-3 py-1 text-[10px] font-black rounded-lg border-none shadow-sm ${getStatusClass(order.paymentStatus)}`}>
+                        <div className="flex items-center gap-2 text-muted-foreground font-black uppercase text-[10px] tracking-widest">
+                          <div className="size-6 rounded-lg bg-muted flex items-center justify-center">
+                            {getPaymentIcon(order.paymentMethod)}
+                          </div>
+                          {order.paymentMethod}
+                        </div>
+                      </td>
+                      <td className="px-8 py-6">
+                        <span className="font-black text-lg text-primary tracking-tighter">R$ {Number(order.finalAmount).toFixed(2)}</span>
+                      </td>
+                      <td className="px-8 py-6">
+                        <Badge className={`flex items-center gap-1 w-fit px-3 py-1 text-[9px] font-black rounded-lg border-none shadow-sm ${getStatusClass(order.paymentStatus)}`}>
                           {getStatusIcon(order.paymentStatus)}
                           {order.paymentStatus?.toUpperCase()}
                         </Badge>
                       </td>
                       <td className="px-8 py-6 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <Button variant="ghost" size="icon" className="size-10 rounded-xl hover:bg-primary/10 text-primary" asChild>
+                          <Button variant="ghost" size="icon" className="size-10 rounded-xl hover:bg-primary/10 text-primary transition-all" asChild>
                             <Link href={`/pedidos/${order.id}`}><Eye className="size-5" /></Link>
                           </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="size-10 rounded-xl hover:bg-muted">
+                              <Button variant="ghost" size="icon" className="size-10 rounded-xl hover:bg-muted transition-all">
                                 <MoreVertical className="size-5" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl shadow-2xl border-2">
-                              <DropdownMenuItem className="p-3 rounded-xl text-sm font-black cursor-pointer hover:bg-primary/5">MARCAR COMO PAGO</DropdownMenuItem>
-                              <DropdownMenuItem className="p-3 rounded-xl text-sm font-black cursor-pointer text-destructive hover:bg-destructive/5" onSelect={() => handleDelete(order.id)}>EXCLUIR REGISTRO</DropdownMenuItem>
+                              <DropdownMenuItem className="p-3 rounded-xl text-sm font-black cursor-pointer hover:bg-primary/5 transition-colors">
+                                MARCAR COMO PAGO
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                className="p-3 rounded-xl text-sm font-black cursor-pointer text-destructive hover:bg-destructive/5 transition-colors" 
+                                onSelect={() => handleDelete(order.id)}
+                              >
+                                EXCLUIR REGISTRO
+                              </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
