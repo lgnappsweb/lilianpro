@@ -264,7 +264,7 @@ export default function EditarClientePage() {
           <Button 
             type="submit" 
             size="lg"
-            className="w-full h-24 sm:h-32 text-2xl sm:text-4xl font-black rounded-[1.5rem] sm:rounded-[3rem] bg-primary text-white hover:bg-primary/90 shadow-2xl transition-all active:scale-95 uppercase tracking-widest gap-6"
+            className="w-full h-24 sm:h-32 text-lg sm:text-4xl font-black rounded-[1.5rem] sm:rounded-[3rem] bg-primary text-white hover:bg-primary/90 shadow-2xl transition-all active:scale-95 uppercase tracking-widest gap-6"
             disabled={isLoading}
           >
             {isLoading ? (

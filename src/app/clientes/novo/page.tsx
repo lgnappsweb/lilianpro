@@ -113,20 +113,20 @@ export default function NovoClientePage() {
             <UserPlus className="size-16 sm:size-24 text-primary" />
             <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap">NOVO CLIENTE</h1>
           </div>
-          <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest">ADICIONE UM NOVO CLIENTE AO SEU CATÁLOGO</p>
+          <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">ADICIONE UM NOVO CLIENTE AO SEU CATÁLOGO</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-10">
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
           <CardHeader className="bg-muted/30 p-8 border-b-2">
-            <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black">
+            <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left">
               <User className="size-8 text-primary" />
               Identificação & Contato
             </CardTitle>
           </CardHeader>
           <CardContent className="p-8 sm:p-12 space-y-8">
-            <div className="space-y-4">
+            <div className="space-y-4 text-left">
               <Label htmlFor="fullName" className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Nome Completo</Label>
               <div className="relative">
                 <User className="absolute left-5 top-1/2 -translate-y-1/2 size-6 text-muted-foreground/30 hidden sm:block" />
@@ -142,7 +142,7 @@ export default function NovoClientePage() {
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 text-left">
               <Label htmlFor="phone" className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">WhatsApp / Telefone</Label>
               <div className="relative">
                 <Phone className="absolute left-5 top-1/2 -translate-y-1/2 size-6 text-muted-foreground/30 hidden sm:block" />
@@ -163,14 +163,14 @@ export default function NovoClientePage() {
 
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
           <CardHeader className="bg-muted/30 p-8 border-b-2">
-            <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black">
+            <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left">
               <MapPin className="size-8 text-primary" />
               Localização & Endereço
             </CardTitle>
           </CardHeader>
           <CardContent className="p-8 sm:p-12 space-y-8">
             <div className="grid sm:grid-cols-2 gap-8">
-              <div className="space-y-4">
+              <div className="space-y-4 text-left">
                 <Label htmlFor="city" className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Cidade</Label>
                 <div className="relative">
                   <Map className="absolute left-5 top-1/2 -translate-y-1/2 size-6 text-muted-foreground/30 hidden sm:block" />
@@ -185,7 +185,7 @@ export default function NovoClientePage() {
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-4 text-left">
                 <Label htmlFor="neighborhood" className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Bairro</Label>
                 <div className="relative">
                   <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 size-6 text-muted-foreground/30 hidden sm:block" />
@@ -201,7 +201,7 @@ export default function NovoClientePage() {
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 text-left">
               <Label htmlFor="address" className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Referência / Endereço</Label>
               <div className="relative">
                 <Info className="absolute left-5 top-1/2 -translate-y-1/2 size-6 text-muted-foreground/30 hidden sm:block" />
@@ -220,12 +220,12 @@ export default function NovoClientePage() {
 
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
           <CardHeader className="bg-muted/30 p-8 border-b-2">
-            <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black">
+            <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left">
               <Info className="size-8 text-primary" />
               Observações & Descrição
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-8 sm:p-12">
+          <CardContent className="p-8 sm:p-12 text-left">
             <div className="space-y-4">
               <Label htmlFor="notes" className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Notas Importantes</Label>
               <Textarea
@@ -244,7 +244,7 @@ export default function NovoClientePage() {
           <Button 
             type="submit" 
             size="lg"
-            className="w-full h-24 sm:h-32 text-2xl sm:text-4xl font-black rounded-[1.5rem] sm:rounded-[3rem] bg-primary text-white hover:bg-primary/90 shadow-2xl transition-all active:scale-95 uppercase tracking-widest gap-6"
+            className="w-full h-24 sm:h-32 text-lg sm:text-4xl font-black rounded-[1.5rem] sm:rounded-[3rem] bg-primary text-white hover:bg-primary/90 shadow-2xl transition-all active:scale-95 uppercase tracking-widest gap-6"
             disabled={isLoading}
           >
             {isLoading ? (
