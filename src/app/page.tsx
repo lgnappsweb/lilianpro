@@ -209,7 +209,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="p-8 space-y-6">
             <Link href="/produtos" className="block">
-              <div className="flex items-center gap-5 p-5 rounded-[1.5rem] bg-background border-2 border-muted shadow-sm hover:border-primary/20 transition-colors">
+              <div className="flex items-center gap-5 p-5 rounded-[1.5rem] bg-background border-2 border-muted shadow-sm hover:border-primary/20 transition-colors relative group/item">
                 <div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
                   <Package className="size-8" />
                 </div>
@@ -217,11 +217,11 @@ export default function DashboardPage() {
                   <p className="text-xl font-black uppercase tracking-tight px-2">Produtos</p>
                   <p className="text-sm text-muted-foreground font-bold">{products?.length || 0} itens</p>
                 </div>
-                <Badge variant="secondary" className="text-xs font-black px-3 py-1 bg-primary/5 text-primary border-none">Ver</Badge>
+                <Badge variant="secondary" className="absolute bottom-3 right-4 text-[10px] font-black px-3 py-1 bg-primary/5 text-primary border-none shadow-sm group-hover/item:bg-primary group-hover/item:text-white transition-all">Ver</Badge>
               </div>
             </Link>
             <Link href="/clientes" className="block">
-              <div className="flex items-center gap-5 p-5 rounded-[1.5rem] bg-background border-2 border-muted shadow-sm hover:border-accent/20 transition-colors">
+              <div className="flex items-center gap-5 p-5 rounded-[1.5rem] bg-background border-2 border-muted shadow-sm hover:border-accent/20 transition-colors relative group/item">
                 <div className="size-14 rounded-2xl bg-accent/10 flex items-center justify-center text-accent shadow-inner">
                   <Users className="size-8" />
                 </div>
@@ -229,7 +229,7 @@ export default function DashboardPage() {
                   <p className="text-xl font-black uppercase tracking-tight px-2">Clientes</p>
                   <p className="text-sm text-muted-foreground font-bold">{clients?.length || 0} contatos</p>
                 </div>
-                <Badge variant="secondary" className="text-xs font-black px-3 py-1 bg-accent/5 text-accent border-none">Ver</Badge>
+                <Badge variant="secondary" className="absolute bottom-3 right-4 text-[10px] font-black px-3 py-1 bg-accent/5 text-accent border-none shadow-sm group-hover/item:bg-accent group-hover/item:text-white transition-all">Ver</Badge>
               </div>
             </Link>
           </CardContent>
