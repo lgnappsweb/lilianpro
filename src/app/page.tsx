@@ -148,7 +148,7 @@ export default function DashboardPage() {
         <div className="w-full">
           <div className="flex flex-col items-center justify-center gap-4">
             <LayoutDashboard className="size-10 sm:size-16 text-primary" />
-            <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm">Olá, {user?.displayName?.split(' ')[0] || 'Admin'}!</h1>
+            <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm">Olá, LILIAN</h1>
           </div>
           <p className="text-base sm:text-xl text-muted-foreground mt-4 font-bold opacity-80 uppercase tracking-widest">Veja como está o seu negócio hoje.</p>
         </div>
@@ -185,7 +185,7 @@ export default function DashboardPage() {
       <div className="grid gap-8 md:grid-cols-7">
         <Card className="md:col-span-4 border-none shadow-xl overflow-hidden bg-gradient-to-br from-white to-pink-50 dark:from-slate-950 dark:to-pink-950/20 rounded-[2.5rem]">
           <CardHeader className="p-8 pb-4">
-            <div className="flex items-center gap-3 text-primary">
+            <div className="flex flex-col items-center gap-3 text-primary">
               <Sparkles className="size-8" />
               <CardTitle className="text-2xl md:text-3xl font-black">Resumo Inteligente</CardTitle>
             </div>
@@ -202,7 +202,7 @@ export default function DashboardPage() {
 
         <Card className="md:col-span-3 border-none shadow-xl rounded-[2.5rem] overflow-hidden">
           <CardHeader className="p-8 pb-4 bg-muted/20">
-            <CardTitle className="text-2xl md:text-3xl font-black flex items-center gap-3">
+            <CardTitle className="text-2xl md:text-3xl font-black flex flex-col items-center gap-3">
               <ShoppingBag className="size-8 text-primary" />
               Catálogo
             </CardTitle>
