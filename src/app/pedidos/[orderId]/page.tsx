@@ -95,7 +95,7 @@ export default function DetalhesPedidoPage() {
         <div className="w-full">
           <div className="flex flex-col items-center justify-center gap-6">
             <ReceiptText className="size-16 sm:size-24 text-primary" />
-            <h1 className="text-5xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap px-2">
+            <h1 className="text-[2.2rem] sm:text-5xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl px-2 max-w-full text-center">
               RESUMO DA VENDA
             </h1>
           </div>
