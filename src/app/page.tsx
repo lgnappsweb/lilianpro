@@ -145,8 +145,8 @@ export default function DashboardPage() {
     <div className="space-y-12 animate-in fade-in duration-500 w-full overflow-hidden">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 px-2">
         <div>
-          <h1 className="text-4xl md:text-5xl font-black tracking-tight text-primary font-headline uppercase">Olá, {user?.displayName || 'Administradora'}!</h1>
-          <p className="text-xl text-muted-foreground mt-2 font-bold opacity-60">Veja como está o seu negócio hoje.</p>
+          <h1 className="text-3xl md:text-4xl font-black tracking-tight text-primary font-headline uppercase">Olá, {user?.displayName || 'Administradora'}!</h1>
+          <p className="text-xl text-muted-foreground mt-2 font-bold opacity-80">Veja como está o seu negócio hoje.</p>
         </div>
         <Button asChild className="h-16 px-10 text-xl font-black shadow-xl rounded-2xl bg-primary hover:bg-primary/90 transition-all hover:scale-105">
           <Link href="/vendas/nova">
