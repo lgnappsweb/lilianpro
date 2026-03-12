@@ -131,7 +131,7 @@ export default function LoginPage() {
                 </div>
                 <div className="pt-4 border-t-2 border-muted/50">
                   <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-black opacity-40 italic">
-                    Desenvolvedor: Lucas Gregório do Nascimento
+                    Desenvolvedor: <span className="text-primary opacity-100 not-italic font-bold">Lucas Gregório do Nascimento</span>
                   </p>
                 </div>
               </div>
