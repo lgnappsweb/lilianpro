@@ -28,9 +28,7 @@ import {
   CreditCard,
   Calendar as CalendarIcon,
   ClipboardCheck,
-  CheckCircle2,
 } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, doc } from "firebase/firestore";
@@ -300,7 +298,7 @@ export default function NovaVendaPage() {
           </CardContent>
         </Card>
 
-        {/* 4. Resumo da Venda */}
+        {/* 4. Resumo da Venda (Check-in) */}
         <Card className={cn(
           "border-none shadow-2xl rounded-[3rem] overflow-hidden transition-all duration-700 transform",
           isReady ? "bg-primary text-primary-foreground scale-[1.02]" : "bg-muted/50 text-muted-foreground opacity-50"
