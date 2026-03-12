@@ -9,25 +9,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Search,
-  MoreHorizontal,
   MessageCircle,
-  Phone,
   UserPlus,
   Trash2,
   FileText,
   Edit,
   Loader2,
   Users,
-  MapPin,
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -93,7 +82,7 @@ export default function ClientesPage() {
             <Users className="size-10 sm:size-16 text-primary" />
             <h1 className="text-4xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm text-center">CLIENTES</h1>
           </div>
-          <p className="text-xs sm:text-lg text-muted-foreground mt-2 font-bold opacity-60 uppercase tracking-widest text-center">Gerencie seu catálogo de contatos e histórico.</p>
+          <p className="text-[10px] sm:text-lg text-muted-foreground mt-2 font-bold opacity-60 uppercase tracking-widest text-center">Gerencie seu catálogo de contatos e histórico.</p>
         </div>
         <Button asChild className="w-full h-16 px-10 text-xl font-black rounded-2xl shadow-xl bg-primary hover:bg-primary/90 transition-transform hover:scale-105">
           <Link href="/clientes/novo">
@@ -122,67 +111,42 @@ export default function ClientesPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredClientes.map((cliente) => (
-              <Card key={cliente.id} className="bg-background border-4 border-muted rounded-[1.5rem] sm:rounded-[2.5rem] p-6 sm:p-10 space-y-6 shadow-xl hover:border-primary/20 transition-all group relative overflow-hidden flex flex-col justify-between h-full min-h-[300px]">
+              <Card key={cliente.id} className="bg-background border-4 border-muted rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl hover:border-primary/20 transition-all flex flex-col justify-between h-full min-h-[350px]">
                 <div className="space-y-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex flex-col gap-1 min-w-0 flex-1">
-                      <h3 className="font-black text-2xl sm:text-4xl break-words leading-tight uppercase tracking-tighter text-primary italic">
-                        {cliente.fullName}
-                      </h3>
-                      <div className="flex flex-col gap-1 mt-2">
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <MapPin className="size-5 text-primary/40 shrink-0" />
-                          <span className="text-sm sm:text-xl font-black uppercase tracking-widest opacity-80 break-words leading-tight">
-                            {cliente.city} {cliente.neighborhood ? `• ${cliente.neighborhood}` : ""}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <Phone className="size-5 text-primary/40 shrink-0" />
-                          <span className="text-sm sm:text-xl font-black uppercase tracking-widest opacity-80">{cliente.phone}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button className="size-12 sm:size-16 rounded-2xl border-4 border-muted hover:border-primary/20 flex items-center justify-center transition-all bg-background shrink-0 shadow-sm active:scale-95">
-                          <MoreHorizontal className="size-8 sm:size-10 text-primary" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-72 p-3 rounded-[1.5rem] shadow-2xl border-4">
-                        <DropdownMenuLabel className="font-black text-[10px] px-4 py-2 uppercase tracking-[0.2em] opacity-40">Opções da Cliente</DropdownMenuLabel>
-                        <DropdownMenuSeparator className="my-2 h-1 bg-muted" />
-                        <DropdownMenuItem asChild className="p-4 font-black text-xl cursor-pointer rounded-xl focus:bg-primary/5">
-                          <Link href={`/clientes/${cliente.id}`}>
-                            <FileText className="mr-3 size-7 text-primary" />
-                            Ver Detalhes
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="p-4 font-black text-xl cursor-pointer rounded-xl focus:bg-primary/5">
-                          <Edit className="mr-3 size-7 text-primary" />
-                          Editar Cadastro
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator className="my-2 h-1 bg-muted" />
-                        <DropdownMenuItem 
-                          className="p-4 font-black text-xl text-destructive cursor-pointer rounded-xl focus:bg-destructive/10" 
-                          onSelect={() => setClientToDelete(cliente)}
-                        >
-                          <Trash2 className="mr-3 size-7" />
-                          Excluir Cliente
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
+                  <h3 className="font-black text-2xl sm:text-4xl break-words leading-tight uppercase tracking-tighter text-primary italic">
+                    {cliente.fullName}
+                  </h3>
                 </div>
 
-                <div className="pt-6">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <Button variant="outline" asChild className="h-12 sm:h-16 font-black text-xs uppercase tracking-widest rounded-xl border-2 hover:bg-primary/5">
+                      <Link href={`/clientes/${cliente.id}`}>
+                        <FileText className="mr-2 size-5" />
+                        Detalhes
+                      </Link>
+                    </Button>
+                    <Button variant="outline" className="h-12 sm:h-16 font-black text-xs uppercase tracking-widest rounded-xl border-2 hover:bg-primary/5">
+                      <Edit className="mr-2 size-5" />
+                      Editar
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="h-12 sm:h-16 font-black text-xs uppercase tracking-widest rounded-xl border-2 text-destructive border-destructive/20 hover:bg-destructive/5 hover:border-destructive"
+                      onClick={() => setClientToDelete(cliente)}
+                    >
+                      <Trash2 className="mr-2 size-5" />
+                      Excluir
+                    </Button>
+                  </div>
+
                   <Button
                     variant="default"
                     size="lg"
-                    className="w-full bg-green-600 hover:bg-green-700 h-16 sm:h-24 rounded-2xl sm:rounded-3xl font-black text-lg sm:text-3xl gap-4 shadow-xl transition-all active:scale-95 uppercase tracking-widest"
+                    className="w-full bg-green-600 hover:bg-green-700 h-16 sm:h-20 rounded-xl font-black text-sm sm:text-xl gap-3 shadow-xl transition-all active:scale-95 uppercase tracking-widest"
                     onClick={() => openWhatsApp(cliente.phone)}
                   >
-                    <MessageCircle className="size-8 sm:size-12" />
+                    <MessageCircle className="size-6 sm:size-8" />
                     Chamar no WhatsApp
                   </Button>
                 </div>
