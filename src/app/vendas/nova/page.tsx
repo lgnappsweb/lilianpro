@@ -162,9 +162,14 @@ export default function NovaVendaPage() {
 
   return (
     <div className="space-y-6 sm:space-y-10 w-full animate-in fade-in duration-500 pb-32">
-      <div className="text-center">
-        <h1 className="text-3xl sm:text-6xl font-black tracking-tighter text-primary font-headline uppercase leading-none">Nova Venda</h1>
-        <p className="text-sm sm:text-xl text-muted-foreground mt-3 font-bold opacity-80 uppercase tracking-widest">Cadastre uma venda rapidamente no seu sistema.</p>
+      <div className="flex flex-col items-center text-center gap-6 px-2 mb-10">
+        <div className="w-full">
+          <div className="flex items-center justify-center gap-4 mb-2">
+            <ShoppingBag className="size-10 sm:size-16 text-primary" />
+            <h1 className="text-4xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm">NOVA VENDA</h1>
+          </div>
+          <p className="text-lg sm:text-xl text-muted-foreground mt-3 font-bold opacity-60 uppercase tracking-widest">Cadastre uma venda rapidamente no seu sistema.</p>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6 sm:gap-10">
