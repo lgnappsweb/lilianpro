@@ -12,8 +12,9 @@ import { Sparkles, LogIn } from 'lucide-react';
 
 export default function LoginPage() {
   const auth = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  // Definindo as credenciais solicitadas como padrão para o protótipo
+  const [email, setEmail] = useState('litencarv@icloud.com');
+  const [password, setPassword] = useState('Ltc1036');
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +31,7 @@ export default function LoginPage() {
             </div>
           </div>
           <CardTitle className="text-2xl font-headline font-bold text-primary">GlamGestão</CardTitle>
-          <CardDescription>Acesse sua conta administrativa</CardDescription>
+          <CardDescription>Acesse sua conta de administradora única</CardDescription>
         </CardHeader>
         <form onSubmit={handleLogin}>
           <CardContent className="space-y-4">
@@ -39,7 +40,7 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="admin@glamgestao.com"
+                placeholder="litencarv@icloud.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -56,11 +57,14 @@ export default function LoginPage() {
               />
             </div>
           </CardContent>
-          <CardFooter>
+          <CardFooter className="flex flex-col space-y-4">
             <Button type="submit" className="w-full h-11 text-lg font-semibold">
               <LogIn className="mr-2 size-5" />
               Entrar
             </Button>
+            <p className="text-xs text-center text-muted-foreground">
+              Acesso exclusivo para: litencarv@icloud.com
+            </p>
           </CardFooter>
         </form>
       </Card>
