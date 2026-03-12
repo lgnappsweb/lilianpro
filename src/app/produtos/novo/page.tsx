@@ -128,7 +128,6 @@ export default function NovoProdutoPage() {
       catalogPrice: unmaskCurrency(formData.catalogPrice),
       costPrice: unmaskCurrency(formData.costPrice),
       salePrice: unmaskCurrency(formData.salePrice),
-      imageUrl: `https://picsum.photos/seed/${productId}/500/500`,
     };
 
     try {

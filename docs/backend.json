@@ -88,11 +88,6 @@
         "description": {
           "type": "string",
           "description": "A detailed description of the product."
-        },
-        "imageUrl": {
-          "type": "string",
-          "description": "URL to an image of the product.",
-          "format": "uri"
         }
       },
       "required": [

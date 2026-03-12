@@ -21,7 +21,6 @@ import {
   Loader2,
   Edit,
 } from "lucide-react";
-import Image from "next/image";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, doc } from "firebase/firestore";
 import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
@@ -151,22 +150,13 @@ export default function ProdutosPage() {
       ) : (
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 w-full">
           {filteredProducts.map((product) => (
-            <Card key={product.id} className="border-none shadow-md group hover:shadow-2xl transition-all rounded-[2rem] overflow-hidden border-b-8 border-b-primary/10 relative">
-              <div className="relative aspect-square overflow-hidden bg-muted">
-                <Image
-                  src={product.imageUrl || `https://picsum.photos/seed/${product.id}/500/500`}
-                  alt={product.name}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
-                  data-ai-hint="beauty product"
-                />
-                <div className="absolute top-4 left-4 flex gap-2">
-                  <Badge className={`text-[10px] font-black px-4 py-1.5 rounded-xl shadow-lg border-none text-white ${getBrandBadgeColor(product.brand)}`}>
+            <Card key={product.id} className="border-none shadow-md group hover:shadow-2xl transition-all rounded-[2rem] overflow-hidden border-b-8 border-b-primary/10 relative p-2">
+              <CardHeader className="pb-3 pt-6 px-6 text-left">
+                <div className="flex items-center gap-2 mb-4">
+                  <Badge className={`text-[10px] font-black px-4 py-1.5 rounded-xl shadow-sm border-none text-white ${getBrandBadgeColor(product.brand)}`}>
                     {product.brand}
                   </Badge>
                 </div>
-              </div>
-              <CardHeader className="pb-3 pt-8 px-8 text-left">
                 <div className="space-y-2">
                   <CardTitle className="text-2xl font-black leading-tight group-hover:text-primary transition-colors line-clamp-2 px-2 italic uppercase tracking-tighter">
                     {product.name}
@@ -176,7 +166,7 @@ export default function ProdutosPage() {
                   </CardDescription>
                 </div>
               </CardHeader>
-              <CardContent className="pb-10 px-8 space-y-6">
+              <CardContent className="pb-8 px-6 space-y-6">
                 <div className="flex items-center justify-between border-t-2 pt-6">
                   <p className="text-3xl font-black text-primary tracking-tighter px-2">R$ {Number(product.salePrice).toFixed(2)}</p>
                   <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-xl uppercase tracking-tighter">
