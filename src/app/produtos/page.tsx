@@ -57,12 +57,12 @@ export default function ProdutosPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="flex flex-col items-center text-center gap-6">
-        <div>
+      <div className="flex flex-col items-start text-left sm:items-center sm:text-center gap-6">
+        <div className="w-full">
           <h1 className="text-4xl font-black tracking-tight text-primary font-headline">Estoque & Catálogo</h1>
           <p className="text-lg text-muted-foreground mt-2 font-medium">Organize seus produtos da Avon, Natura e outras marcas.</p>
         </div>
-        <Button className="h-14 px-8 bg-primary hover:bg-primary/90 text-lg font-bold shadow-lg rounded-2xl">
+        <Button className="w-full h-14 px-8 bg-primary hover:bg-primary/90 text-lg font-bold shadow-lg rounded-2xl">
           <Plus className="mr-3 size-6" />
           Novo Produto
         </Button>
