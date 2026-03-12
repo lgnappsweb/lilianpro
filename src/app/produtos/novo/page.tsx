@@ -62,7 +62,6 @@ export default function NovoProdutoPage() {
 
   const { data: categories, isLoading: categoriesLoading } = useCollection(categoriesQuery);
 
-  // Helper para formatar moeda enquanto digita (Real)
   const maskCurrency = (value: string) => {
     const digits = value.replace(/\D/g, "");
     if (!digits) return "";
@@ -73,13 +72,11 @@ export default function NovoProdutoPage() {
     });
   };
 
-  // Helper para transformar string formatada em número puro
   const unmaskCurrency = (value: string) => {
     if (!value) return 0;
     return parseFloat(value.replace(/\./g, "").replace(",", ".")) || 0;
   };
 
-  // Lógica de cálculo automático baseada na marca e preço de revista
   useEffect(() => {
     const catalog = unmaskCurrency(formData.catalogPrice);
     if (catalog === 0 || !formData.brand) return;
@@ -94,7 +91,6 @@ export default function NovoProdutoPage() {
       setFormData(prev => ({
         ...prev,
         costPrice: maskCurrency((calculatedCost * 100).toFixed(0)),
-        // Por padrão, o preço de venda sugerido é o preço de revista
         salePrice: formData.catalogPrice
       }));
     }
@@ -103,7 +99,6 @@ export default function NovoProdutoPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     
-    // Aplica máscara apenas nos campos financeiros
     if (["catalogPrice", "costPrice", "salePrice"].includes(name)) {
       setFormData((prev) => ({ ...prev, [name]: maskCurrency(value) }));
     } else {
@@ -164,7 +159,7 @@ export default function NovoProdutoPage() {
         <div className="w-full">
           <div className="flex flex-col items-center justify-center gap-6">
             <Package className="size-16 sm:size-24 text-primary" />
-            <h1 className="text-5xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap px-2">NOVO PRODUTO</h1>
+            <h1 className="text-5xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap px-2 uppercase tracking-tighter italic">NOVO PRODUTO</h1>
           </div>
           <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">ADICIONE UM NOVO ITEM AO SEU CATÁLOGO ELITE</p>
         </div>
