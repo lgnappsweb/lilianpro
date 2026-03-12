@@ -44,11 +44,13 @@ export async function generateMonthlySalesSummary(
   input: GenerateMonthlySalesSummaryInput
 ): Promise<GenerateMonthlySalesSummaryOutput> {
   try {
-    return await generateMonthlySalesSummaryFlow(input);
+    // Chama o fluxo e garante que ele retorne um objeto válido mesmo em caso de falha interna
+    const result = await generateMonthlySalesSummaryFlow(input);
+    return result;
   } catch (error: any) {
-    console.error("Erro no wrapper do resumo mensal:", error);
+    console.error("Erro fatal no fluxo de resumo mensal:", error);
     return {
-      summary: "O resumo inteligente está temporariamente indisponível. Verifique se a chave GEMINI_API_KEY está configurada corretamente no seu ambiente."
+      summary: "O resumo inteligente está temporariamente indisponível. Para ativá-lo, configure a chave GEMINI_API_KEY no arquivo .env."
     };
   }
 }
@@ -94,16 +96,22 @@ const generateMonthlySalesSummaryFlow = ai.defineFlow(
   },
   async input => {
     try {
+      // Tenta gerar a resposta da IA. Se a API Key estiver ausente, o Genkit lançará um erro aqui.
       const {output} = await prompt(input);
-      if (!output) {
-        throw new Error('A IA não retornou nenhum conteúdo.');
+      
+      if (!output || !output.summary) {
+        return {
+          summary: "A IA não conseguiu gerar o resumo com os dados atuais. Por favor, tente novamente mais tarde."
+        };
       }
+      
       return output;
     } catch (error: any) {
-      console.error("Erro dentro do fluxo Genkit:", error);
-      // Retorna um fallback amigável em vez de lançar o erro
+      // Captura o erro (ex: falta de chave de API) e retorna um fallback sem quebrar o servidor
+      console.error("Erro ao chamar prompt da IA:", error.message || error);
+      
       return {
-        summary: "Não foi possível gerar os insights automáticos agora devido a um erro técnico ou falta de configuração da API Key do Gemini."
+        summary: "Os insights automáticos do mês não puderam ser gerados agora. Verifique se a sua chave de API do Google Gemini está configurada corretamente no ambiente de desenvolvimento."
       };
     }
   }
