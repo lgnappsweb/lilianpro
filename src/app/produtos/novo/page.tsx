@@ -29,7 +29,6 @@ import {
   Hash,
   Info,
   Plus,
-  Sparkles,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
@@ -63,10 +62,27 @@ export default function NovoProdutoPage() {
 
   const { data: categories, isLoading: categoriesLoading } = useCollection(categoriesQuery);
 
+  // Helper para formatar moeda enquanto digita (Real)
+  const maskCurrency = (value: string) => {
+    const digits = value.replace(/\D/g, "");
+    if (!digits) return "";
+    const number = parseFloat(digits) / 100;
+    return number.toLocaleString("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
+
+  // Helper para transformar string formatada em número puro
+  const unmaskCurrency = (value: string) => {
+    if (!value) return 0;
+    return parseFloat(value.replace(/\./g, "").replace(",", ".")) || 0;
+  };
+
   // Lógica de cálculo automático baseada na marca e preço de revista
   useEffect(() => {
-    const catalog = parseFloat(formData.catalogPrice);
-    if (isNaN(catalog) || !formData.brand) return;
+    const catalog = unmaskCurrency(formData.catalogPrice);
+    if (catalog === 0 || !formData.brand) return;
 
     let discount = 0;
     if (formData.brand === "VERDE (N)") discount = 0.30;
@@ -77,16 +93,22 @@ export default function NovoProdutoPage() {
       const calculatedCost = catalog * (1 - discount);
       setFormData(prev => ({
         ...prev,
-        costPrice: calculatedCost.toFixed(2),
+        costPrice: maskCurrency((calculatedCost * 100).toFixed(0)),
         // Por padrão, o preço de venda sugerido é o preço de revista
-        salePrice: catalog.toFixed(2)
+        salePrice: formData.catalogPrice
       }));
     }
   }, [formData.brand, formData.catalogPrice]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    
+    // Aplica máscara apenas nos campos financeiros
+    if (["catalogPrice", "costPrice", "salePrice"].includes(name)) {
+      setFormData((prev) => ({ ...prev, [name]: maskCurrency(value) }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -109,9 +131,9 @@ export default function NovoProdutoPage() {
       ...formData,
       id: productId,
       adminId: user.uid,
-      catalogPrice: Number(formData.catalogPrice) || 0,
-      costPrice: Number(formData.costPrice) || 0,
-      salePrice: Number(formData.salePrice) || 0,
+      catalogPrice: unmaskCurrency(formData.catalogPrice),
+      costPrice: unmaskCurrency(formData.costPrice),
+      salePrice: unmaskCurrency(formData.salePrice),
       imageUrl: `https://picsum.photos/seed/${productId}/500/500`,
     };
 
@@ -225,8 +247,8 @@ export default function NovoProdutoPage() {
                   <Input
                     id="catalogPrice"
                     name="catalogPrice"
-                    type="number"
-                    step="0.01"
+                    type="text"
+                    inputMode="numeric"
                     placeholder="0,00"
                     className="h-16 text-xl font-black rounded-xl border-4 border-muted bg-background focus:border-primary"
                     value={formData.catalogPrice}
@@ -244,8 +266,8 @@ export default function NovoProdutoPage() {
                 <Input
                   id="costPrice"
                   name="costPrice"
-                  type="number"
-                  step="0.01"
+                  type="text"
+                  inputMode="numeric"
                   placeholder="0,00"
                   className="h-16 text-xl font-black rounded-xl border-4 border-muted bg-background"
                   value={formData.costPrice}
@@ -259,8 +281,8 @@ export default function NovoProdutoPage() {
                 <Input
                   id="salePrice"
                   name="salePrice"
-                  type="number"
-                  step="0.01"
+                  type="text"
+                  inputMode="numeric"
                   placeholder="0,00"
                   className="h-16 text-xl font-black rounded-xl border-4 border-primary/20 bg-primary/5 focus:border-primary"
                   value={formData.salePrice}
