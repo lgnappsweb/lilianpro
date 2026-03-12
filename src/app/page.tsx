@@ -214,7 +214,7 @@ export default function DashboardPage() {
                   <Package className="size-8" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xl font-black truncate uppercase tracking-tight px-2">Produtos</p>
+                  <p className="text-xl font-black uppercase tracking-tight px-2">Produtos</p>
                   <p className="text-sm text-muted-foreground font-bold">{products?.length || 0} itens</p>
                 </div>
                 <Badge variant="secondary" className="text-xs font-black px-3 py-1 bg-primary/5 text-primary border-none">Ver</Badge>
@@ -226,7 +226,7 @@ export default function DashboardPage() {
                   <Users className="size-8" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xl font-black truncate uppercase tracking-tight px-2">Clientes</p>
+                  <p className="text-xl font-black uppercase tracking-tight px-2">Clientes</p>
                   <p className="text-sm text-muted-foreground font-bold">{clients?.length || 0} contatos</p>
                 </div>
                 <Badge variant="secondary" className="text-xs font-black px-3 py-1 bg-accent/5 text-accent border-none">Ver</Badge>
