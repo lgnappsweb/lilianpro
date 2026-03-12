@@ -35,19 +35,33 @@ import { cn } from "@/lib/utils";
 
 const SUGESTOES_CATEGORIAS = {
   "NATURA": [
-    "Perfumaria Feminina", "Perfumaria Masculina", "Corpo e Banho (Tododia)", 
-    "Rosto (Chronos)", "Maquiagem (Una/Faces)", "Cabelos (Lumina)", 
-    "Mamãe e Bebê", "Sabonetes", "Desodorantes"
+    "Perfumaria Feminina", "Perfumaria Masculina", "Perfumaria Unissex",
+    "Corpo e Banho (Tododia)", "Rosto (Chronos)", "Maquiagem (Una)", 
+    "Maquiagem (Faces)", "Cabelos (Lumina)", "Cabelos (Plant)",
+    "Mamãe e Bebê", "Naturé (Infantil)", "Sabonetes", "Desodorantes", 
+    "Óleos (Sève)", "Ekos (Corpo)", "Ekos (Mãos e Pés)", "Ekos (Banho)",
+    "Homen (Barba e Bigode)", "Homen (Cuidados)", "Kits & Presentes", 
+    "Refis", "Crer Para Ver", "Acessórios Natura", "Proteção Solar (Fotoequilíbrio)"
   ],
   "AVON": [
-    "Perfumaria", "Maquiagem (Color Trend)", "Rosto (Renew)", 
-    "Cuidados Diários (Care)", "Cabelos (Advance Techniques)", 
-    "Higiene Íntima", "Proteção Solar", "Corpo"
+    "Perfumaria Feminina", "Perfumaria Masculina", "Maquiagem (Color Trend)", 
+    "Maquiagem (Avon True)", "Maquiagem (Power Stay)", "Maquiagem (Olhos)",
+    "Maquiagem (Lábios)", "Maquiagem (Rosto)", "Esmaltes e Unhas",
+    "Rosto (Renew Anti-idade)", "Renew (Limpeza Facial)", "Renew (Olhos)",
+    "Cuidados Diários (Care)", "Corpo (Encanto)", "Cabelos (Advance Techniques)", 
+    "Higiene Íntima", "Proteção Solar (Sun+)", "Desodorantes Roll-on",
+    "Desodorantes Aerossol", "Kits de Presente Avon", "Acessórios de Beleza",
+    "Bijuterias e Folheados", "Moda & Casa (Avon)"
   ],
   "CASA & ESTILO": [
-    "Cozinha e Utensílios", "Cama, Mesa e Banho", "Organização", 
-    "Moda e Acessórios", "Infantil e Brinquedos", "Saúde e Bem-estar", 
-    "Decoração"
+    "Cozinha e Utensílios", "Potes e Vasilhas", "Panelas e Frigideiras",
+    "Mesa Posta (Toalhas e Sousplat)", "Cama (Jogos de Lençol)", "Cama (Edredons e Mantas)",
+    "Banho (Toalhas e Roupões)", "Organização Doméstica", "Decoração de Interiores",
+    "Moda (Lingerie)", "Moda (Pijamas e Camisolas)", "Moda (Fitness)",
+    "Calçados e Chinelos", "Relógios e Óculos", "Semijoias",
+    "Infantil (Brinquedos)", "Infantil (Escolar)", "Papelaria e Livros",
+    "Eletrônicos (Beleza e Saúde)", "Bem-estar e Saúde", "Utilidades Domésticas",
+    "Limpeza Prática", "Ferramentas e Jardinagem"
   ]
 };
 
