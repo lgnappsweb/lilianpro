@@ -61,7 +61,7 @@ export default function NovaVendaPage() {
   const [selectedItems, setSelectedItems] = useState([
     { id: `temp-${Date.now()}`, productId: "", quantity: 1, price: 0, name: "" }
   ]);
-  const [paymentMethod, setPaymentMethod] = useState("pix");
+  const [paymentMethod, setPaymentMethod] = useState(""); // Começa vazio conforme solicitado
   const [dueDate, setDueDate] = useState("");
   const [notes, setNotes] = useState("");
   const [discount, setDiscount] = useState(0);
@@ -103,8 +103,8 @@ export default function NovaVendaPage() {
   const finalTotal = Math.max(0, subtotal - discount + additionalFee);
 
   const isReady = useMemo(() => {
-    return !!selectedClientId && selectedItems.some(item => !!item.productId);
-  }, [selectedClientId, selectedItems]);
+    return !!selectedClientId && selectedItems.some(item => !!item.productId) && !!paymentMethod;
+  }, [selectedClientId, selectedItems, paymentMethod]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,7 +112,7 @@ export default function NovaVendaPage() {
       toast({
         variant: "destructive",
         title: "Dados incompletos",
-        description: "Por favor, selecione a cliente e pelo menos um produto.",
+        description: "Por favor, selecione a cliente, produtos e forma de pagamento.",
       });
       return;
     }
@@ -159,7 +159,6 @@ export default function NovaVendaPage() {
   };
 
   const hasItems = selectedItems.some(item => !!item.productId);
-  const fluorescentGreen = "text-[#39FF14]";
 
   return (
     <div className="space-y-6 sm:space-y-10 max-w-5xl mx-auto w-full animate-in fade-in duration-500 pb-32 px-4">
