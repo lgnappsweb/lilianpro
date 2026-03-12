@@ -20,6 +20,7 @@ import {
   FileText,
   Edit,
   Loader2,
+  Users,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -85,11 +86,14 @@ export default function ClientesPage() {
   };
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-500">
-      <div className="flex flex-col items-start text-left sm:items-center sm:text-center gap-6 px-2">
+    <div className="space-y-10 animate-in fade-in duration-500 w-full">
+      <div className="flex flex-col items-center text-center gap-6 px-2">
         <div className="w-full">
-          <h1 className="text-4xl md:text-5xl font-black tracking-tight text-primary font-headline uppercase">Minhas Clientes</h1>
-          <p className="text-xl text-muted-foreground mt-2 font-bold opacity-60">Gerencie seu catálogo de contatos e histórico.</p>
+          <div className="flex items-center justify-center gap-4 mb-2">
+            <Users className="size-10 sm:size-16 text-primary" />
+            <h1 className="text-4xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm">CLIENTES</h1>
+          </div>
+          <p className="text-lg sm:text-xl text-muted-foreground mt-3 font-bold opacity-60 uppercase tracking-widest">Gerencie seu catálogo de contatos e histórico.</p>
         </div>
         <Button asChild className="w-full h-16 px-10 text-xl font-black rounded-2xl shadow-xl bg-primary hover:bg-primary/90 transition-transform hover:scale-105">
           <Link href="/clientes/novo">
@@ -99,7 +103,7 @@ export default function ClientesPage() {
         </Button>
       </div>
 
-      <Card className="border-none shadow-2xl rounded-[2.5rem] overflow-hidden">
+      <Card className="border-none shadow-2xl rounded-[2.5rem] overflow-hidden w-full">
         <CardHeader className="p-8 pb-4 bg-muted/20">
           <div className="relative">
             <Search className="absolute left-6 top-1/2 -translate-y-1/2 size-7 text-muted-foreground" />
