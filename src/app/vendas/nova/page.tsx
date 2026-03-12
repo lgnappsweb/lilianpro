@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -93,6 +93,12 @@ export default function NovaVendaPage() {
   const [discount, setDiscount] = useState(0);
   const [additionalFee, setAdditionalFee] = useState(0);
   const [itemToDeleteId, setItemToDeleteId] = useState<string | null>(null);
+
+  // Define data atual como exemplo padrão para evitar campo vazio e destacar o uso
+  useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+    setDueDate(today);
+  }, []);
 
   const clientsQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -469,7 +475,12 @@ export default function NovaVendaPage() {
                 <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Vencimento (A Prazo)</Label>
                 <div className="relative">
                   <CalendarIcon className="absolute left-5 top-1/2 -translate-y-1/2 size-6 text-muted-foreground hidden sm:block" />
-                  <Input type="date" className="h-14 sm:h-20 sm:pl-16 text-base sm:text-2xl font-black rounded-xl sm:rounded-3xl border-4 border-muted bg-background" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+                  <Input 
+                    type="date" 
+                    className="h-14 sm:h-20 sm:pl-16 text-base sm:text-2xl font-black rounded-xl sm:rounded-3xl border-4 border-muted bg-background dark:bg-slate-100 dark:text-slate-900 dark:border-white/40 focus:border-primary transition-all shadow-lg" 
+                    value={dueDate} 
+                    onChange={(e) => setDueDate(e.target.value)} 
+                  />
                 </div>
               </div>
               <div className="sm:col-span-2 space-y-4 text-left">
