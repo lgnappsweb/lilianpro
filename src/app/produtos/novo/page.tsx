@@ -91,7 +91,6 @@ export default function NovoProdutoPage() {
       setFormData(prev => ({
         ...prev,
         costPrice: maskCurrency((calculatedCost * 100).toFixed(0)),
-        // salePrice stays as it is, manually filled by the user
       }));
     }
   }, [formData.brand, formData.catalogPrice]);
@@ -159,7 +158,7 @@ export default function NovoProdutoPage() {
         <div className="w-full">
           <div className="flex flex-col items-center justify-center gap-6">
             <Package className="size-16 sm:size-24 text-primary" />
-            <h1 className="text-5xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap px-2 uppercase tracking-tighter italic">NOVO PRODUTO</h1>
+            <h1 className="text-5xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap px-2">NOVO PRODUTO</h1>
           </div>
           <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">ADICIONE UM NOVO ITEM AO SEU CATÁLOGO ELITE</p>
         </div>
@@ -245,7 +244,7 @@ export default function NovoProdutoPage() {
                     type="text"
                     inputMode="numeric"
                     placeholder="0,00"
-                    className="h-16 text-xl font-black rounded-xl border-4 border-muted bg-background focus:border-primary"
+                    className="h-16 text-xl font-black rounded-xl border-4 border-muted bg-background focus:border-primary placeholder:text-muted-foreground/40"
                     value={formData.catalogPrice}
                     onChange={handleChange}
                   />
@@ -264,7 +263,7 @@ export default function NovoProdutoPage() {
                   type="text"
                   inputMode="numeric"
                   placeholder="0,00"
-                  className="h-16 text-xl font-black rounded-xl border-4 border-muted bg-background"
+                  className="h-16 text-xl font-black rounded-xl border-4 border-muted bg-background placeholder:text-muted-foreground/40"
                   value={formData.costPrice}
                   onChange={handleChange}
                 />
@@ -279,7 +278,7 @@ export default function NovoProdutoPage() {
                   type="text"
                   inputMode="numeric"
                   placeholder="0,00"
-                  className="h-16 text-xl font-black rounded-xl border-4 border-primary/20 bg-primary/5 focus:border-primary"
+                  className="h-16 text-xl font-black rounded-xl border-4 border-primary/20 bg-primary/5 focus:border-primary placeholder:text-muted-foreground/40"
                   value={formData.salePrice}
                   onChange={handleChange}
                   required
@@ -295,7 +294,7 @@ export default function NovoProdutoPage() {
                   id="productCode"
                   name="productCode"
                   placeholder="Ex: 54321"
-                  className="h-16 sm:h-20 sm:pl-16 text-xl sm:text-2xl font-black rounded-xl sm:rounded-3xl border-4 border-muted bg-background"
+                  className="h-16 sm:h-20 sm:pl-16 text-xl sm:text-2xl font-black rounded-xl sm:rounded-3xl border-4 border-muted bg-background placeholder:text-muted-foreground/40"
                   value={formData.productCode}
                   onChange={handleChange}
                 />
