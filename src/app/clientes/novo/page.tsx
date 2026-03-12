@@ -113,7 +113,7 @@ export default function NovoClientePage() {
             <UserPlus className="size-16 sm:size-24 text-primary" />
             <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl">NOVO CLIENTE</h1>
           </div>
-          <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest">Adicione uma nova cliente ao seu catálogo de elite.</p>
+          <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest">ADICIONE UM NOVO CLIENTE AO SEU CATÁLOGO</p>
         </div>
       </div>
 
