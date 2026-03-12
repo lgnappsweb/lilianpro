@@ -36,14 +36,14 @@ import { signOut } from "firebase/auth";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
-  { name: "Painel", icon: LayoutDashboard, href: "/" },
-  { name: "Clientes", icon: Users, href: "/clientes" },
-  { name: "Categorias", icon: Tag, href: "/categorias" },
-  { name: "Produtos", icon: Package, href: "/produtos" },
-  { name: "Pedidos", icon: ClipboardList, href: "/pedidos" },
-  { name: "Financeiro", icon: Wallet, href: "/financeiro" },
-  { name: "Relatórios", icon: BarChart3, href: "/relatorios" },
-  { name: "Ajustes", icon: Settings, href: "/configuracoes" },
+  { name: "Painel", icon: LayoutDashboard, href: "/", color: "text-blue-500" },
+  { name: "Clientes", icon: Users, href: "/clientes", color: "text-accent" },
+  { name: "Categorias", icon: Tag, href: "/categorias", color: "text-orange-500" },
+  { name: "Produtos", icon: Package, href: "/produtos", color: "text-primary" },
+  { name: "Pedidos", icon: ClipboardList, href: "/pedidos", color: "text-purple-500" },
+  { name: "Financeiro", icon: Wallet, href: "/financeiro", color: "text-green-600" },
+  { name: "Relatórios", icon: BarChart3, href: "/relatorios", color: "text-pink-500" },
+  { name: "Ajustes", icon: Settings, href: "/configuracoes", color: "text-slate-500" },
 ];
 
 export function AppSidebar({ appName }: { appName?: string }) {
@@ -97,10 +97,13 @@ export function AppSidebar({ appName }: { appName?: string }) {
                     asChild
                     isActive={pathname === item.href}
                     tooltip={item.name}
-                    className="h-12 rounded-xl"
+                    className={cn(
+                      "h-12 rounded-xl transition-all",
+                      pathname === item.href ? "bg-primary/10 border border-primary/20" : "hover:bg-muted"
+                    )}
                   >
                     <Link href={item.href}>
-                      <item.icon className={cn("size-6", pathname === item.href ? "text-primary" : "text-muted-foreground")} />
+                      <item.icon className={cn("size-6 transition-colors", pathname === item.href ? "text-primary" : item.color)} />
                       <span className={cn("text-base font-bold", pathname === item.href ? "text-primary" : "text-foreground")}>{item.name}</span>
                     </Link>
                   </SidebarMenuButton>
