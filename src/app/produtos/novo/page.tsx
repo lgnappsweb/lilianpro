@@ -91,7 +91,7 @@ export default function NovoProdutoPage() {
       setFormData(prev => ({
         ...prev,
         costPrice: maskCurrency((calculatedCost * 100).toFixed(0)),
-        salePrice: formData.catalogPrice
+        // salePrice stays as it is, manually filled by the user
       }));
     }
   }, [formData.brand, formData.catalogPrice]);
