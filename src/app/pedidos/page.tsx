@@ -99,7 +99,7 @@ export default function PedidosPage() {
         </Button>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4 items-center">
+      <div className="flex flex-col gap-6 w-full">
         <div className="relative flex-1 w-full">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-6 text-muted-foreground" />
           <Input 
@@ -109,14 +109,14 @@ export default function PedidosPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+        
+        <div className="grid grid-cols-2 sm:flex sm:flex-row gap-3 w-full md:w-auto">
           {["todos", "pago", "pendente", "atrasado"].map((filter) => (
             <Button
               key={filter}
               variant={activeFilter === filter ? "default" : "outline"}
-              size="sm"
               onClick={() => setActiveFilter(filter)}
-              className={`capitalize h-14 px-6 font-bold rounded-2xl ${activeFilter === filter ? "shadow-lg" : "border-muted"}`}
+              className={`capitalize h-12 sm:h-14 px-4 sm:px-8 text-sm sm:text-base font-black rounded-xl sm:rounded-2xl transition-all ${activeFilter === filter ? "shadow-lg scale-105" : "border-muted opacity-60"}`}
             >
               {filter}
             </Button>
