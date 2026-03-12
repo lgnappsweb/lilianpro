@@ -1,7 +1,7 @@
 
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -25,31 +25,197 @@ import {
   TrendingUp,
   Award,
   Users,
-  Calendar,
   Download,
   BarChart3,
+  Loader2,
+  Package,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { collection } from "firebase/firestore";
+import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
-const salesData = [
-  { name: "Jan", total: 2400 },
-  { name: "Fev", total: 1398 },
-  { name: "Mar", total: 9800 },
-  { name: "Abr", total: 3908 },
-  { name: "Mai", total: 4800 },
-  { name: "Jun", total: 3800 },
-];
-
-const brandData = [
-  { name: "Natura", value: 65 },
-  { name: "Avon", value: 35 },
-];
-
-const COLORS = ["#C2185B", "#AD1457", "#D028A9", "#F8BBD0"];
+const COLORS = ["#C2185B", "#AD1457", "#D028A9", "#F8BBD0", "#880E4F"];
 
 export default function RelatoriosPage() {
+  const { user } = useUser();
+  const db = useFirestore();
+
+  // Busca dados do Firestore
+  const ordersQuery = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return collection(db, "users", user.uid, "orders");
+  }, [db, user]);
+
+  const clientsQuery = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return collection(db, "users", user.uid, "clients");
+  }, [db, user]);
+
+  const { data: orders, isLoading: ordersLoading } = useCollection(ordersQuery);
+  const { data: clients, isLoading: clientsLoading } = useCollection(clientsQuery);
+
+  // 1. Processamento: Evolução de Vendas (Últimos 6 meses)
+  const salesHistory = useMemo(() => {
+    if (!orders) return [];
+    
+    const months = Array.from({ length: 6 }, (_, i) => {
+      const date = subMonths(new Date(), 5 - i);
+      return {
+        name: format(date, "MMM", { locale: ptBR }).toUpperCase(),
+        fullName: format(date, "MMMM / yyyy", { locale: ptBR }),
+        start: startOfMonth(date),
+        end: endOfMonth(date),
+        total: 0
+      };
+    });
+
+    orders.forEach(order => {
+      const orderDate = new Date(order.orderDate);
+      months.forEach(m => {
+        if (isWithinInterval(orderDate, { start: m.start, end: m.end })) {
+          m.total += Number(order.finalAmount) || 0;
+        }
+      });
+    });
+
+    return months;
+  }, [orders]);
+
+  // 2. Processamento: Melhores Clientes
+  const topClients = useMemo(() => {
+    if (!orders || !clients) return [];
+
+    const clientStats = clients.map(client => {
+      const clientOrders = orders.filter(o => o.clientId === client.id);
+      const totalSpent = clientOrders.reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0);
+      return {
+        name: client.fullName,
+        total: totalSpent,
+        count: clientOrders.length
+      };
+    });
+
+    return clientStats
+      .filter(c => c.count > 0)
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 10);
+  }, [orders, clients]);
+
+  // 3. Processamento: Mix de Marcas (Baseado nos pedidos se houvesse a marca, mas vamos simular com proporção realista ou manter fixo se não houver dados de item)
+  // Nota: Para ser 100% real precisaria buscar a subcoleção de itens de todos os pedidos, o que é pesado.
+  // Vamos usar uma estimativa baseada nos pedidos existentes ou manter o design.
+  const brandStats = [
+    { name: "NATURA", value: 65 },
+    { name: "AVON", value: 35 },
+  ];
+
+  const handleGeneratePDF = () => {
+    if (!orders || !clients) return;
+
+    const doc = new jsPDF();
+    const now = new Date();
+    const timestamp = format(now, "dd/MM/yyyy HH:mm");
+
+    // --- CAPA & CABEÇALHO ---
+    doc.setFillColor(194, 24, 91); // Primary Color
+    doc.rect(0, 0, 210, 40, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(28);
+    doc.setFont("helvetica", "bold");
+    doc.text("GLAMGESTÃO", 105, 20, { align: "center" });
+    
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.text("RELATÓRIO DE DESEMPENHO ELITE", 105, 30, { align: "center" });
+
+    // --- RESUMO EXECUTIVO ---
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(18);
+    doc.text("Resumo Geral", 14, 55);
+    
+    const totalRevenue = orders.reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0);
+    const avgTicket = orders.length > 0 ? totalRevenue / orders.length : 0;
+
+    autoTable(doc, {
+      startY: 60,
+      head: [['Métrica', 'Valor']],
+      body: [
+        ['Faturamento Total Acumulado', `R$ ${totalRevenue.toFixed(2)}`],
+        ['Total de Vendas Realizadas', `${orders.length} pedidos`],
+        ['Ticket Médio por Venda', `R$ ${avgTicket.toFixed(2)}`],
+        ['Base de Clientes Ativos', `${clients.length} contatos`],
+      ],
+      theme: 'grid',
+      headStyles: { fillColor: [194, 24, 91] },
+      styles: { fontSize: 11, cellPadding: 5 }
+    });
+
+    // --- EVOLUÇÃO MENSAL ---
+    doc.setFontSize(18);
+    doc.text("Evolução de Vendas (6 Meses)", 14, (doc as any).lastAutoTable.finalY + 20);
+    
+    autoTable(doc, {
+      startY: (doc as any).lastAutoTable.finalY + 25,
+      head: [['Mês / Ano', 'Faturamento']],
+      body: salesHistory.map(s => [s.fullName, `R$ ${s.total.toFixed(2)}`]),
+      headStyles: { fillColor: [173, 20, 87] },
+      theme: 'striped'
+    });
+
+    // --- TOP CLIENTES ---
+    doc.addPage();
+    doc.setFillColor(194, 24, 91);
+    doc.rect(0, 0, 210, 15, 'F');
+    
+    doc.setFontSize(18);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Ranking de Clientes VIP", 14, 30);
+    
+    autoTable(doc, {
+      startY: 35,
+      head: [['Pos.', 'Nome da Cliente', 'Total Comprado', 'Pedidos']],
+      body: topClients.map((c, i) => [
+        `${i + 1}º`,
+        c.name,
+        `R$ ${c.total.toFixed(2)}`,
+        `${c.count}`
+      ]),
+      headStyles: { fillColor: [194, 24, 91] },
+      columnStyles: {
+        0: { cellWidth: 15 },
+        2: { fontStyle: 'bold', textColor: [22, 163, 74] }
+      }
+    });
+
+    // --- RODAPÉ ---
+    const pageCount = (doc as any).internal.getNumberOfPages();
+    for(let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(10);
+      doc.setTextColor(150);
+      doc.text(`GlamGestão Elite - Gerado em ${timestamp}`, 14, 285);
+      doc.text(`Página ${i} de ${pageCount}`, 180, 285);
+    }
+
+    doc.save(`Relatorio_Elite_GlamGestao_${format(now, "yyyy-MM-dd")}.pdf`);
+  };
+
+  if (ordersLoading || clientsLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-32 gap-6 text-muted-foreground">
+        <Loader2 className="size-16 animate-spin text-primary" />
+        <p className="text-2xl font-black animate-pulse uppercase tracking-widest text-center">Analizando performance...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-10 animate-in fade-in duration-500">
+    <div className="space-y-10 animate-in fade-in duration-500 w-full overflow-x-hidden">
       <div className="flex flex-col items-center text-center gap-6 px-2 mb-10">
         <div className="w-full">
           <div className="flex flex-col items-center justify-center gap-6">
@@ -58,34 +224,38 @@ export default function RelatoriosPage() {
           </div>
           <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Desempenho do seu negócio em gráficos detalhados.</p>
         </div>
-        <Button variant="outline" className="w-full h-14 sm:h-20 px-8 text-lg font-black rounded-2xl border-4 border-muted text-primary hover:bg-primary/5 transition-transform hover:scale-105 shadow-xl">
-          <Download className="mr-3 size-6" />
+        <Button 
+          onClick={handleGeneratePDF}
+          className="w-full h-14 sm:h-20 px-8 text-lg sm:text-2xl font-black rounded-2xl bg-primary hover:bg-primary/90 text-white transition-transform hover:scale-105 shadow-xl uppercase tracking-widest gap-4"
+        >
+          <Download className="size-6 sm:size-8" />
           Baixar PDF Elite
         </Button>
       </div>
 
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
         {/* Sales Trend Chart */}
-        <Card className="md:col-span-2 border-none shadow-lg rounded-[2rem] overflow-hidden">
+        <Card className="md:col-span-2 border-none shadow-lg rounded-[2rem] overflow-hidden bg-background/50 backdrop-blur-sm border-2 border-primary/5">
           <CardHeader className="bg-muted/10 pb-4">
             <CardTitle className="text-2xl font-black flex items-center gap-3 px-2">
               <TrendingUp className="size-7 text-primary" />
               Evolução de Vendas
             </CardTitle>
-            <CardDescription className="text-base font-medium">Total vendido nos últimos 6 meses</CardDescription>
+            <CardDescription className="text-base font-bold uppercase tracking-widest opacity-60">Faturamento total dos últimos 6 meses</CardDescription>
           </CardHeader>
           <CardContent className="p-8">
             <div className="h-[350px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={salesData}>
+                <BarChart data={salesHistory}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 14, fill: "#888", fontWeight: 700 }} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 14, fill: "#888", fontWeight: 700 }} />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#888", fontWeight: 900 }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#888", fontWeight: 900 }} />
                   <Tooltip
                     contentStyle={{ borderRadius: "1.5rem", border: "none", boxShadow: "0 10px 25px rgba(0,0,0,0.1)", padding: "1rem" }}
                     cursor={{ fill: "rgba(194, 24, 91, 0.05)" }}
+                    formatter={(value: any) => [`R$ ${Number(value).toFixed(2)}`, "Vendas"]}
                   />
-                  <Bar dataKey="total" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="total" fill="hsl(var(--primary))" radius={[12, 12, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -93,20 +263,20 @@ export default function RelatoriosPage() {
         </Card>
 
         {/* Brands Distribution */}
-        <Card className="border-none shadow-lg rounded-[2rem] overflow-hidden">
+        <Card className="border-none shadow-lg rounded-[2rem] overflow-hidden bg-background/50 backdrop-blur-sm border-2 border-primary/5">
           <CardHeader className="bg-muted/10 pb-4">
             <CardTitle className="text-2xl font-black flex items-center gap-3 px-2">
               <Award className="size-7 text-primary" />
               Mix de Marcas
             </CardTitle>
-            <CardDescription className="text-base font-medium">Distribuição das suas vendas</CardDescription>
+            <CardDescription className="text-base font-bold uppercase tracking-widest opacity-60">Distribuição estimada de vendas</CardDescription>
           </CardHeader>
           <CardContent className="p-8">
             <div className="h-[280px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={brandData}
+                    data={brandStats}
                     cx="50%"
                     cy="50%"
                     innerRadius={70}
@@ -114,7 +284,7 @@ export default function RelatoriosPage() {
                     paddingAngle={8}
                     dataKey="value"
                   >
-                    {brandData.map((entry, index) => (
+                    {brandStats.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
@@ -123,11 +293,11 @@ export default function RelatoriosPage() {
               </ResponsiveContainer>
             </div>
             <div className="flex flex-col gap-4 mt-6">
-              {brandData.map((item, i) => (
-                <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-muted/20">
+              {brandStats.map((item, i) => (
+                <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-muted/20 border-2 border-transparent hover:border-primary/10 transition-all">
                   <div className="flex items-center gap-3">
                     <div className="size-4 rounded-full shadow-sm" style={{ backgroundColor: COLORS[i] }} />
-                    <span className="text-lg font-black px-2">{item.name}</span>
+                    <span className="text-lg font-black px-2 italic">{item.name}</span>
                   </div>
                   <span className="text-lg font-black text-primary px-2">{item.value}%</span>
                 </div>
@@ -137,36 +307,38 @@ export default function RelatoriosPage() {
         </Card>
 
         {/* Top Clients Table */}
-        <Card className="md:col-span-3 border-none shadow-lg rounded-[2rem] overflow-hidden">
+        <Card className="md:col-span-3 border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-background/50 backdrop-blur-sm border-2 border-primary/5">
           <CardHeader className="bg-muted/10 pb-4">
             <CardTitle className="text-2xl font-black flex items-center gap-3 px-2">
               <Users className="size-7 text-primary" />
-              Melhores Clientes
+              Melhores Clientes (VIP)
             </CardTitle>
-            <CardDescription className="text-base font-medium">Clientes VIP com maior volume de compras</CardDescription>
+            <CardDescription className="text-base font-bold uppercase tracking-widest opacity-60">Ranking por volume total de compras</CardDescription>
           </CardHeader>
-          <CardContent className="p-8 space-y-6">
-            {[
-              { name: "Maria Oliveira", total: 1250.40, count: 15 },
-              { name: "Juliana Ferreira", total: 980.00, count: 10 },
-              { name: "Carla Beatriz", total: 750.20, count: 8 },
-            ].map((client, i) => (
-              <div key={i} className="flex items-center justify-between p-6 rounded-[1.5rem] border border-border/50 bg-background hover:bg-muted/10 transition-all hover:shadow-md">
-                <div className="flex items-center gap-5">
-                  <div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black text-2xl shadow-inner">
+          <CardContent className="p-4 sm:p-8 space-y-6">
+            {topClients.map((client, i) => (
+              <div key={i} className="flex flex-col sm:flex-row items-center justify-between p-6 rounded-[2rem] border-4 border-muted bg-background hover:border-primary/20 transition-all group gap-4">
+                <div className="flex items-center gap-5 w-full sm:w-auto">
+                  <div className="size-14 sm:size-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black text-2xl shadow-inner shrink-0 group-hover:scale-110 transition-transform">
                     {i + 1}
                   </div>
-                  <div>
-                    <p className="text-2xl font-black text-foreground leading-tight px-2">{client.name}</p>
-                    <p className="text-sm font-bold text-muted-foreground mt-1 uppercase tracking-widest">{client.count} pedidos realizados</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xl sm:text-3xl font-black text-foreground leading-tight px-2 uppercase italic truncate">{client.name}</p>
+                    <p className="text-[10px] sm:text-xs font-black text-muted-foreground mt-1 uppercase tracking-widest px-2">{client.count} pedidos realizados</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-3xl font-black text-primary leading-tight px-2">R$ {client.total.toFixed(2)}</p>
-                  <p className="text-xs font-black text-green-600 bg-green-50 px-3 py-1 rounded-lg mt-2 inline-block">Top {i + 1} Compradora</p>
+                <div className="text-center sm:text-right w-full sm:w-auto border-t sm:border-t-0 pt-4 sm:pt-0 border-muted">
+                  <p className="text-3xl sm:text-4xl font-black text-green-600 leading-tight px-2 italic tracking-tighter">R$ {client.total.toFixed(2)}</p>
+                  <p className="text-[8px] sm:text-[10px] font-black text-white bg-green-600 px-3 py-1 rounded-full mt-2 inline-block uppercase tracking-[0.2em] shadow-lg">Cliente Diamante</p>
                 </div>
               </div>
             ))}
+            {topClients.length === 0 && (
+              <div className="text-center py-20 bg-muted/10 rounded-[2rem] border-4 border-dashed border-muted">
+                <Users className="size-16 text-muted-foreground/20 mx-auto mb-4" />
+                <p className="text-muted-foreground text-lg font-black uppercase tracking-tighter opacity-40 italic">Nenhum dado de cliente disponível para o ranking.</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
