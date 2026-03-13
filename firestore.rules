@@ -4,41 +4,56 @@ service cloud.firestore {
 
     /**
      * CORE PHILOSOPHY:
-     * This ruleset enforces a strict user-ownership model. Every piece of data 
-     * (Clients, Products, Orders, Categories, Config) is nested under a specific 
-     * user's UID in the document path: /users/{userId}/...
-     *
-     * KEY SECURITY DECISIONS:
-     * 1. Path-Based Authorization: The 'userId' wildcard in the URL is the source of truth. 
-     *    A user can only access data if their authenticated UID matches the 'userId' in the path.
-     * 2. Recursive Access: Once ownership of the root user document is established, 
-     *    access is granted to all nested collections and documents.
+     * Este conjunto de regras impõe um modelo de propriedade estrita do usuário.
+     * Todos os dados são aninhados sob o UID do usuário no caminho: /users/{userId}/...
      */
 
-    // --- Helper Functions ---
+    // --- Funções Auxiliares ---
 
-    /** @description Checks if the user is authenticated. */
+    /** @description Verifica se o usuário está autenticado. */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /** @description Checks if the authenticated user's UID matches the provided userId. */
+    /** @description Verifica se o UID do usuário autenticado coincide com o userId fornecido. */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    // --- Collection Rules ---
+    // --- Regras de Silo de Usuário ---
 
     /**
-     * @description Rules for the User root and all its sub-resources.
-     * Covers: /users/{userId}/clients, /users/{userId}/orders, etc.
+     * @description Garante acesso total a tudo sob o caminho do usuário 
+     * se ele for o proprietário. O padrão {allPaths=**} cobre o documento 
+     * do usuário e todas as subcoleções recursivamente.
      */
     match /users/{userId} {
       allow read, write: if isOwner(userId);
-      
-      match /{allPaths=**} {
-        allow read, write: if isOwner(userId);
-      }
+    }
+
+    match /users/{userId}/{allPaths=**} {
+      allow read, write: if isOwner(userId);
+    }
+    
+    // Regras explícitas para coleções principais para garantir permissão de listagem (list)
+    match /users/{userId}/clients/{clientId} {
+      allow read, write: if isOwner(userId);
+    }
+    
+    match /users/{userId}/orders/{orderId} {
+      allow read, write: if isOwner(userId);
+    }
+    
+    match /users/{userId}/products/{productId} {
+      allow read, write: if isOwner(userId);
+    }
+    
+    match /users/{userId}/categories/{categoryId} {
+      allow read, write: if isOwner(userId);
+    }
+    
+    match /users/{userId}/config/{configDoc} {
+      allow read, write: if isOwner(userId);
     }
   }
 }
