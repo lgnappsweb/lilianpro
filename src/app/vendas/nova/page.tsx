@@ -73,19 +73,8 @@ export default function NovaVendaPage() {
   const { toast } = useToast();
 
   const [selectedClientId, setSelectedClientId] = useState("");
-  const [selectedItems, setSelectedItems] = useState<SaleItem[]>([
-    { 
-      id: `temp-${Date.now()}`, 
-      productId: "", 
-      quantity: 1, 
-      price: 0, 
-      costPrice: 0, 
-      catalogPrice: 0,
-      salePrice: 0,
-      name: "", 
-      priceStrategy: 'sale'
-    }
-  ]);
+  // Começa com a lista de itens vazia conforme solicitado
+  const [selectedItems, setSelectedItems] = useState<SaleItem[]>([]);
   const [paymentMethod, setPaymentMethod] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [notes, setNotes] = useState("");
@@ -165,7 +154,7 @@ export default function NovaVendaPage() {
   const finalTotal = Math.max(0, subtotal - discount + additionalFee);
 
   const isReady = useMemo(() => {
-    return !!selectedClientId && selectedItems.some(item => !!item.productId) && !!paymentMethod;
+    return !!selectedClientId && selectedItems.length > 0 && selectedItems.some(item => !!item.productId) && !!paymentMethod;
   }, [selectedClientId, selectedItems, paymentMethod]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -195,6 +184,7 @@ export default function NovaVendaPage() {
       paymentStatus: paymentMethod === "a prazo" ? "Pendente" : "Pago",
       dueDate: dueDate || null,
       notes,
+      isDeleted: false,
     };
 
     setDocumentNonBlocking(doc(db, "users", user.uid, "orders", orderId), orderData, { merge: true });
@@ -437,6 +427,13 @@ export default function NovaVendaPage() {
                 )}
               </div>
             ))}
+
+            {selectedItems.length === 0 && (
+              <div className="text-center py-10 opacity-40 border-4 border-dashed border-muted rounded-[2rem]">
+                <Package className="size-12 mx-auto mb-4" />
+                <p className="font-black uppercase tracking-widest text-sm">Nenhum produto adicionado</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
