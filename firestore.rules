@@ -3,26 +3,28 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * CORE PHILOSOPHY: User Silo Pattern
-     * Este sistema garante que cada usuário (adminId) tenha acesso total e exclusivo
+     * CORE PHILOSOPHY: User Silo Pattern (v2 Robust)
+     * Este sistema garante que cada usuário tenha acesso total e exclusivo
      * apenas aos seus próprios dados localizados no caminho /users/{userId}/...
+     * 
+     * A estrutura abaixo garante que tanto o documento raiz do usuário
+     * quanto todas as subcoleções (pedidos, clientes, etc) herdem a permissão.
      */
 
-    // Verifica se o usuário está autenticado e se é o dono do diretório de dados
-    function isOwner(userId) {
-      return request.auth != null && request.auth.uid == userId;
-    }
-
-    // Regra recursiva global para o Silo do Usuário
-    // O padrão {document=**} garante que permissões sejam herdadas por todas
-    // as subcoleções (clients, orders, orderItems, products, config, etc.)
-    match /users/{userId}/{document=**} {
-      allow read, write: if isOwner(userId);
+    match /users/{userId} {
+      // Permite acesso ao próprio documento do usuário
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Permite acesso recursivo a QUALQUER subcoleção ou documento aninhado
+      // Isso resolve especificamente erros de 'list' em caminhos como /users/ID/orders
+      match /{allPaths=**} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
     }
     
-    // Suporte adicional para o nó raiz do usuário se necessário
-    match /users/{userId} {
-      allow read, write: if isOwner(userId);
+    // Suporte para consultas que possam iniciar na raiz da coleção (opcional, mas seguro)
+    match /users/{userId}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
   }
 }
