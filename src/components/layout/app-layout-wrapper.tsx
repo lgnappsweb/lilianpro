@@ -1,4 +1,3 @@
-
 "use client";
 
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
@@ -118,7 +117,11 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
   let backHref = "/";
   let backLabel = "Voltar ao início";
 
-  if (pathname.includes('/clientes/')) {
+  // Verificação específica para a página de histórico de um cliente
+  if (pathname.includes('/clientes/') && pathname.includes('/historico')) {
+    backHref = "/historico";
+    backLabel = "Voltar ao histórico";
+  } else if (pathname.includes('/clientes/')) {
     backHref = "/clientes";
     backLabel = "Voltar aos clientes";
   } else if (pathname.includes('/produtos/')) {
@@ -127,6 +130,9 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
   } else if (pathname.includes('/pedidos/') || pathname.includes('/vendas/')) {
     backHref = "/pedidos";
     backLabel = "Voltar aos pedidos";
+  } else if (pathname.includes('/categorias/')) {
+    backHref = "/categorias";
+    backLabel = "Voltar às categorias";
   }
 
   return (
