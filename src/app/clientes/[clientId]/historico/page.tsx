@@ -362,13 +362,6 @@ export default function HistoricoClientePage() {
 
       {/* AÇÕES DE RODAPÉ */}
       <div className="pt-10 flex flex-col gap-6">
-        <Button asChild variant="outline" className="w-full h-20 rounded-[2rem] border-4 border-muted font-black text-xl gap-4 shadow-xl hover:bg-muted/50 transition-all">
-          <Link href={`/clientes/${clientId}`}>
-            <ArrowLeft className="size-6" />
-            VOLTAR AO PERFIL
-          </Link>
-        </Button>
-
         {stats.count > 0 && (
           <Button 
             variant="ghost" 
@@ -379,6 +372,13 @@ export default function HistoricoClientePage() {
             LIMPAR TODO O HISTÓRICO
           </Button>
         )}
+
+        <Button asChild variant="outline" className="w-full h-20 rounded-[2rem] border-4 border-muted font-black text-xl gap-4 shadow-xl hover:bg-muted/50 transition-all">
+          <Link href={`/clientes/${clientId}`}>
+            <ArrowLeft className="size-6" />
+            VOLTAR AO PERFIL
+          </Link>
+        </Button>
       </div>
 
       {/* Alerta de Confirmação para Excluir Pedido Individual */}
