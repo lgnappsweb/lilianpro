@@ -16,6 +16,7 @@ import {
   BarChart3,
   Settings,
   LogOut,
+  History,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -34,6 +35,7 @@ const primaryItems = [
 ];
 
 const moreItems = [
+  { name: "Histórico", icon: History, href: "/historico", color: "text-pink-600" },
   { name: "Categorias", icon: Tag, href: "/categorias", color: "text-orange-500" },
   { name: "Produtos", icon: Package, href: "/produtos", color: "text-primary" },
   { name: "Pedidos", icon: ClipboardList, href: "/pedidos", color: "text-purple-500" },
