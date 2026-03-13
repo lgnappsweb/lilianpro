@@ -23,6 +23,8 @@ import {
   MessageCircle,
   Loader2,
   ClipboardCheck,
+  History,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -88,7 +90,7 @@ export default function DetalhesClientePage() {
         </div>
       </div>
 
-      {/* NOME DA CLIENTE (FLEXÍVEL - REGRAS DE LINHA) */}
+      {/* NOME DA CLIENTE E BOTÃO DE HISTÓRICO */}
       <div className="flex flex-col items-center text-center mb-10 px-4">
         <h2 className={cn(
           "text-4xl md:text-7xl font-black tracking-tighter text-foreground font-headline uppercase leading-tight italic drop-shadow-sm max-w-5xl px-2",
@@ -96,9 +98,18 @@ export default function DetalhesClientePage() {
         )}>
           {cliente.fullName}
         </h2>
-        <Badge variant="secondary" className="mt-4 bg-primary/10 text-primary border-none font-black px-6 py-2 rounded-full text-xs sm:text-sm uppercase tracking-widest">
-          Cliente Ativa
-        </Badge>
+        <div className="flex flex-wrap items-center justify-center gap-4 mt-6">
+          <Badge variant="secondary" className="bg-primary/10 text-primary border-none font-black px-6 py-2 rounded-full text-xs sm:text-sm uppercase tracking-widest">
+            Cliente Ativa
+          </Badge>
+          <Button asChild className="bg-accent hover:bg-accent/90 text-white font-black rounded-full px-8 py-6 h-auto shadow-xl transition-all hover:scale-105 active:scale-95 gap-3 uppercase tracking-widest text-xs sm:text-sm">
+            <Link href={`/clientes/${clientId}/historico`}>
+              <History className="size-5" />
+              Ver Histórico de Compras
+              <Sparkles className="size-4 animate-pulse text-white/50" />
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
