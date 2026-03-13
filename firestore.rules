@@ -9,27 +9,23 @@ service cloud.firestore {
      * Garante que apenas o proprietário autenticado possa acessar seus dados.
      */
 
-    // Verifica se o usuário está logado
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    // Verifica se o UID do usuário corresponde ao adminId do caminho
+    // Verifica se o usuário está logado e é o dono dos dados no caminho
     function isOwner(adminId) {
-      return isSignedIn() && request.auth.uid == adminId;
+      return request.auth != null && request.auth.uid == adminId;
     }
 
-    // Regra Global para a árvore do usuário: abrange o documento do usuário e TODAS as subcoleções
-    match /users/{adminId}/{allPaths=**} {
+    // Regra Recursiva Monumental: Abrange o documento do usuário e TODAS as suas subcoleções
+    // (clientes, produtos, categorias, pedidos, itens de pedidos, configurações, etc.)
+    match /users/{adminId}/{document=**} {
       allow read, write: if isOwner(adminId);
     }
 
-    // Regra específica para o documento raiz do usuário (caso não seja capturado pelo curinga recursivo)
+    // Regra específica para o nó raiz do usuário (caso necessário para metadados diretos)
     match /users/{adminId} {
       allow read, write: if isOwner(adminId);
     }
 
-    // Registro de administradores (Permite leitura pontual para verificação de acesso)
+    // Registro de administradores (Permite leitura individual para verificação de perfil)
     match /admins/{adminId} {
       allow get: if isOwner(adminId);
       allow list, write: if false;
