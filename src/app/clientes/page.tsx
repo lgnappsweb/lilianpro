@@ -17,7 +17,6 @@ import {
   Loader2,
   Users,
   User,
-  History,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -127,12 +126,6 @@ export default function ClientesPage() {
                       <Link href={`/clientes/${cliente.id}`}>
                         <FileText className="mr-1 size-3 sm:size-4" />
                         Detalhes
-                      </Link>
-                    </Button>
-                    <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-accent/5 text-accent border-accent/20 hover:border-accent px-2">
-                      <Link href={`/clientes/${cliente.id}/historico`}>
-                        <History className="mr-1 size-3 sm:size-4" />
-                        Histórico
                       </Link>
                     </Button>
                     <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2">
