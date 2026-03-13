@@ -9,19 +9,18 @@ service cloud.firestore {
      * Garante que apenas o proprietário autenticado possa acessar seus próprios dados.
      */
 
-    // Verifica se o usuário está logado e se o UID coincide com o adminId do caminho
-    function isOwner(adminId) {
-      return request.auth != null && request.auth.uid == adminId;
+    // Verifica se o usuário está logado e se o UID coincide com o proprietário do caminho
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
     }
 
     // Regra Global para o nó do Usuário e TODAS as suas subcoleções
-    // Isso garante que 'get', 'list', 'create', 'update' e 'delete' funcionem 
-    // em caminhos como /users/{uid}, /users/{uid}/orders, /users/{uid}/clients, etc.
-    match /users/{adminId} {
-      allow read, write: if isOwner(adminId);
+    // Estrutura robusta para garantir que 'get' e 'list' funcionem em qualquer nível
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
       
       match /{allPaths=**} {
-        allow read, write: if isOwner(adminId);
+        allow read, write: if isOwner(userId);
       }
     }
 
