@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useMemo } from "react";
@@ -14,17 +13,32 @@ import {
   User,
   Loader2,
   Calendar,
+  Trash2,
 } from "lucide-react";
 import Link from "next/link";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection } from "firebase/firestore";
+import { collection, doc } from "firebase/firestore";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function HistoricoGlobalPage() {
   const { user } = useUser();
   const db = useFirestore();
+  const { toast } = useToast();
   
   const [searchTerm, setSearchTerm] = useState("");
+  const [clientToDelete, setClientToDelete] = useState<any | null>(null);
 
   const clientsQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -39,6 +53,18 @@ export default function HistoricoGlobalPage() {
       c.fullName?.toLowerCase().includes(searchTerm.toLowerCase())
     ).sort((a, b) => a.fullName.localeCompare(b.fullName));
   }, [clients, searchTerm]);
+
+  const handleDeleteConfirm = () => {
+    if (clientToDelete && user && db) {
+      const docRef = doc(db, "users", user.uid, "clients", clientToDelete.id);
+      deleteDocumentNonBlocking(docRef);
+      toast({
+        title: "Cliente removido",
+        description: `${clientToDelete.fullName} e todo o seu histórico foram excluídos do sistema.`,
+      });
+      setClientToDelete(null);
+    }
+  };
 
   return (
     <div className="space-y-12 animate-in fade-in duration-500 w-full">
@@ -71,27 +97,43 @@ export default function HistoricoGlobalPage() {
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:gap-6">
             {filteredClients.map((cliente) => (
-              <Link key={cliente.id} href={`/clientes/${cliente.id}/historico`} className="group">
-                <Card className="bg-background border-4 border-muted rounded-[1.5rem] sm:rounded-[2rem] p-6 shadow-lg group-hover:border-primary/40 group-hover:shadow-2xl transition-all flex items-center justify-between">
-                  <div className="flex items-center gap-6">
-                    <div className="size-14 sm:size-20 rounded-full bg-primary/10 flex items-center justify-center text-primary shadow-inner shrink-0 group-hover:scale-110 transition-transform">
-                      <User className="size-8 sm:size-10" />
-                    </div>
-                    <div className="text-left">
-                      <h3 className="font-black text-xl sm:text-4xl text-primary uppercase tracking-tighter italic leading-none px-1">
-                        {cliente.fullName}
-                      </h3>
-                      <div className="flex items-center gap-2 mt-2 px-1">
-                        <Calendar className="size-3 text-muted-foreground opacity-60" />
-                        <p className="text-[10px] sm:text-xs text-muted-foreground font-black uppercase tracking-widest opacity-60">
-                          Clique para ver a jornada de compras
-                        </p>
+              <div key={cliente.id} className="group relative">
+                <Link href={`/clientes/${cliente.id}/historico`}>
+                  <Card className="bg-background border-4 border-muted rounded-[1.5rem] sm:rounded-[2rem] p-6 shadow-lg group-hover:border-primary/40 group-hover:shadow-2xl transition-all flex items-center justify-between">
+                    <div className="flex items-center gap-6">
+                      <div className="size-14 sm:size-20 rounded-full bg-primary/10 flex items-center justify-center text-primary shadow-inner shrink-0 group-hover:scale-110 transition-transform">
+                        <User className="size-8 sm:size-10" />
+                      </div>
+                      <div className="text-left">
+                        <h3 className="font-black text-xl sm:text-4xl text-primary uppercase tracking-tighter italic leading-none px-1">
+                          {cliente.fullName}
+                        </h3>
+                        <div className="flex items-center gap-2 mt-2 px-1">
+                          <Calendar className="size-3 text-muted-foreground opacity-60" />
+                          <p className="text-[10px] sm:text-xs text-muted-foreground font-black uppercase tracking-widest opacity-60">
+                            Clique para ver a jornada de compras
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <ChevronRight className="size-8 sm:size-12 text-muted-foreground group-hover:text-primary group-hover:translate-x-2 transition-all opacity-20 group-hover:opacity-100" />
-                </Card>
-              </Link>
+                    <div className="flex items-center gap-4">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="size-10 sm:size-12 rounded-xl text-destructive hover:bg-destructive/10 border-2 border-transparent hover:border-destructive/20 transition-all opacity-0 group-hover:opacity-100"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setClientToDelete(cliente);
+                        }}
+                      >
+                        <Trash2 className="size-5 sm:size-6" />
+                      </Button>
+                      <ChevronRight className="size-8 sm:size-12 text-muted-foreground group-hover:text-primary group-hover:translate-x-2 transition-all opacity-20 group-hover:opacity-100" />
+                    </div>
+                  </Card>
+                </Link>
+              </div>
             ))}
           </div>
         )}
@@ -104,6 +146,23 @@ export default function HistoricoGlobalPage() {
           </div>
         )}
       </div>
+
+      <AlertDialog open={!!clientToDelete} onOpenChange={(open) => !open && setClientToDelete(null)}>
+        <AlertDialogContent className="rounded-[2.5rem] p-8 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-3xl sm:text-5xl font-black tracking-tighter text-primary uppercase leading-none text-left px-2">Excluir permanentemente?</AlertDialogTitle>
+            <AlertDialogDescription className="text-xl sm:text-2xl font-bold mt-6 leading-relaxed text-muted-foreground text-left">
+              Os dados da cliente <strong className="text-foreground border-b-4 border-primary px-1">{clientToDelete?.fullName}</strong> e toda a sua jornada de compras serão removidos definitivamente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-4 mt-12 flex-col sm:flex-row">
+            <AlertDialogCancel className="h-16 sm:h-24 px-10 text-xl font-black rounded-2xl sm:rounded-3xl border-4 border-muted hover:bg-muted/50">Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="h-16 sm:h-24 px-10 text-xl font-black bg-destructive text-white hover:bg-destructive/90 rounded-2xl sm:rounded-3xl shadow-xl active:scale-95 transition-all">
+              SIM, EXCLUIR TUDO
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

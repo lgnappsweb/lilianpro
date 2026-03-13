@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from "@/firebase";
 import { doc, collection, query, where } from "firebase/firestore";
@@ -24,11 +24,24 @@ import {
   Search,
   ChevronRight,
   MessageCircle,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 /**
  * Componente para renderizar os itens de um pedido específico no histórico
@@ -73,6 +86,9 @@ export default function HistoricoClientePage() {
   const { clientId } = useParams();
   const { user } = useUser();
   const db = useFirestore();
+  const { toast } = useToast();
+
+  const [orderToDelete, setOrderToDelete] = useState<any | null>(null);
 
   // Busca as configurações para o nome do app
   const settingsRef = useMemoFirebase(() => {
@@ -89,7 +105,7 @@ export default function HistoricoClientePage() {
   }, [db, user, clientId]);
   const { data: cliente, isLoading: clientLoading } = useDoc(clientRef);
 
-  // Busca todos os pedidos desta cliente
+  // Busca todos os pedidos desta cliente (sem filtro de isDeleted para mostrar histórico completo)
   const ordersQuery = useMemoFirebase(() => {
     if (!db || !user || !clientId) return null;
     return query(
@@ -110,6 +126,18 @@ export default function HistoricoClientePage() {
     const total = orders.reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0);
     return { total, count: orders.length };
   }, [orders]);
+
+  const handleDeleteConfirm = () => {
+    if (orderToDelete && user && db) {
+      const docRef = doc(db, "users", user.uid, "orders", orderToDelete.id);
+      deleteDocumentNonBlocking(docRef);
+      toast({
+        title: "Venda removida!",
+        description: "O registro foi excluído definitivamente da jornada desta cliente.",
+      });
+      setOrderToDelete(null);
+    }
+  };
 
   const getStatusInfo = (status: string) => {
     switch (status) {
@@ -263,10 +291,10 @@ export default function HistoricoClientePage() {
                   {/* Detalhes dos Produtos dentro do Pedido */}
                   <OrderItemsList orderId={order.id} />
 
-                  <div className="grid grid-cols-2 gap-3 mt-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
                     <Button asChild variant="outline" className="h-12 rounded-xl font-black uppercase tracking-widest text-[10px] border-2 hover:bg-primary/5 transition-all">
                       <Link href={`/pedidos/${order.id}`}>
-                        Ver Detalhes <ChevronRight className="ml-1 size-3" />
+                        Detalhes <ChevronRight className="ml-1 size-3" />
                       </Link>
                     </Button>
                     <Button 
@@ -275,6 +303,14 @@ export default function HistoricoClientePage() {
                     >
                       <MessageCircle className="size-4" />
                       Compartilhar
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      className="h-12 rounded-xl font-black uppercase tracking-widest text-[10px] border-2 text-destructive border-destructive/20 hover:bg-destructive/5 hover:border-destructive transition-all"
+                      onClick={() => setOrderToDelete(order)}
+                    >
+                      <Trash2 className="size-4 mr-1" />
+                      Excluir
                     </Button>
                   </div>
                 </CardContent>
@@ -300,6 +336,24 @@ export default function HistoricoClientePage() {
           </Link>
         </Button>
       </div>
+
+      {/* Alerta de Confirmação para Excluir Pedido */}
+      <AlertDialog open={!!orderToDelete} onOpenChange={(open) => !open && setOrderToDelete(null)}>
+        <AlertDialogContent className="rounded-[2.5rem] p-8 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-3xl sm:text-5xl font-black tracking-tighter text-primary uppercase leading-none text-left px-2">Excluir do Histórico?</AlertDialogTitle>
+            <AlertDialogDescription className="text-xl sm:text-2xl font-bold mt-6 leading-relaxed text-muted-foreground text-left">
+              Esta venda será <strong className="text-primary uppercase font-black">apagada permanentemente</strong> da jornada desta cliente. Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-4 mt-12 flex-col sm:flex-row">
+            <AlertDialogCancel className="h-16 sm:h-24 px-10 text-xl font-black rounded-2xl sm:rounded-3xl border-4 border-muted hover:bg-muted/50">Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="h-16 sm:h-24 px-10 text-xl font-black bg-destructive text-white hover:bg-destructive/90 rounded-2xl sm:rounded-3xl shadow-xl active:scale-95 transition-all">
+              SIM, EXCLUIR AGORA
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
