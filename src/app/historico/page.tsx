@@ -13,33 +13,16 @@ import {
   User,
   Loader2,
   Calendar,
-  Trash2,
 } from "lucide-react";
 import Link from "next/link";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection, doc, query, where, getDocs } from "firebase/firestore";
-import { cn } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
-import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { collection } from "firebase/firestore";
 
 export default function HistoricoGlobalPage() {
   const { user } = useUser();
   const db = useFirestore();
-  const { toast } = useToast();
   
   const [searchTerm, setSearchTerm] = useState("");
-  const [clientToClearHistory, setClientToClearHistory] = useState<any | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   const clientsQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -54,38 +37,6 @@ export default function HistoricoGlobalPage() {
       c.fullName?.toLowerCase().includes(searchTerm.toLowerCase())
     ).sort((a, b) => a.fullName.localeCompare(b.fullName));
   }, [clients, searchTerm]);
-
-  const handleClearHistoryConfirm = async () => {
-    if (clientToClearHistory && user && db) {
-      setIsDeleting(true);
-      try {
-        // Busca todos os pedidos vinculados a este cliente
-        const ordersRef = collection(db, "users", user.uid, "orders");
-        const q = query(ordersRef, where("clientId", "==", clientToClearHistory.id));
-        const querySnapshot = await getDocs(q);
-        
-        // Remove cada pedido individualmente (isso aciona a limpeza no histórico individual também)
-        querySnapshot.forEach((orderDoc) => {
-          deleteDocumentNonBlocking(doc(db, "users", user.uid, "orders", orderDoc.id));
-        });
-
-        toast({
-          title: "Histórico limpo!",
-          description: `Todas as compras de ${clientToClearHistory.fullName} foram removidas. O cadastro do cliente permanece salvo.`,
-        });
-      } catch (error) {
-        console.error("Erro ao limpar histórico:", error);
-        toast({
-          variant: "destructive",
-          title: "Erro ao limpar",
-          description: "Não foi possível remover o histórico de compras.",
-        });
-      } finally {
-        setIsDeleting(false);
-        setClientToClearHistory(null);
-      }
-    }
-  };
 
   return (
     <div className="space-y-12 animate-in fade-in duration-500 w-full">
@@ -142,19 +93,6 @@ export default function HistoricoGlobalPage() {
                     </div>
                   </Card>
                 </Link>
-                {/* Botão de Excluir Histórico sempre visível no canto inferior direito */}
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="absolute bottom-3 right-3 size-10 sm:size-12 rounded-xl text-destructive hover:bg-destructive/10 border-2 border-muted/20 hover:border-destructive/20 transition-all z-10"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setClientToClearHistory(cliente);
-                  }}
-                >
-                  <Trash2 className="size-5 sm:size-6" />
-                </Button>
               </div>
             ))}
           </div>
@@ -168,28 +106,6 @@ export default function HistoricoGlobalPage() {
           </div>
         )}
       </div>
-
-      <AlertDialog open={!!clientToClearHistory} onOpenChange={(open) => !open && setClientToClearHistory(null)}>
-        <AlertDialogContent className="rounded-[2.5rem] p-8 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-3xl sm:text-5xl font-black tracking-tighter text-primary uppercase leading-none text-left px-2">Limpar Histórico?</AlertDialogTitle>
-            <AlertDialogDescription className="text-xl sm:text-2xl font-bold mt-6 leading-relaxed text-muted-foreground text-left">
-              Todas as compras registradas para <strong className="text-foreground border-b-4 border-primary px-1">{clientToClearHistory?.fullName}</strong> serão removidas. <br /><br />
-              <span className="text-primary uppercase font-black">O cadastro da cliente continuará salvo no sistema.</span>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="gap-4 mt-12 flex-col sm:flex-row">
-            <AlertDialogCancel className="h-16 sm:h-24 px-10 text-xl font-black rounded-2xl sm:rounded-3xl border-4 border-muted hover:bg-muted/50">Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleClearHistoryConfirm} 
-              disabled={isDeleting}
-              className="h-16 sm:h-24 px-10 text-xl font-black bg-destructive text-white hover:bg-destructive/90 rounded-2xl sm:rounded-3xl shadow-xl active:scale-95 transition-all"
-            >
-              {isDeleting ? "LIMPANDO..." : "SIM, LIMPAR COMPRAS"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

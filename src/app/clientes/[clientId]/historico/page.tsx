@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from "@/firebase";
-import { doc, collection, query, where } from "firebase/firestore";
+import { doc, collection, query, where, getDocs } from "firebase/firestore";
 import {
   Card,
   CardContent,
@@ -87,8 +87,11 @@ export default function HistoricoClientePage() {
   const { user } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
+  const router = useRouter();
 
   const [orderToDelete, setOrderToDelete] = useState<any | null>(null);
+  const [showClearAllAlert, setShowClearAllAlert] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
 
   // Busca as configurações para o nome do app
   const settingsRef = useMemoFirebase(() => {
@@ -105,7 +108,7 @@ export default function HistoricoClientePage() {
   }, [db, user, clientId]);
   const { data: cliente, isLoading: clientLoading } = useDoc(clientRef);
 
-  // Busca todos os pedidos desta cliente (sem filtro de isDeleted para mostrar histórico completo)
+  // Busca todos os pedidos desta cliente
   const ordersQuery = useMemoFirebase(() => {
     if (!db || !user || !clientId) return null;
     return query(
@@ -139,6 +142,36 @@ export default function HistoricoClientePage() {
     }
   };
 
+  const handleClearAllConfirm = async () => {
+    if (user && db && clientId) {
+      setIsClearing(true);
+      try {
+        const ordersRef = collection(db, "users", user.uid, "orders");
+        const q = query(ordersRef, where("clientId", "==", clientId));
+        const querySnapshot = await getDocs(q);
+        
+        querySnapshot.forEach((orderDoc) => {
+          deleteDocumentNonBlocking(doc(db, "users", user.uid, "orders", orderDoc.id));
+        });
+
+        toast({
+          title: "Histórico limpo!",
+          description: `Todas as compras de ${cliente?.fullName} foram removidas.`,
+        });
+        setShowClearAllAlert(false);
+      } catch (error) {
+        console.error("Erro ao limpar histórico:", error);
+        toast({
+          variant: "destructive",
+          title: "Erro ao limpar",
+          description: "Não foi possível remover o histórico completo.",
+        });
+      } finally {
+        setIsClearing(false);
+      }
+    }
+  };
+
   const getStatusInfo = (status: string) => {
     switch (status) {
       case "Pago": return { icon: CheckCircle2, color: "text-green-600", bg: "bg-green-100", label: "PAGO" };
@@ -166,7 +199,7 @@ export default function HistoricoClientePage() {
     message += `📦 *Qtd. Pedidos:* ${stats.count}\n\n`;
     message += `📅 *RESUMO DA JORNADA:*\n`;
 
-    sortedOrders.forEach((order, index) => {
+    sortedOrders.forEach((order) => {
       const statusLabel = order.paymentStatus === "Pago" ? "✅ PAGO" : order.paymentStatus === "Atrasado" ? "❌ ATRASADO" : "⏳ PENDENTE";
       message += `--------------------------\n`;
       message += `🛒 Compra em ${new Date(order.orderDate).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}\n`;
@@ -328,16 +361,27 @@ export default function HistoricoClientePage() {
       </div>
 
       {/* AÇÕES DE RODAPÉ */}
-      <div className="pt-10">
+      <div className="pt-10 flex flex-col gap-6">
         <Button asChild variant="outline" className="w-full h-20 rounded-[2rem] border-4 border-muted font-black text-xl gap-4 shadow-xl hover:bg-muted/50 transition-all">
           <Link href={`/clientes/${clientId}`}>
             <ArrowLeft className="size-6" />
             VOLTAR AO PERFIL
           </Link>
         </Button>
+
+        {stats.count > 0 && (
+          <Button 
+            variant="ghost" 
+            className="w-full h-20 rounded-[2rem] border-4 border-destructive/20 text-destructive font-black text-xl gap-4 shadow-sm hover:bg-destructive/10 transition-all"
+            onClick={() => setShowClearAllAlert(true)}
+          >
+            <Trash2 className="size-6" />
+            LIMPAR TODO O HISTÓRICO
+          </Button>
+        )}
       </div>
 
-      {/* Alerta de Confirmação para Excluir Pedido */}
+      {/* Alerta de Confirmação para Excluir Pedido Individual */}
       <AlertDialog open={!!orderToDelete} onOpenChange={(open) => !open && setOrderToDelete(null)}>
         <AlertDialogContent className="rounded-[2.5rem] p-8 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto">
           <AlertDialogHeader>
@@ -350,6 +394,29 @@ export default function HistoricoClientePage() {
             <AlertDialogCancel className="h-16 sm:h-24 px-10 text-xl font-black rounded-2xl sm:rounded-3xl border-4 border-muted hover:bg-muted/50">Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteConfirm} className="h-16 sm:h-24 px-10 text-xl font-black bg-destructive text-white hover:bg-destructive/90 rounded-2xl sm:rounded-3xl shadow-xl active:scale-95 transition-all">
               SIM, EXCLUIR AGORA
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Alerta de Confirmação para Limpar Histórico Total */}
+      <AlertDialog open={showClearAllAlert} onOpenChange={setShowClearAllAlert}>
+        <AlertDialogContent className="rounded-[2.5rem] p-8 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-3xl sm:text-5xl font-black tracking-tighter text-primary uppercase leading-none text-left px-2">Limpar Histórico Total?</AlertDialogTitle>
+            <AlertDialogDescription className="text-xl sm:text-2xl font-bold mt-6 leading-relaxed text-muted-foreground text-left">
+              <span className="text-destructive font-black">ATENÇÃO:</span> Todas as compras de <strong className="text-foreground border-b-4 border-primary px-1">{cliente?.fullName}</strong> serão removidas definitivamente. <br /><br />
+              O cadastro da cliente continuará salvo, mas sua jornada de compras ficará vazia.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-4 mt-12 flex-col sm:flex-row">
+            <AlertDialogCancel className="h-16 sm:h-24 px-10 text-xl font-black rounded-2xl sm:rounded-3xl border-4 border-muted hover:bg-muted/50">Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleClearAllConfirm} 
+              disabled={isClearing}
+              className="h-16 sm:h-24 px-10 text-xl font-black bg-destructive text-white hover:bg-destructive/90 rounded-2xl sm:rounded-3xl shadow-xl active:scale-95 transition-all"
+            >
+              {isClearing ? "LIMPANDO..." : "SIM, LIMPAR TUDO"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
