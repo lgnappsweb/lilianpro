@@ -4,7 +4,7 @@
 import React, { useMemo } from "react";
 import { useParams } from "next/navigation";
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from "@/firebase";
-import { doc, collection, query, where, orderBy } from "firebase/firestore";
+import { doc, collection, query, where } from "firebase/firestore";
 import {
   Card,
   CardContent,
@@ -81,16 +81,21 @@ export default function HistoricoClientePage() {
   }, [db, user, clientId]);
   const { data: cliente, isLoading: clientLoading } = useDoc(clientRef);
 
-  // Busca todos os pedidos desta cliente
+  // Busca todos os pedidos desta cliente (sem orderBy para evitar erro de índice composto)
   const ordersQuery = useMemoFirebase(() => {
     if (!db || !user || !clientId) return null;
     return query(
       collection(db, "users", user.uid, "orders"),
-      where("clientId", "==", clientId),
-      orderBy("orderDate", "desc")
+      where("clientId", "==", clientId)
     );
   }, [db, user, clientId]);
   const { data: orders, isLoading: ordersLoading } = useCollection(ordersQuery);
+
+  // Ordenação e Estatísticas em Memória
+  const sortedOrders = useMemo(() => {
+    if (!orders) return [];
+    return [...orders].sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
+  }, [orders]);
 
   const stats = useMemo(() => {
     if (!orders) return { total: 0, count: 0 };
@@ -163,7 +168,7 @@ export default function HistoricoClientePage() {
         </div>
 
         <div className="grid gap-6">
-          {orders?.map((order) => {
+          {sortedOrders.map((order) => {
             const status = getStatusInfo(order.paymentStatus);
             return (
               <Card key={order.id} className="border-4 border-muted rounded-[2rem] shadow-xl hover:border-primary/20 transition-all overflow-hidden group">
@@ -204,7 +209,7 @@ export default function HistoricoClientePage() {
             );
           })}
 
-          {(!orders || orders.length === 0) && (
+          {sortedOrders.length === 0 && (
             <div className="text-center py-24 bg-muted/10 rounded-[3rem] border-4 border-dashed border-muted">
               <Search className="size-16 text-muted-foreground/20 mx-auto mb-4" />
               <p className="text-muted-foreground text-xl font-black uppercase tracking-tighter opacity-40 italic">Nenhuma compra registrada para esta cliente.</p>
