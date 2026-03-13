@@ -3,10 +3,10 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * GLAMGESTÃO / LILIANPRO - REGRAS DE SEGURANÇA ELITE
+     * LILIANPRO - REGRAS DE SEGURANÇA ELITE
      * 
      * Modelo: Propriedade Total do Usuário (Single-Tenant Path)
-     * Descrição: Garante que apenas o proprietário autenticado possa acessar seus dados.
+     * Garante que apenas o proprietário autenticado possa acessar seus dados.
      */
 
     // Verifica se o usuário está logado
@@ -19,16 +19,17 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == adminId;
     }
 
-    // Regra Recursiva Robusta: Cobre a raiz do usuário e TODAS as subcoleções (clientes, produtos, pedidos, etc.)
-    match /users/{adminId} {
+    // Regra Global para a árvore do usuário: abrange o documento do usuário e TODAS as subcoleções
+    match /users/{adminId}/{allPaths=**} {
       allow read, write: if isOwner(adminId);
-      
-      match /{allPaths=**} {
-        allow read, write: if isOwner(adminId);
-      }
     }
 
-    // Registro de administradores (Somente leitura pontual permitida para o próprio usuário)
+    // Regra específica para o documento raiz do usuário (caso não seja capturado pelo curinga recursivo)
+    match /users/{adminId} {
+      allow read, write: if isOwner(adminId);
+    }
+
+    // Registro de administradores (Permite leitura pontual para verificação de acesso)
     match /admins/{adminId} {
       allow get: if isOwner(adminId);
       allow list, write: if false;
