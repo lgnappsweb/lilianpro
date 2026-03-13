@@ -1,6 +1,7 @@
+
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -18,11 +19,16 @@ import {
   FileDown,
   Share2,
   FileText,
+  TrendingUp,
+  Users,
+  Package,
+  Trophy,
+  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase";
-import { collection, doc } from "firebase/firestore";
+import { collection, doc, getDocs } from "firebase/firestore";
 import { format, startOfMonth, endOfMonth, isWithinInterval, setDay, setMonth, setYear, getDate, getMonth, getYear } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -74,12 +80,21 @@ export default function FinanceiroPage() {
     to: endOfMonth(new Date()),
   });
 
+  const [topProductsRaw, setTopProductsRaw] = useState<any[]>([]);
+  const [isRankingsLoading, setIsRankingsLoading] = useState(false);
+
   const settingsRef = useMemoFirebase(() => {
     if (!db || !user) return null;
     return doc(db, "users", user.uid, "config", "settings");
   }, [db, user]);
   const { data: settings } = useDoc(settingsRef);
   const appName = settings?.appName || "LilianPro";
+
+  const productsQuery = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return collection(db, "users", user.uid, "products");
+  }, [db, user]);
+  const { data: allProducts } = useCollection(productsQuery);
 
   const ordersQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -88,7 +103,6 @@ export default function FinanceiroPage() {
 
   const { data: ordersData, isLoading } = useCollection(ordersQuery);
 
-  // Filtra apenas pedidos ativos (não excluídos logicamente)
   const orders = useMemo(() => {
     if (!ordersData) return [];
     return ordersData.filter(o => !o.isDeleted);
@@ -106,6 +120,72 @@ export default function FinanceiroPage() {
       });
     });
   }, [orders, date]);
+
+  // Cálculo dos Top Clientes
+  const topClients = useMemo(() => {
+    const clientMap: Record<string, { name: string, total: number, count: number }> = {};
+    filteredOrders.forEach(o => {
+      if (!clientMap[o.clientId]) {
+        clientMap[o.clientId] = { name: o.clientName, total: 0, count: 0 };
+      }
+      clientMap[o.clientId].total += (Number(o.finalAmount) || 0);
+      clientMap[o.clientId].count += 1;
+    });
+    return Object.values(clientMap).sort((a, b) => b.total - a.total).slice(0, 20);
+  }, [filteredOrders]);
+
+  // Busca de itens para o Ranking de Produtos
+  useEffect(() => {
+    if (!user || !db || filteredOrders.length === 0) {
+      setTopProductsRaw([]);
+      return;
+    }
+
+    const fetchItemsForRankings = async () => {
+      setIsRankingsLoading(true);
+      const productSales: Record<string, { name: string, quantity: number, total: number, productId: string }> = {};
+      
+      try {
+        // Buscamos itens dos pedidos filtrados
+        const itemPromises = filteredOrders.map(order => 
+          getDocs(collection(db, "users", user.uid, "orders", order.id, "orderItems"))
+        );
+        
+        const snapshots = await Promise.all(itemPromises);
+        
+        snapshots.forEach(snap => {
+          snap.forEach(doc => {
+            const item = doc.data();
+            const pid = item.productId;
+            if (!productSales[pid]) {
+              productSales[pid] = { name: item.productName, quantity: 0, total: 0, productId: pid };
+            }
+            productSales[pid].quantity += (Number(item.quantity) || 0);
+            productSales[pid].total += (Number(item.subtotal) || 0);
+          });
+        });
+
+        const sorted = Object.values(productSales)
+          .sort((a, b) => b.quantity - a.quantity)
+          .slice(0, 20);
+        
+        setTopProductsRaw(sorted);
+      } catch (e) {
+        console.error("Erro ao carregar rankings de produtos:", e);
+      } finally {
+        setIsRankingsLoading(false);
+      }
+    };
+
+    fetchItemsForRankings();
+  }, [filteredOrders, user, db]);
+
+  const topProducts = useMemo(() => {
+    return topProductsRaw.map(tp => {
+      const p = allProducts?.find(prod => prod.id === tp.productId);
+      return { ...tp, brand: p?.brand || "OUTRA" };
+    });
+  }, [topProductsRaw, allProducts]);
 
   const financialStats = useMemo(() => {
     if (!filteredOrders) return { recebido: 0, pendente: 0, atrasado: 0 };
@@ -183,7 +263,6 @@ export default function FinanceiroPage() {
     const fromStr = format(date.from, "dd/MM/yyyy");
     const toStr = format(date.to, "dd/MM/yyyy");
 
-    // Estilo Elite
     doc.setFontSize(22);
     doc.setTextColor(194, 24, 91);
     doc.text(`${appName} - Relatório Financeiro`, 14, 20);
@@ -209,6 +288,13 @@ export default function FinanceiroPage() {
     doc.save(`Relatorio_Financeiro_${fromStr.replace(/\//g, '-')}.pdf`);
   };
 
+  const getBrandBadgeColor = (brand: string) => {
+    if (brand === "VERDE (N)") return "bg-green-600 text-white";
+    if (brand === "ROSA (A)") return "bg-primary text-white";
+    if (brand === "MARROM (C&E)") return "bg-amber-900 text-white";
+    return "bg-muted text-muted-foreground";
+  };
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-4 text-muted-foreground">
@@ -219,7 +305,7 @@ export default function FinanceiroPage() {
   }
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-500 w-full overflow-x-hidden">
+    <div className="space-y-10 animate-in fade-in duration-500 w-full overflow-x-hidden pb-20">
       <div className="flex flex-col items-center text-center gap-6 px-2 mb-10">
         <div className="w-full">
           <div className="flex flex-col items-center justify-center gap-6">
@@ -325,6 +411,93 @@ export default function FinanceiroPage() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* RANKINGS ELITE - NOVAS SEÇÕES */}
+      <div className="grid gap-8 md:grid-cols-2">
+        {/* RANKING DE PRODUTOS MAIS VENDIDOS */}
+        <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-background/50 backdrop-blur-sm border-2 border-primary/5">
+          <CardHeader className="bg-primary/10 pb-8 p-8 border-b-2 border-primary/10">
+            <CardTitle className="text-2xl font-black px-2 uppercase tracking-tight italic flex items-center gap-3 text-primary">
+              <Package className="text-primary" /> TOP 20 PRODUTOS
+            </CardTitle>
+            <CardDescription className="font-bold opacity-70 px-2 uppercase text-[10px] tracking-widest">Os campeões de vendas do período</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4 p-4 sm:p-8">
+            {isRankingsLoading ? (
+              <div className="flex flex-col items-center justify-center py-20 gap-4 opacity-40">
+                <Loader2 className="size-10 animate-spin text-primary" />
+                <p className="font-black uppercase tracking-tighter">Analisando faturamento...</p>
+              </div>
+            ) : topProducts.length > 0 ? (
+              topProducts.map((p, i) => (
+                <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-6 rounded-[1.5rem] border-4 border-muted bg-background hover:border-primary/20 transition-all group gap-4 relative overflow-hidden">
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <div className="size-8 sm:size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-black text-lg shadow-inner shrink-0 group-hover:scale-110 transition-transform">
+                      {i + 1}º
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-black text-lg sm:text-xl px-1 uppercase italic text-primary truncate leading-tight">{p.name}</p>
+                      <div className="flex flex-wrap items-center gap-2 mt-1">
+                        <Badge className={cn("text-[8px] font-black px-2 py-0.5 rounded-md", getBrandBadgeColor(p.brand))}>
+                          {p.brand}
+                        </Badge>
+                        <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">
+                          {p.quantity} unid. vendidas
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-xl sm:text-2xl font-black text-green-600 px-1 italic">R$ {p.total.toFixed(2)}</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-20 bg-muted/10 rounded-[2rem] border-4 border-dashed border-muted">
+                <Package className="size-12 text-muted-foreground/20 mx-auto mb-4" />
+                <p className="text-muted-foreground text-sm font-black uppercase tracking-tighter opacity-40 italic">Nenhuma venda detalhada no período.</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* RANKING DE MELHORES CLIENTES */}
+        <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-background/50 backdrop-blur-sm border-2 border-accent/5">
+          <CardHeader className="bg-accent/10 pb-8 p-8 border-b-2 border-accent/10">
+            <CardTitle className="text-2xl font-black px-2 uppercase tracking-tight italic flex items-center gap-3 text-accent">
+              <Users className="text-accent" /> TOP 20 CLIENTES
+            </CardTitle>
+            <CardDescription className="font-bold opacity-70 px-2 uppercase text-[10px] tracking-widest">Suas clientes mais fiéis no período</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4 p-4 sm:p-8">
+            {topClients.length > 0 ? (
+              topClients.map((c, i) => (
+                <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-6 rounded-[1.5rem] border-4 border-muted bg-background hover:border-accent/20 transition-all group gap-4">
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <div className="size-8 sm:size-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent font-black text-lg shadow-inner shrink-0 group-hover:scale-110 transition-transform">
+                      {i + 1}º
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-black text-lg sm:text-xl px-1 uppercase italic text-accent truncate leading-tight">{c.name}</p>
+                      <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mt-1 px-1">
+                        Compradora Diamante • {c.count} pedidos
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-xl sm:text-2xl font-black text-green-600 px-1 italic">R$ {c.total.toFixed(2)}</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-20 bg-muted/10 rounded-[2rem] border-4 border-dashed border-muted">
+                <Users className="size-12 text-muted-foreground/20 mx-auto mb-4" />
+                <p className="text-muted-foreground text-sm font-black uppercase tracking-tighter opacity-40 italic">Sem histórico de clientes no período.</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid gap-8 md:grid-cols-2">
