@@ -78,6 +78,11 @@ export default function ConfiguracoesPage() {
     setIsLoading(true);
     try {
       setDocumentNonBlocking(settingsRef, formData, { merge: true });
+      
+      // Atualização imediata do cache local para evitar lag visual
+      localStorage.setItem('glam_app_name', formData.appName);
+      document.title = `${formData.appName} - Controle de Vendas`;
+      
       toast({
         title: "Ajustes salvos!",
         description: "As alterações foram aplicadas em todo o sistema.",

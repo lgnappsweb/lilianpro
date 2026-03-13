@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /configuracoes
+
+Sitemap: https://lilianpro.web.app/sitemap.xml

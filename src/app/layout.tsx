@@ -7,6 +7,7 @@ import { FirebaseClientProvider } from '@/firebase/client-provider';
 export const metadata: Metadata = {
   title: 'LilianPro - Controle de Vendas',
   description: 'Aplicativo profissional para revendedoras Avon e Natura',
+  applicationName: 'LilianPro',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
