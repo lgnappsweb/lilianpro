@@ -3,56 +3,25 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * CORE PHILOSOPHY:
-     * Este conjunto de regras impõe um modelo de propriedade estrita do usuário.
-     * Todos os dados são aninhados sob o UID do usuário no caminho: /users/{userId}/...
+     * CORE PHILOSOPHY: User Silo Pattern
+     * Este sistema garante que cada usuário (adminId) tenha acesso total e exclusivo
+     * apenas aos seus próprios dados localizados no caminho /users/{userId}/...
      */
 
-    // --- Funções Auxiliares ---
-
-    /** @description Verifica se o usuário está autenticado. */
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    /** @description Verifica se o UID do usuário autenticado coincide com o userId fornecido. */
+    // Verifica se o usuário está autenticado e se é o dono do diretório de dados
     function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
+      return request.auth != null && request.auth.uid == userId;
     }
 
-    // --- Regras de Silo de Usuário ---
-
-    /**
-     * @description Garante acesso total a tudo sob o caminho do usuário 
-     * se ele for o proprietário. O padrão {allPaths=**} cobre o documento 
-     * do usuário e todas as subcoleções recursivamente.
-     */
+    // Regra recursiva global para o Silo do Usuário
+    // O padrão {document=**} garante que permissões sejam herdadas por todas
+    // as subcoleções (clients, orders, orderItems, products, config, etc.)
+    match /users/{userId}/{document=**} {
+      allow read, write: if isOwner(userId);
+    }
+    
+    // Suporte adicional para o nó raiz do usuário se necessário
     match /users/{userId} {
-      allow read, write: if isOwner(userId);
-    }
-
-    match /users/{userId}/{allPaths=**} {
-      allow read, write: if isOwner(userId);
-    }
-    
-    // Regras explícitas para coleções principais para garantir permissão de listagem (list)
-    match /users/{userId}/clients/{clientId} {
-      allow read, write: if isOwner(userId);
-    }
-    
-    match /users/{userId}/orders/{orderId} {
-      allow read, write: if isOwner(userId);
-    }
-    
-    match /users/{userId}/products/{productId} {
-      allow read, write: if isOwner(userId);
-    }
-    
-    match /users/{userId}/categories/{categoryId} {
-      allow read, write: if isOwner(userId);
-    }
-    
-    match /users/{userId}/config/{configDoc} {
       allow read, write: if isOwner(userId);
     }
   }
