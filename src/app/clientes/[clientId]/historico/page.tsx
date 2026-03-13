@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useMemo } from "react";
@@ -210,7 +209,7 @@ export default function HistoricoClientePage() {
           className="w-full h-16 rounded-2xl bg-green-600 hover:bg-green-700 font-black text-lg gap-3 shadow-xl uppercase tracking-widest transition-transform active:scale-95"
         >
           <MessageCircle className="size-6" />
-          Compartilhar Histórico no WhatsApp
+          COMPARTILHAR HISTÓRICO
         </Button>
       )}
 
