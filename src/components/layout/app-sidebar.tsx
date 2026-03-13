@@ -1,8 +1,7 @@
-
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
+import Link from "next/navigation";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -39,10 +38,10 @@ import { Button } from "@/components/ui/button";
 const navItems = [
   { name: "Painel", icon: LayoutDashboard, href: "/", color: "text-blue-500" },
   { name: "Clientes", icon: Users, href: "/clientes", color: "text-accent" },
-  { name: "Histórico", icon: History, href: "/historico", color: "text-pink-600" },
   { name: "Categorias", icon: Tag, href: "/categorias", color: "text-orange-500" },
   { name: "Produtos", icon: Package, href: "/produtos", color: "text-primary" },
   { name: "Pedidos", icon: ClipboardList, href: "/pedidos", color: "text-purple-500" },
+  { name: "Histórico", icon: History, href: "/historico", color: "text-pink-600" },
   { name: "Financeiro", icon: Wallet, href: "/financeiro", color: "text-green-600" },
   { name: "Relatórios", icon: BarChart3, href: "/relatorios", color: "text-pink-500" },
   { name: "Ajustes", icon: Settings, href: "/configuracoes", color: "text-slate-500" },
