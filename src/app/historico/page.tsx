@@ -138,22 +138,23 @@ export default function HistoricoGlobalPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="size-10 sm:size-12 rounded-xl text-destructive hover:bg-destructive/10 border-2 border-transparent hover:border-destructive/20 transition-all opacity-0 group-hover:opacity-100"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setClientToClearHistory(cliente);
-                        }}
-                      >
-                        <Trash2 className="size-5 sm:size-6" />
-                      </Button>
                       <ChevronRight className="size-8 sm:size-12 text-muted-foreground group-hover:text-primary group-hover:translate-x-2 transition-all opacity-20 group-hover:opacity-100" />
                     </div>
                   </Card>
                 </Link>
+                {/* Botão de Excluir Histórico sempre visível no canto inferior direito */}
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="absolute bottom-3 right-3 size-10 sm:size-12 rounded-xl text-destructive hover:bg-destructive/10 border-2 border-muted/20 hover:border-destructive/20 transition-all z-10"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setClientToClearHistory(cliente);
+                  }}
+                >
+                  <Trash2 className="size-5 sm:size-6" />
+                </Button>
               </div>
             ))}
           </div>
