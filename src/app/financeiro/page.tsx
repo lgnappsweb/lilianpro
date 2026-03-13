@@ -86,7 +86,13 @@ export default function FinanceiroPage() {
     return collection(db, "users", user.uid, "orders");
   }, [db, user]);
 
-  const { data: orders, isLoading } = useCollection(ordersQuery);
+  const { data: ordersData, isLoading } = useCollection(ordersQuery);
+
+  // Filtra apenas pedidos ativos (não excluídos logicamente)
+  const orders = useMemo(() => {
+    if (!ordersData) return [];
+    return ordersData.filter(o => !o.isDeleted);
+  }, [ordersData]);
 
   const filteredOrders = useMemo(() => {
     if (!orders) return [];
@@ -114,7 +120,7 @@ export default function FinanceiroPage() {
     const { recebido, pendente, atrasado } = financialStats;
     return [
       { title: "Entradas Totais", value: `R$ ${recebido.toFixed(2)}`, icon: ArrowDownCircle, color: "text-green-600", bg: "bg-green-100", stripe: "bg-green-600" },
-      { title: "Pendentes", value: `R$ ${pendente.toFixed(2)}`, icon: Clock, color: "text-orange-600", bg: "bg-orange-100", stripe: "bg-orange-500" },
+      { title: "Pendentes", value: `R$ ${pendente.toFixed(2)}`, icon: Clock, color: "text-orange-600", bg: "bg-orange-100", stripe: "bg-orange-50" },
       { title: "Atrasados", value: `R$ ${atrasado.toFixed(2)}`, icon: AlertCircle, color: "text-red-600", bg: "bg-red-100", stripe: "bg-red-600" },
     ];
   }, [financialStats]);

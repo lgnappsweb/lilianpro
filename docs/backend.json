@@ -52,7 +52,8 @@
         "finalAmount": { "type": "number" },
         "dueDate": { "type": "string", "format": "date-time" },
         "notes": { "type": "string" },
-        "adminId": { "type": "string" }
+        "adminId": { "type": "string" },
+        "isDeleted": { "type": "boolean", "description": "Indica se o pedido foi removido da lista ativa de gerenciamento." }
       },
       "required": ["id", "clientId", "orderDate", "paymentMethod", "paymentStatus", "finalAmount", "adminId"]
     },

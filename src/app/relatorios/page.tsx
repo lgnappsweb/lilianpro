@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
@@ -46,19 +45,15 @@ export default function RelatoriosPage() {
   const { user } = useUser();
   const db = useFirestore();
 
-  // Estado para garantir que a data de referência seja "hoje" e atualize se o app ficar aberto
   const [today, setToday] = useState(new Date());
 
   useEffect(() => {
-    // Atualiza a referência de "hoje" diariamente
     const interval = setInterval(() => setToday(new Date()), 1000 * 60 * 60 * 24);
     return () => clearInterval(interval);
   }, []);
 
-  // Define a data de início do período de 6 meses (início do mês de 5 meses atrás)
   const reportingStartDate = useMemo(() => startOfMonth(subMonths(today, 5)), [today]);
 
-  // Busca dados do Firestore
   const ordersQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
     return collection(db, "users", user.uid, "orders");
@@ -79,23 +74,23 @@ export default function RelatoriosPage() {
     return doc(db, "users", user.uid, "config", "settings");
   }, [db, user]);
 
-  const { data: orders, isLoading: ordersLoading } = useCollection(ordersQuery);
+  const { data: ordersData, isLoading: ordersLoading } = useCollection(ordersQuery);
   const { data: clients, isLoading: clientsLoading } = useCollection(clientsQuery);
   const { data: products, isLoading: productsLoading } = useCollection(productsQuery);
   const { data: settings } = useDoc(settingsRef);
 
   const appName = settings?.appName || "LilianPro";
 
-  // Filtra as ordens para o período dos últimos 6 meses
+  // Filtra as ordens ativas (não deletadas logicamente) e dentro do período de 6 meses
   const ordersInPeriod = useMemo(() => {
-    if (!orders) return [];
-    return orders.filter(o => {
+    if (!ordersData) return [];
+    return ordersData.filter(o => {
+      if (o.isDeleted) return false;
       const orderDate = new Date(o.orderDate);
       return orderDate >= reportingStartDate;
     });
-  }, [orders, reportingStartDate]);
+  }, [ordersData, reportingStartDate]);
 
-  // 1. Processamento: Evolução de Vendas (Últimos 6 meses baseados em 'today')
   const salesHistory = useMemo(() => {
     const months = Array.from({ length: 6 }, (_, i) => {
       const date = subMonths(today, 5 - i);
@@ -120,7 +115,6 @@ export default function RelatoriosPage() {
     return months;
   }, [ordersInPeriod, today]);
 
-  // 2. Processamento: Melhores Clientes (Apenas compras nos últimos 6 meses)
   const topClients = useMemo(() => {
     if (!ordersInPeriod || !clients) return [];
 
@@ -140,7 +134,6 @@ export default function RelatoriosPage() {
       .slice(0, 10);
   }, [ordersInPeriod, clients]);
 
-  // 3. Processamento: Mix de Marcas (Baseado no Catálogo Geral)
   const brandStats = useMemo(() => {
     if (!products || products.length === 0) {
       return [
@@ -177,8 +170,7 @@ export default function RelatoriosPage() {
     const now = new Date();
     const timestamp = format(now, "dd/MM/yyyy HH:mm");
 
-    // --- CAPA & CABEÇALHO ---
-    doc.setFillColor(194, 24, 91); // Primary Color
+    doc.setFillColor(194, 24, 91);
     doc.rect(0, 0, 210, 40, 'F');
     
     doc.setTextColor(255, 255, 255);
@@ -190,7 +182,6 @@ export default function RelatoriosPage() {
     doc.setFont("helvetica", "normal");
     doc.text("RELATÓRIO DE DESEMPENHO ELITE - ÚLTIMOS 6 MESES", 105, 30, { align: "center" });
 
-    // --- RESUMO EXECUTIVO ---
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(18);
     doc.text("Resumo do Período", 14, 55);
@@ -201,7 +192,7 @@ export default function RelatoriosPage() {
 
     autoTable(doc, {
       startY: 60,
-      head: [['Métrica (6 Meses)', 'Valor']],
+      head: [['Métrica (6 Meses Ativos)', 'Valor']],
       body: [
         ['Faturamento no Período', `R$ ${totalRevenue.toFixed(2)}`],
         ['Pedidos Realizados', `${ordersInPeriod.length} pedidos`],
@@ -214,7 +205,6 @@ export default function RelatoriosPage() {
       styles: { fontSize: 11, cellPadding: 5 }
     });
 
-    // --- EVOLUÇÃO MENSAL ---
     doc.setFontSize(18);
     doc.text("Evolução de Vendas", 14, (doc as any).lastAutoTable.finalY + 20);
     
@@ -226,7 +216,6 @@ export default function RelatoriosPage() {
       theme: 'striped'
     });
 
-    // --- TOP CLIENTES ---
     doc.addPage();
     doc.setFillColor(194, 24, 91);
     doc.rect(0, 0, 210, 15, 'F');
@@ -251,7 +240,6 @@ export default function RelatoriosPage() {
       }
     });
 
-    // --- RODAPÉ ---
     const pageCount = (doc as any).internal.getNumberOfPages();
     for(let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
@@ -283,7 +271,7 @@ export default function RelatoriosPage() {
             <BarChart3 className="size-16 sm:size-24 text-primary" />
             <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap px-2">RELATÓRIOS</h1>
           </div>
-          <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Performance dos últimos 6 meses atualizada hoje.</p>
+          <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Performance dos últimos 6 meses (Pedidos Ativos).</p>
         </div>
         <Button 
           onClick={handleGeneratePDF}
@@ -381,7 +369,7 @@ export default function RelatoriosPage() {
               <Users className="size-7 text-primary" />
               Melhores Clientes do Período
             </CardTitle>
-            <CardDescription className="text-base font-bold uppercase tracking-widest opacity-60">Ranking por faturamento nos últimos 6 meses</CardDescription>
+            <CardDescription className="text-base font-bold uppercase tracking-widest opacity-60">Ranking por faturamento (Pedidos Ativos)</CardDescription>
           </CardHeader>
           <CardContent className="p-4 sm:p-8 space-y-6">
             {topClients.map((client, i) => {
@@ -414,7 +402,7 @@ export default function RelatoriosPage() {
             {topClients.length === 0 && (
               <div className="text-center py-20 bg-muted/10 rounded-[2rem] border-4 border-dashed border-muted">
                 <Users className="size-16 text-muted-foreground/20 mx-auto mb-4" />
-                <p className="text-muted-foreground text-lg font-black uppercase tracking-tighter opacity-40 italic px-4 text-center">Nenhuma venda registrada nos últimos 6 meses para compor o ranking.</p>
+                <p className="text-muted-foreground text-lg font-black uppercase tracking-tighter opacity-40 italic px-4 text-center">Nenhuma venda ativa registrada para compor o ranking.</p>
               </div>
             )}
           </CardContent>

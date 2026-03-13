@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
@@ -48,7 +47,13 @@ export default function DashboardPage() {
     if (!db || !user) return null;
     return collection(db, "users", user.uid, "orders");
   }, [db, user]);
-  const { data: orders, isLoading: ordersLoading } = useCollection(ordersQuery);
+  const { data: ordersData, isLoading: ordersLoading } = useCollection(ordersQuery);
+
+  // Filtra apenas pedidos ativos (não excluídos logicamente)
+  const orders = useMemo(() => {
+    if (!ordersData) return [];
+    return ordersData.filter(o => !o.isDeleted);
+  }, [ordersData]);
 
   const clientsQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -71,7 +76,7 @@ export default function DashboardPage() {
       {
         title: "Total Vendido",
         value: `R$ ${totalVendido.toFixed(2)}`,
-        description: "Faturamento total",
+        description: "Faturamento total ativo",
         icon: TrendingUp,
         color: "text-primary",
         bg: "bg-primary/10",
@@ -121,7 +126,7 @@ export default function DashboardPage() {
       bg: "bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-500/30",
       iconColor: "text-green-600",
       title: "TUDO EM DIA",
-      desc: "Excelente! Todas as suas vendas estão liquidadas.",
+      desc: "Excelente! Todas as suas vendas ativas estão liquidadas.",
       icon: CheckCircle2,
     };
 

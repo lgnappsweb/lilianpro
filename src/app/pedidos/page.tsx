@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, doc } from "firebase/firestore";
-import { deleteDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase/non-blocking-updates";
+import { updateDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import {
@@ -87,6 +87,9 @@ export default function PedidosPage() {
   const filteredOrders = useMemo(() => {
     if (!orders) return [];
     return orders.filter(o => {
+      // Oculta pedidos arquivados (soft-deleted) da lista ativa
+      if (o.isDeleted) return false;
+
       const searchStr = searchTerm.toLowerCase();
       const matchesSearch = 
         o.id?.toLowerCase().includes(searchStr) || 
@@ -99,10 +102,11 @@ export default function PedidosPage() {
   const handleDeleteConfirm = () => {
     if (orderToDelete && user && db) {
       const docRef = doc(db, "users", user.uid, "orders", orderToDelete.id);
-      deleteDocumentNonBlocking(docRef);
+      // Implementação de Soft Delete: apenas marca como deletado para manter no histórico
+      updateDocumentNonBlocking(docRef, { isDeleted: true });
       toast({
         title: "Pedido removido",
-        description: "O registro do pedido foi excluído com sucesso.",
+        description: "O registro saiu da lista ativa, mas continua no histórico do cliente.",
       });
       setOrderToDelete(null);
     }
@@ -267,15 +271,15 @@ export default function PedidosPage() {
       <AlertDialog open={!!orderToDelete} onOpenChange={(open) => !open && setOrderToDelete(null)}>
         <AlertDialogContent className="rounded-[2.5rem] p-8 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-3xl sm:text-5xl font-black tracking-tighter text-primary uppercase leading-none text-left px-2">Excluir Pedido?</AlertDialogTitle>
+            <AlertDialogTitle className="text-3xl sm:text-5xl font-black tracking-tighter text-primary uppercase leading-none text-left px-2">Remover Pedido?</AlertDialogTitle>
             <AlertDialogDescription className="text-xl sm:text-2xl font-bold mt-6 leading-relaxed text-muted-foreground text-left">
-              O registro do pedido de <strong className="text-foreground border-b-4 border-primary px-1">{orderToDelete?.clientName}</strong> será removido definitivamente do histórico financeiro.
+              O pedido de <strong className="text-foreground border-b-4 border-primary px-1">{orderToDelete?.clientName}</strong> sairá do gerenciamento ativo, mas <span className="text-primary font-black">permanecerá no histórico permanente</span> do cliente.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-4 mt-12 flex-col sm:flex-row">
             <AlertDialogCancel className="h-16 sm:h-24 px-10 text-xl font-black rounded-2xl sm:rounded-3xl border-4 border-muted hover:bg-muted/50">Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteConfirm} className="h-16 sm:h-24 px-10 text-xl font-black bg-destructive text-white hover:bg-destructive/90 rounded-2xl sm:rounded-3xl shadow-xl active:scale-95 transition-all">
-              SIM, EXCLUIR AGORA
+              SIM, REMOVER
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
