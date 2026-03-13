@@ -4,113 +4,40 @@ service cloud.firestore {
 
     /**
      * CORE PHILOSOPHY:
-     * This ruleset enforces a strict administrator-ownership model. Every piece of data 
-     * (Customers, Products, Sales, SaleItems) is nested under a specific administrator's 
-     * UID in the document path.
-     *
-     * DATA STRUCTURE:
-     * All data is organized hierarchically: /admins/{adminId}/...
-     * This ensures that authorization is inherently tied to the path, allowing for 
-     * efficient, path-based security checks without the need for expensive cross-document lookups.
+     * This ruleset enforces a strict user-ownership model. Every piece of data 
+     * (Clients, Products, Orders, Categories, Config) is nested under a specific 
+     * user's UID in the document path: /users/{userId}/...
      *
      * KEY SECURITY DECISIONS:
-     * 1. Path-Based Authorization: The 'adminId' wildcard in the URL is the source of truth. 
-     *    A user can only access data if their authenticated UID matches the 'adminId' in the path.
-     * 2. DBAC (Database-Backed Access Control): The root '/admins/{adminId}' document 
-     *    serves as the anchor. If a user can create/read this document (tied to their UID), 
-     *    they are considered an authorized administrator.
-     * 3. Denormalization for Authorization: The administrator's identity is denormalized 
-     *    into the path of every sub-collection, making rules atomic and fast.
-     * 4. Prototyping Flexibility: Rules strictly enforce 'who' can access data but are 
-     *    flexible on 'what' the data looks like, allowing for rapid schema iteration.
+     * 1. Path-Based Authorization: The 'userId' wildcard in the URL is the source of truth. 
+     *    A user can only access data if their authenticated UID matches the 'userId' in the path.
+     * 2. Recursive Access: Once ownership of the root user document is established, 
+     *    access is granted to all nested collections and documents.
      */
 
     // --- Helper Functions ---
 
-    /** @description Checks if the user is authenticated with any provider. */
+    /** @description Checks if the user is authenticated. */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /** @description Checks if the authenticated user's UID matches the provided adminId. */
-    function isOwner(adminId) {
-      return isSignedIn() && request.auth.uid == adminId;
-    }
-
-    /** @description Checks ownership and ensures the document already exists for update/delete. */
-    function isExistingOwner(adminId) {
-      return isOwner(adminId) && resource != null;
+    /** @description Checks if the authenticated user's UID matches the provided userId. */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
     }
 
     // --- Collection Rules ---
 
     /**
-     * @description Rules for the Admin root document. Acts as the entry point for an administrator's data silo.
-     * @path /admins/{adminId}
-     * @allow User 'abc' (create) their own admin document at /admins/abc.
-     * @deny User 'abc' (update) an admin document at /admins/xyz.
-     * @principle Self-creation and ownership of the root admin identity.
+     * @description Rules for the User root and all its sub-resources.
+     * Covers: /users/{userId}/clients, /users/{userId}/orders, etc.
      */
-    match /admins/{adminId} {
-      allow get: if isOwner(adminId);
-      allow list: if false; // Admins cannot be listed for privacy.
-      allow create: if isOwner(adminId);
-      allow update, delete: if isExistingOwner(adminId);
-
-      /**
-       * @description Rules for Customer profiles owned by the administrator.
-       * @path /admins/{adminId}/customers/{customerId}
-       * @allow Admin 'abc' (list) all customers under /admins/abc/customers.
-       * @deny Admin 'abc' (get) a customer document under /admins/xyz/customers.
-       * @principle Path-based ownership for customer data segregation.
-       */
-      match /customers/{customerId} {
-        allow get, list: if isOwner(adminId);
-        allow create: if isOwner(adminId) && request.resource.data.id == customerId;
-        allow update: if isExistingOwner(adminId) && request.resource.data.id == resource.data.id;
-        allow delete: if isExistingOwner(adminId);
-      }
-
-      /**
-       * @description Rules for the Product catalog owned by the administrator.
-       * @path /admins/{adminId}/products/{productId}
-       * @allow Admin 'abc' (create) a product at /admins/abc/products/prod123.
-       * @deny Admin 'abc' (delete) a product at /admins/xyz/products/prod123.
-       * @principle Relational integrity between the document ID and the path.
-       */
-      match /products/{productId} {
-        allow get, list: if isOwner(adminId);
-        allow create: if isOwner(adminId) && request.resource.data.id == productId;
-        allow update: if isExistingOwner(adminId) && request.resource.data.id == resource.data.id;
-        allow delete: if isExistingOwner(adminId);
-      }
-
-      /**
-       * @description Rules for Sales transactions recorded by the administrator.
-       * @path /admins/{adminId}/sales/{saleId}
-       * @allow Admin 'abc' (update) a sale status at /admins/abc/sales/sale789.
-       * @deny Unauthenticated user (get) a sale at /admins/abc/sales/sale789.
-       * @principle Strict ownership for financial transaction records.
-       */
-      match /sales/{saleId} {
-        allow get, list: if isOwner(adminId);
-        allow create: if isOwner(adminId) && request.resource.data.id == saleId;
-        allow update: if isExistingOwner(adminId) && request.resource.data.id == resource.data.id;
-        allow delete: if isExistingOwner(adminId);
-
-        /**
-         * @description Rules for individual items within a specific sale.
-         * @path /admins/{adminId}/sales/{saleId}/saleItems/{saleItemId}
-         * @allow Admin 'abc' (list) items for their own sale /admins/abc/sales/sale789/saleItems.
-         * @deny Admin 'abc' (create) an item for someone else's sale /admins/xyz/sales/sale789/saleItems.
-         * @principle Deeply nested ownership validation via parent path wildcards.
-         */
-        match /saleItems/{saleItemId} {
-          allow get, list: if isOwner(adminId);
-          allow create: if isOwner(adminId) && request.resource.data.id == saleItemId;
-          allow update: if isExistingOwner(adminId) && request.resource.data.id == resource.data.id;
-          allow delete: if isExistingOwner(adminId);
-        }
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+      
+      match /{allPaths=**} {
+        allow read, write: if isOwner(userId);
       }
     }
   }
