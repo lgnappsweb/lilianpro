@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -71,6 +70,16 @@ export default function DetalhesPedidoPage() {
     }
   };
 
+  const formatDateBR = (isoString: string) => {
+    return new Date(isoString).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+  };
+
+  const formatDueDateBR = (dateString: string) => {
+    if (!dateString) return "";
+    const [year, month, day] = dateString.split('-');
+    return `${day}/${month}/${year}`;
+  };
+
   const shareOnWhatsApp = () => {
     if (!order) return;
 
@@ -83,10 +92,10 @@ export default function DetalhesPedidoPage() {
     const message = `✨ *RESUMO DA VENDA - ${appName}* ✨\n\n` +
       `👤 *Cliente:* ${order.clientName}\n` +
       `📄 *Protocolo:* #${order.id?.slice(-8)}\n` +
-      `📅 *Data:* ${new Date(order.orderDate).toLocaleDateString()}\n` +
+      `📅 *Data:* ${formatDateBR(order.orderDate)}\n` +
       `💳 *Pagamento:* ${order.paymentMethod?.toUpperCase()}\n` +
       `📊 *Status:* ${statusInfo.label}\n` +
-      (order.dueDate ? `⏰ *Vencimento:* ${new Date(order.dueDate).toLocaleDateString()}\n` : "") +
+      (order.dueDate ? `⏰ *Vencimento:* ${formatDueDateBR(order.dueDate)}\n` : "") +
       `\n📦 *ITENS:*\n${itemsList}` +
       `\n💰 *FINANCEIRO:*\n` +
       `Subtotal: R$ ${Number(order.totalAmount).toFixed(2)}\n` +
@@ -183,7 +192,7 @@ export default function DetalhesPedidoPage() {
                   <Calendar className="size-3" /> DATA DA VENDA
                 </p>
                 <p className="text-2xl font-black text-foreground">
-                  {new Date(order.orderDate).toLocaleDateString()}
+                  {formatDateBR(order.orderDate)}
                 </p>
               </div>
 
@@ -193,7 +202,7 @@ export default function DetalhesPedidoPage() {
                     <Clock className="size-3" /> DATA DE VENCIMENTO (A PRAZO)
                   </p>
                   <p className="text-2xl font-black text-orange-700">
-                    {new Date(order.dueDate).toLocaleDateString()}
+                    {formatDueDateBR(order.dueDate)}
                   </p>
                 </div>
               )}

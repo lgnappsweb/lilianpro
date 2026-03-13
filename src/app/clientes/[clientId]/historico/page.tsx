@@ -120,6 +120,15 @@ export default function HistoricoClientePage() {
     }
   };
 
+  const formatDateBR = (isoString: string) => {
+    return new Date(isoString).toLocaleDateString('pt-BR', { 
+      day: '2-digit', 
+      month: 'long', 
+      year: 'numeric',
+      timeZone: 'America/Sao_Paulo' 
+    });
+  };
+
   const handleShareHistory = () => {
     if (!cliente || !orders) return;
 
@@ -132,7 +141,7 @@ export default function HistoricoClientePage() {
     sortedOrders.forEach((order, index) => {
       const statusLabel = order.paymentStatus === "Pago" ? "✅ PAGO" : order.paymentStatus === "Atrasado" ? "❌ ATRASADO" : "⏳ PENDENTE";
       message += `--------------------------\n`;
-      message += `🛒 Compra em ${new Date(order.orderDate).toLocaleDateString()}\n`;
+      message += `🛒 Compra em ${new Date(order.orderDate).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}\n`;
       message += `💰 Valor: R$ ${Number(order.finalAmount).toFixed(2)}\n`;
       message += `📊 Status: ${statusLabel}\n`;
     });
@@ -147,7 +156,7 @@ export default function HistoricoClientePage() {
     const statusLabel = order.paymentStatus === "Pago" ? "✅ PAGO" : order.paymentStatus === "Atrasado" ? "❌ ATRASADO" : "⏳ PENDENTE";
     let message = `🛍️ *DETALHE DE COMPRA - ${appName}*\n\n`;
     message += `👤 *Cliente:* ${cliente?.fullName}\n`;
-    message += `📅 *Data:* ${new Date(order.orderDate).toLocaleDateString()}\n`;
+    message += `📅 *Data:* ${new Date(order.orderDate).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}\n`;
     message += `💳 *Pagamento:* ${order.paymentMethod?.toUpperCase()}\n`;
     message += `📊 *Status:* ${statusLabel}\n`;
     message += `💰 *TOTAL: R$ ${Number(order.finalAmount).toFixed(2)}*\n\n`;
@@ -232,7 +241,7 @@ export default function HistoricoClientePage() {
                     <div className="flex items-center gap-3">
                       <Calendar className="size-5 text-primary" />
                       <p className="text-lg font-black text-foreground tracking-tighter">
-                        {new Date(order.orderDate).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                        {formatDateBR(order.orderDate)}
                       </p>
                     </div>
                     <Badge className={cn("px-4 py-1 rounded-full font-black text-[10px] uppercase shadow-sm border-none", status.bg, status.color)}>

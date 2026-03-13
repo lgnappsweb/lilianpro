@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
@@ -94,10 +93,16 @@ export default function NovaVendaPage() {
   const [additionalFee, setAdditionalFee] = useState(0);
   const [itemToDeleteId, setItemToDeleteId] = useState<string | null>(null);
 
-  // Define data atual como exemplo padrão para evitar campo vazio e destacar o uso
+  // Define data atual no fuso horário do Brasil (America/Sao_Paulo)
   useEffect(() => {
-    const today = new Date().toISOString().split('T')[0];
-    setDueDate(today);
+    const now = new Date();
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Sao_Paulo',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+    setDueDate(formatter.format(now));
   }, []);
 
   const clientsQuery = useMemoFirebase(() => {

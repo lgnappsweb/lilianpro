@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useMemo, useState } from "react";
@@ -142,6 +141,16 @@ export default function FinanceiroPage() {
     if (part === 'year') newDate = setYear(newDate, parseInt(value));
 
     setDate({ ...date, [type]: newDate });
+  };
+
+  const formatDateBR = (isoString: string) => {
+    return new Date(isoString).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+  };
+
+  const formatDueDateBR = (dateString: string) => {
+    if (!dateString) return "";
+    const [year, month, day] = dateString.split('-');
+    return `${day}/${month}/${year}`;
   };
 
   const handleShareText = () => {
@@ -325,7 +334,7 @@ export default function FinanceiroPage() {
                 <div className="flex-1 min-w-0">
                   <p className="font-black text-lg sm:text-xl px-1 uppercase italic text-primary truncate">{p.clientName}</p>
                   <p className="text-[10px] sm:text-xs text-muted-foreground font-black flex items-center gap-2 mt-1 uppercase tracking-widest">
-                    <CalendarIcon className="size-3" /> Vence em: {new Date(p.dueDate).toLocaleDateString()}
+                    <CalendarIcon className="size-3" /> Vence em: {formatDueDateBR(p.dueDate)}
                   </p>
                 </div>
                 <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 sm:gap-0 shrink-0 border-t sm:border-t-0 pt-2 w-full sm:w-auto">
@@ -349,7 +358,7 @@ export default function FinanceiroPage() {
                   <div className="size-10 sm:size-16 rounded-[1.2rem] bg-green-100 flex items-center justify-center text-green-700 shadow-inner shrink-0"><ArrowDownCircle className="size-5 sm:size-8" /></div>
                   <div className="min-w-0 flex-1">
                     <p className="font-black text-lg sm:text-xl px-1 uppercase italic text-green-800 truncate">{p.clientName}</p>
-                    <p className="text-[10px] sm:text-xs text-green-600/60 font-black flex items-center gap-2 mt-1 uppercase tracking-widest"><CalendarIcon className="size-3" /> {new Date(p.orderDate).toLocaleDateString()}</p>
+                    <p className="text-[10px] sm:text-xs text-green-600/60 font-black flex items-center gap-2 mt-1 uppercase tracking-widest"><CalendarIcon className="size-3" /> {formatDateBR(p.orderDate)}</p>
                   </div>
                 </div>
                 <div className="sm:text-right text-left shrink-0 border-t sm:border-t-0 pt-2 w-full sm:w-auto">

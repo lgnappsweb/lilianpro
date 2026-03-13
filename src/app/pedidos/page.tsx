@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useMemo } from "react";
@@ -120,6 +119,10 @@ export default function PedidosPage() {
     }
   };
 
+  const formatDateBR = (isoString: string) => {
+    return new Date(isoString).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+  };
+
   return (
     <div className="space-y-12 animate-in fade-in duration-500 w-full overflow-x-hidden">
       <div className="flex flex-col items-center text-center gap-6 px-2 mb-10">
@@ -182,7 +185,7 @@ export default function PedidosPage() {
                 </Badge>
                 <div className="flex items-center gap-2 text-muted-foreground font-black text-[10px] sm:text-xs uppercase tracking-widest opacity-60">
                   <Calendar className="size-3" />
-                  {new Date(order.orderDate).toLocaleDateString()}
+                  {formatDateBR(order.orderDate)}
                 </div>
               </div>
 
