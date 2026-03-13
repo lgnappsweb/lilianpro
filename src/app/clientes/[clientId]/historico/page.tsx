@@ -24,6 +24,7 @@ import {
   ArrowLeft,
   Search,
   ChevronRight,
+  MessageCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -74,6 +75,14 @@ export default function HistoricoClientePage() {
   const { user } = useUser();
   const db = useFirestore();
 
+  // Busca as configurações para o nome do app
+  const settingsRef = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return doc(db, "users", user.uid, "config", "settings");
+  }, [db, user]);
+  const { data: settings } = useDoc(settingsRef);
+  const appName = settings?.appName || "LilianPro";
+
   // Busca dados da cliente
   const clientRef = useMemoFirebase(() => {
     if (!db || !user || !clientId) return null;
@@ -81,7 +90,7 @@ export default function HistoricoClientePage() {
   }, [db, user, clientId]);
   const { data: cliente, isLoading: clientLoading } = useDoc(clientRef);
 
-  // Busca todos os pedidos desta cliente (sem orderBy para evitar erro de índice composto)
+  // Busca todos os pedidos desta cliente
   const ordersQuery = useMemoFirebase(() => {
     if (!db || !user || !clientId) return null;
     return query(
@@ -110,6 +119,42 @@ export default function HistoricoClientePage() {
       case "Atrasado": return { icon: AlertCircle, color: "text-red-600", bg: "bg-red-100", label: "ATRASADO" };
       default: return { icon: Package, color: "text-muted-foreground", bg: "bg-muted", label: status };
     }
+  };
+
+  const handleShareHistory = () => {
+    if (!cliente || !orders) return;
+
+    let message = `📊 *HISTÓRICO DE COMPRAS - ${appName}*\n\n`;
+    message += `👤 *Cliente:* ${cliente.fullName}\n`;
+    message += `💰 *Total Comprado:* R$ ${stats.total.toFixed(2)}\n`;
+    message += `📦 *Qtd. Pedidos:* ${stats.count}\n\n`;
+    message += `📅 *RESUMO DA JORNADA:*\n`;
+
+    sortedOrders.forEach((order, index) => {
+      const statusLabel = order.paymentStatus === "Pago" ? "✅ PAGO" : order.paymentStatus === "Atrasado" ? "❌ ATRASADO" : "⏳ PENDENTE";
+      message += `--------------------------\n`;
+      message += `🛒 Compra em ${new Date(order.orderDate).toLocaleDateString()}\n`;
+      message += `💰 Valor: R$ ${Number(order.finalAmount).toFixed(2)}\n`;
+      message += `📊 Status: ${statusLabel}\n`;
+    });
+
+    message += `\n--------------------------\n`;
+    message += `✨ _Obrigada pela preferência!_`;
+
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank");
+  };
+
+  const handleShareOrder = (order: any) => {
+    const statusLabel = order.paymentStatus === "Pago" ? "✅ PAGO" : order.paymentStatus === "Atrasado" ? "❌ ATRASADO" : "⏳ PENDENTE";
+    let message = `🛍️ *DETALHE DE COMPRA - ${appName}*\n\n`;
+    message += `👤 *Cliente:* ${cliente?.fullName}\n`;
+    message += `📅 *Data:* ${new Date(order.orderDate).toLocaleDateString()}\n`;
+    message += `💳 *Pagamento:* ${order.paymentMethod?.toUpperCase()}\n`;
+    message += `📊 *Status:* ${statusLabel}\n`;
+    message += `💰 *TOTAL: R$ ${Number(order.finalAmount).toFixed(2)}*\n\n`;
+    message += `✨ _Obrigada pela confiança!_`;
+
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank");
   };
 
   if (clientLoading || ordersLoading) {
@@ -158,6 +203,17 @@ export default function HistoricoClientePage() {
         </Card>
       </div>
 
+      {/* BOTÃO COMPARTILHAR TUDO */}
+      {stats.count > 0 && (
+        <Button 
+          onClick={handleShareHistory}
+          className="w-full h-16 rounded-2xl bg-green-600 hover:bg-green-700 font-black text-lg gap-3 shadow-xl uppercase tracking-widest transition-transform active:scale-95"
+        >
+          <MessageCircle className="size-6" />
+          Compartilhar Histórico no WhatsApp
+        </Button>
+      )}
+
       {/* LISTAGEM DE COMPRAS */}
       <div className="space-y-6">
         <div className="flex items-center justify-between px-2">
@@ -199,11 +255,20 @@ export default function HistoricoClientePage() {
                   {/* Detalhes dos Produtos dentro do Pedido */}
                   <OrderItemsList orderId={order.id} />
 
-                  <Button asChild variant="outline" className="w-full mt-6 h-12 rounded-xl font-black uppercase tracking-widest text-xs border-2 hover:bg-primary/5 group-hover:border-primary/30 transition-all">
-                    <Link href={`/pedidos/${order.id}`}>
-                      Ver Detalhes da Venda <ChevronRight className="ml-2 size-4" />
-                    </Link>
-                  </Button>
+                  <div className="grid grid-cols-2 gap-3 mt-6">
+                    <Button asChild variant="outline" className="h-12 rounded-xl font-black uppercase tracking-widest text-[10px] border-2 hover:bg-primary/5 transition-all">
+                      <Link href={`/pedidos/${order.id}`}>
+                        Ver Detalhes <ChevronRight className="ml-1 size-3" />
+                      </Link>
+                    </Button>
+                    <Button 
+                      onClick={() => handleShareOrder(order)}
+                      className="h-12 rounded-xl bg-green-600 hover:bg-green-700 font-black uppercase tracking-widest text-[10px] gap-2 shadow-lg"
+                    >
+                      <MessageCircle className="size-4" />
+                      Compartilhar
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             );
