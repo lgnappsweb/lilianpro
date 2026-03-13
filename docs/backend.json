@@ -1,17 +1,16 @@
 {
   "entities": {
     "Client": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Client",
       "type": "object",
-      "description": "Represents a customer profile.",
+      "description": "Representa um perfil de cliente/comprador.",
       "properties": {
         "id": { "type": "string" },
         "fullName": { "type": "string" },
         "phone": { "type": "string" },
-        "address": { "type": "string" },
-        "neighborhood": { "type": "string" },
         "city": { "type": "string" },
+        "neighborhood": { "type": "string" },
+        "address": { "type": "string" },
         "registrationDate": { "type": "string", "format": "date-time" },
         "notes": { "type": "string" },
         "adminId": { "type": "string" }
@@ -19,10 +18,9 @@
       "required": ["id", "fullName", "phone", "registrationDate", "adminId"]
     },
     "Product": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Product",
       "type": "object",
-      "description": "Represents a product in the catalog.",
+      "description": "Item do catálogo de produtos.",
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
@@ -35,13 +33,12 @@
         "description": { "type": "string" },
         "adminId": { "type": "string" }
       },
-      "required": ["id", "name", "brand", "category", "salePrice", "adminId"]
+      "required": ["id", "name", "brand", "salePrice", "adminId"]
     },
     "Order": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Order",
       "type": "object",
-      "description": "Represents a sales transaction.",
+      "description": "Registro de uma venda realizada.",
       "properties": {
         "id": { "type": "string" },
         "clientId": { "type": "string" },
@@ -60,10 +57,9 @@
       "required": ["id", "clientId", "orderDate", "paymentMethod", "paymentStatus", "finalAmount", "adminId"]
     },
     "OrderItem": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "OrderItem",
       "type": "object",
-      "description": "An item within an order.",
+      "description": "Item individual dentro de um pedido.",
       "properties": {
         "id": { "type": "string" },
         "orderId": { "type": "string" },
@@ -98,64 +94,35 @@
     }
   },
   "auth": {
-    "providers": ["password", "anonymous"]
+    "providers": ["password"]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/users/{userId}",
-        "definition": {
-          "description": "Root for user-owned data silo."
-        }
-      },
-      {
-        "path": "/users/{userId}/clients/{clientId}",
-        "definition": {
-          "entityName": "Client",
-          "schema": { "$ref": "#/backend/entities/Client" },
-          "description": "Customer records for the user."
-        }
-      },
-      {
-        "path": "/users/{userId}/products/{productId}",
-        "definition": {
-          "entityName": "Product",
-          "schema": { "$ref": "#/backend/entities/Product" },
-          "description": "Product catalog for the user."
-        }
-      },
-      {
-        "path": "/users/{userId}/orders/{orderId}",
-        "definition": {
-          "entityName": "Order",
-          "schema": { "$ref": "#/backend/entities/Order" },
-          "description": "Sales records for the user."
-        }
-      },
-      {
-        "path": "/users/{userId}/orders/{orderId}/orderItems/{itemId}",
-        "definition": {
-          "entityName": "OrderItem",
-          "schema": { "$ref": "#/backend/entities/OrderItem" },
-          "description": "Items within a specific sale."
-        }
-      },
-      {
-        "path": "/users/{userId}/categories/{categoryId}",
-        "definition": {
-          "entityName": "Category",
-          "schema": { "$ref": "#/backend/entities/Category" },
-          "description": "Product categories for the user."
-        }
-      },
-      {
-        "path": "/users/{userId}/config/settings",
-        "definition": {
-          "entityName": "Settings",
-          "schema": { "$ref": "#/backend/entities/Settings" },
-          "description": "Application personalization settings."
-        }
-      }
-    ]
+    "/users/{userId}": {
+      "description": "Documento raiz do silo do usuário."
+    },
+    "/users/{userId}/clients/{clientId}": {
+      "schema": { "$ref": "#/backend/entities/Client" },
+      "description": "Cadastro de clientes do usuário."
+    },
+    "/users/{userId}/products/{productId}": {
+      "schema": { "$ref": "#/backend/entities/Product" },
+      "description": "Catálogo de produtos do usuário."
+    },
+    "/users/{userId}/categories/{categoryId}": {
+      "schema": { "$ref": "#/backend/entities/Category" },
+      "description": "Categorias de produtos."
+    },
+    "/users/{userId}/orders/{orderId}": {
+      "schema": { "$ref": "#/backend/entities/Order" },
+      "description": "Histórico de vendas."
+    },
+    "/users/{userId}/orders/{orderId}/orderItems/{itemId}": {
+      "schema": { "$ref": "#/backend/entities/OrderItem" },
+      "description": "Itens detalhados de cada venda."
+    },
+    "/users/{userId}/config/settings": {
+      "schema": { "$ref": "#/backend/entities/Settings" },
+      "description": "Configurações de personalização do app."
+    }
   }
 }
