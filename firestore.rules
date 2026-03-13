@@ -4,20 +4,15 @@ service cloud.firestore {
 
     /**
      * ESTRUTURA DE SILO POR USUÁRIO
-     * Garante que cada usuário acesse apenas seus próprios dados.
+     * Garante que cada usuário tenha acesso total e exclusivo aos seus próprios dados.
+     * O padrão {document=**} aplica a regra recursivamente a todas as subcoleções.
      */
 
-    match /users/{userId} {
-      // Permite acesso ao documento raiz do usuário
+    match /users/{userId}/{document=**} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
-      
-      // Permite acesso recursivo a todas as subcoleções (clients, orders, products, etc)
-      match /{allPaths=**} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
-      }
     }
     
-    // Fallback de segurança para negar qualquer outro acesso
+    // Fallback de segurança para negar qualquer acesso que não se enquadre no silo acima
     match /{document=**} {
       allow read, write: if false;
     }
