@@ -146,7 +146,6 @@ export default function FinanceiroPage() {
       const productSales: Record<string, { name: string, quantity: number, total: number, productId: string }> = {};
       
       try {
-        // Buscamos itens dos pedidos filtrados
         const itemPromises = filteredOrders.map(order => 
           getDocs(collection(db, "users", user.uid, "orders", order.id, "orderItems"))
         );
@@ -247,10 +246,37 @@ export default function FinanceiroPage() {
 
     let message = `📊 *RELATÓRIO FINANCEIRO ELITE - ${appName}*\n`;
     message += `📅 *Período:* ${fromStr} - ${toStr}\n\n`;
+    
     message += `💰 *RESUMO FINANCEIRO*\n`;
     message += `✅ Entradas: R$ ${financialStats.recebido.toFixed(2)}\n`;
     message += `⏳ Pendentes: R$ ${financialStats.pendente.toFixed(2)}\n`;
     message += `⚠️ Atrasados: R$ ${financialStats.atrasado.toFixed(2)}\n\n`;
+
+    if (topProducts.length > 0) {
+      message += `📦 *TOP PRODUTOS*\n`;
+      topProducts.slice(0, 5).forEach((p, i) => {
+        message += `${i+1}. ${p.name} (${p.brand}) - ${p.quantity} unid.\n`;
+      });
+      message += `\n`;
+    }
+
+    if (topClients.length > 0) {
+      message += `👤 *TOP CLIENTES*\n`;
+      topClients.slice(0, 5).forEach((c, i) => {
+        message += `${i+1}. ${c.name} - R$ ${c.total.toFixed(2)}\n`;
+      });
+      message += `\n`;
+    }
+
+    if (proximosRecebimentos.length > 0) {
+      message += `⏳ *CONTAS A RECEBER*\n`;
+      proximosRecebimentos.slice(0, 5).forEach(p => {
+        message += `• ${p.clientName}: R$ ${Number(p.finalAmount).toFixed(2)} (${formatDueDateBR(p.dueDate)})\n`;
+      });
+      message += `\n`;
+    }
+
+    message += `✨ _Gerado via ${appName}_`;
 
     const encodedMessage = encodeURIComponent(message);
     window.open(`https://wa.me/?text=${encodedMessage}`, "_blank");
@@ -265,16 +291,16 @@ export default function FinanceiroPage() {
 
     doc.setFontSize(22);
     doc.setTextColor(194, 24, 91);
-    doc.text(`${appName} - Relatório Financeiro`, 14, 20);
+    doc.text(`${appName} - Relatório Financeiro Detalhado`, 14, 20);
     
-    doc.setFontSize(12);
+    doc.setFontSize(10);
     doc.setTextColor(100);
-    doc.text(`Período: ${fromStr} - ${toStr}`, 14, 30);
-    doc.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy HH:mm")}`, 14, 37);
+    doc.text(`Período: ${fromStr} - ${toStr}`, 14, 28);
+    doc.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy HH:mm")}`, 14, 34);
 
     autoTable(doc, {
-      startY: 55,
-      head: [['Descrição', 'Valor']],
+      startY: 40,
+      head: [['RESUMO FINANCEIRO', 'VALOR']],
       body: [
         ['Entradas Confirmadas', `R$ ${financialStats.recebido.toFixed(2)}`],
         ['Pagamentos Pendentes', `R$ ${financialStats.pendente.toFixed(2)}`],
@@ -285,7 +311,47 @@ export default function FinanceiroPage() {
       headStyles: { fillColor: [194, 24, 91] }
     });
 
-    doc.save(`Relatorio_Financeiro_${fromStr.replace(/\//g, '-')}.pdf`);
+    if (topProducts.length > 0) {
+      autoTable(doc, {
+        startY: (doc as any).lastAutoTable.finalY + 15,
+        head: [['TOP PRODUTOS', 'MARCA', 'QTD', 'TOTAL']],
+        body: topProducts.map((p, i) => [
+          `${i+1}º ${p.name}`,
+          p.brand,
+          p.quantity,
+          `R$ ${p.total.toFixed(2)}`
+        ]),
+        headStyles: { fillColor: [194, 24, 91] }
+      });
+    }
+
+    if (topClients.length > 0) {
+      autoTable(doc, {
+        startY: (doc as any).lastAutoTable.finalY + 15,
+        head: [['TOP CLIENTES', 'PEDIDOS', 'TOTAL']],
+        body: topClients.map((c, i) => [
+          `${i+1}º ${c.name}`,
+          c.count,
+          `R$ ${c.total.toFixed(2)}`
+        ]),
+        headStyles: { fillColor: [194, 24, 91] }
+      });
+    }
+
+    if (proximosRecebimentos.length > 0) {
+      autoTable(doc, {
+        startY: (doc as any).lastAutoTable.finalY + 15,
+        head: [['CONTAS A RECEBER', 'VENCIMENTO', 'VALOR']],
+        body: proximosRecebimentos.map(p => [
+          p.clientName,
+          formatDueDateBR(p.dueDate),
+          `R$ ${Number(p.finalAmount).toFixed(2)}`
+        ]),
+        headStyles: { fillColor: [194, 24, 91] }
+      });
+    }
+
+    doc.save(`Relatorio_Financeiro_Completo_${fromStr.replace(/\//g, '-')}.pdf`);
   };
 
   const getBrandBadgeColor = (brand: string) => {
@@ -413,9 +479,7 @@ export default function FinanceiroPage() {
         ))}
       </div>
 
-      {/* RANKINGS ELITE - NOVAS SEÇÕES */}
       <div className="grid gap-8 md:grid-cols-2">
-        {/* RANKING DE PRODUTOS MAIS VENDIDOS */}
         <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-background/50 backdrop-blur-sm border-2 border-primary/5">
           <CardHeader className="bg-primary/10 pb-8 p-8 border-b-2 border-primary/10">
             <CardTitle className="text-2xl font-black px-2 uppercase tracking-tight italic flex items-center gap-3 text-primary">
@@ -462,7 +526,6 @@ export default function FinanceiroPage() {
           </CardContent>
         </Card>
 
-        {/* RANKING DE MELHORES CLIENTES */}
         <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-background/50 backdrop-blur-sm border-2 border-accent/5">
           <CardHeader className="bg-accent/10 pb-8 p-8 border-b-2 border-accent/10">
             <CardTitle className="text-2xl font-black px-2 uppercase tracking-tight italic flex items-center gap-3 text-accent">
