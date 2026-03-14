@@ -38,6 +38,7 @@ import {
   UserCheck,
   RefreshCw,
   AlertTriangle,
+  Calendar,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc, setDocumentNonBlocking } from "@/firebase";
@@ -113,26 +114,10 @@ export default function NovaVendaPage() {
 
   const [saleItems, setSaleItems] = useState<SaleItem[]>([]);
   const [paymentMethod, setPaymentMethod] = useState("");
-  const [dueDate, setDueDate] = useState("");
+  const [orderDate, setOrderDate] = useState(new Date().toISOString().split('T')[0]);
   const [saleNotes, setSaleNotes] = useState("");
   const [discount, setDiscount] = useState(0);
   const [additionalFee, setAdditionalFee] = useState(0);
-
-  // Lógica de Vencimento Fixo no dia 05 do mês seguinte
-  useEffect(() => {
-    const now = new Date();
-    let nextMonth = now.getMonth() + 1;
-    let year = now.getFullYear();
-    
-    if (nextMonth > 11) {
-      nextMonth = 0;
-      year++;
-    }
-    
-    // Formata YYYY-MM-05 para o input de data
-    const m = String(nextMonth + 1).padStart(2, '0');
-    setDueDate(`${year}-${m}-05`);
-  }, []);
 
   const formatPhone = (value: string) => {
     if (!value) return "";
@@ -149,7 +134,8 @@ export default function NovaVendaPage() {
     return number.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
-  const unmaskCurrency = (value: string) => {
+  const unmaskCurrency = (value: string | number) => {
+    if (typeof value === 'number') return value;
     if (!value) return 0;
     const cleaned = value.toString().replace(/\./g, "").replace(",", ".");
     return parseFloat(cleaned) || 0;
@@ -235,6 +221,11 @@ export default function NovaVendaPage() {
       const finalClientId = selectedClient ? selectedClient.id : `cli-${Date.now()}`;
       const orderId = `ord-${Date.now()}`;
 
+      // Calcula Vencimento: Dia 05 do mês seguinte à venda
+      const d = new Date(orderDate);
+      d.setMonth(d.getMonth() + 1);
+      const dueDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-05`;
+
       if (!selectedClient) {
         const finalClientData = { ...clientData, id: finalClientId, adminId: user.uid, registrationDate: new Date().toISOString() };
         setDocumentNonBlocking(doc(db, "users", user.uid, "clients", finalClientId), finalClientData, { merge: true });
@@ -246,14 +237,14 @@ export default function NovaVendaPage() {
         clientId: finalClientId,
         clientName: clientData.fullName,
         cycleId: activeCycleId,
-        orderDate: new Date().toISOString(),
+        orderDate: new Date(orderDate).toISOString(),
         totalAmount: subtotal,
         discountAmount: discount,
         additionalFeeAmount: additionalFee,
         finalAmount: finalTotal,
         paymentMethod,
         paymentStatus: paymentMethod === "a prazo" ? "Pendente" : "Pago",
-        dueDate: dueDate || null,
+        dueDate: dueDate,
         notes: saleNotes,
         isDeleted: false,
       };
@@ -388,9 +379,9 @@ export default function NovaVendaPage() {
                       <Input placeholder="Categoria" className="h-16 text-xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted px-4 placeholder:text-muted-foreground/30" value={item.category} onChange={(e) => handleItemChange(item.tempId, "category", e.target.value)} />
                     </div>
                     <div className="grid grid-cols-3">
-                      <div className="relative"><Input placeholder="00,00" className="h-16 text-center font-black bg-sky-100 border-b-4 border-sky-400" value={item.catalogPrice} onChange={(e) => handleItemChange(item.tempId, "catalogPrice", maskCurrency(e.target.value))} /><span className="absolute top-1 left-1 text-[7px] font-black uppercase text-sky-700/60">Revista</span></div>
-                      <div className="relative"><Input placeholder="00,00" className="h-16 text-center font-black bg-orange-100 border-b-4 border-orange-400" value={item.costPrice} onChange={(e) => handleItemChange(item.tempId, "costPrice", maskCurrency(e.target.value))} /><span className="absolute top-1 left-1 text-[7px] font-black uppercase text-orange-700/60">Custo</span></div>
-                      <div className="relative"><Input placeholder="00,00" className="h-16 text-center font-black bg-green-100 border-none" value={item.salePrice} onChange={(e) => handleItemChange(item.tempId, "salePrice", maskCurrency(e.target.value))} required /><span className="absolute top-1 left-1 text-[7px] font-black uppercase text-green-700/60">Venda</span></div>
+                      <div className="relative"><Input placeholder="00,00" className="h-16 text-center text-3xl font-black text-foreground bg-sky-100 border-b-4 border-sky-400" value={item.catalogPrice} onChange={(e) => handleItemChange(item.tempId, "catalogPrice", maskCurrency(e.target.value))} /><span className="absolute top-1 left-1 text-[7px] font-black uppercase text-sky-700/60">Revista</span></div>
+                      <div className="relative"><Input placeholder="00,00" className="h-16 text-center text-3xl font-black text-foreground bg-orange-100 border-b-4 border-orange-400" value={item.costPrice} onChange={(e) => handleItemChange(item.tempId, "costPrice", maskCurrency(e.target.value))} /><span className="absolute top-1 left-1 text-[7px] font-black uppercase text-orange-700/60">Custo</span></div>
+                      <div className="relative"><Input placeholder="00,00" className="h-16 text-center text-3xl font-black text-foreground bg-green-100 border-none" value={item.salePrice} onChange={(e) => handleItemChange(item.tempId, "salePrice", maskCurrency(e.target.value))} required /><span className="absolute top-1 left-1 text-[7px] font-black uppercase text-green-700/60">Venda</span></div>
                     </div>
                   </div>
                 ))}
@@ -407,7 +398,7 @@ export default function NovaVendaPage() {
           <CardHeader className="bg-muted/80 p-4 border-b-2">
             <CardTitle className="flex flex-row items-center gap-3 text-xl sm:text-3xl font-black text-left uppercase px-2">
               <CreditCard className="size-6 sm:size-8 text-primary" />
-              3. Forma de Pagamento
+              3. Forma de Pagamento & Data
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
@@ -425,9 +416,9 @@ export default function NovaVendaPage() {
             <div className="grid sm:grid-cols-2">
               <div className="border-b-4 sm:border-b-0 sm:border-r-4 border-muted p-4">
                 <Label className="text-[10px] font-black uppercase opacity-60 flex items-center gap-2">
-                  Vencimento <Badge variant="secondary" className="text-[8px] h-4 font-black">FIXO DIA 05</Badge>
+                  Data da Venda <Badge variant="secondary" className="text-[8px] h-4 font-black">VENCIMENTO AUTOMÁTICO DIA 05</Badge>
                 </Label>
-                <Input type="date" className="h-12 text-xl font-black border-none" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+                <Input type="date" className="h-12 text-xl font-black border-none" value={orderDate} onChange={(e) => setOrderDate(e.target.value)} />
               </div>
               <div className="p-4"><Label className="text-[10px] font-black uppercase opacity-60">Notas da Venda</Label><Input placeholder="Ex: Presente, troco..." className="h-12 text-xl font-black border-none placeholder:text-muted-foreground/30" value={saleNotes} onChange={(e) => setSaleNotes(e.target.value)} /></div>
             </div>
@@ -459,8 +450,8 @@ export default function NovaVendaPage() {
             <div className="space-y-4">
               <div className="flex justify-between border-b-2 border-white/10 pb-1"><span className="text-xs font-black uppercase opacity-60">Subtotal</span><span className="text-2xl font-black italic">R$ {subtotal.toFixed(2)}</span></div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1"><Label className="text-[10px] font-black uppercase opacity-60 italic">Desconto (R$)</Label><Input type="number" className="h-14 bg-white/10 border-4 border-white/20 text-white font-black text-center" value={discount} onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)} /></div>
-                <div className="space-y-1"><Label className="text-[10px] font-black uppercase opacity-60 italic">Taxas (R$)</Label><Input type="number" className="h-14 bg-white/10 border-4 border-white/20 text-white font-black text-center" value={additionalFee} onChange={(e) => setAdditionalFee(parseFloat(e.target.value) || 0)} /></div>
+                <div className="space-y-1"><Label className="text-[10px] font-black uppercase opacity-60 italic">Desconto (R$)</Label><Input type="number" className="h-14 bg-white/10 border-4 border-white/20 text-white text-2xl font-black text-center" value={discount} onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)} /></div>
+                <div className="space-y-1"><Label className="text-[10px] font-black uppercase opacity-60 italic">Taxas (R$)</Label><Input type="number" className="h-14 bg-white/10 border-4 border-white/20 text-white text-2xl font-black text-center" value={additionalFee} onChange={(e) => setAdditionalFee(parseFloat(e.target.value) || 0)} /></div>
               </div>
             </div>
             <div className="p-6 rounded-[2rem] bg-white text-primary text-center border-8 border-white animate-in zoom-in duration-500 shadow-2xl">

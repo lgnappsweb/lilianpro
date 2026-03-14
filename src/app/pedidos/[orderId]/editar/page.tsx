@@ -40,6 +40,7 @@ import {
   AlertTriangle,
   Save,
   ArrowLeft,
+  Calendar,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc, setDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase";
@@ -104,7 +105,7 @@ export default function EditarVendaPage() {
 
   const [saleItems, setSaleItems] = useState<SaleItem[]>([]);
   const [paymentMethod, setPaymentMethod] = useState("");
-  const [dueDate, setDueDate] = useState("");
+  const [orderDate, setOrderDate] = useState("");
   const [saleNotes, setSaleNotes] = useState("");
   const [discount, setDiscount] = useState(0);
   const [additionalFee, setAdditionalFee] = useState(0);
@@ -117,7 +118,8 @@ export default function EditarVendaPage() {
     return number.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
-  const unmaskCurrency = (value: string) => {
+  const unmaskCurrency = (value: string | number) => {
+    if (typeof value === 'number') return value;
     if (!value) return 0;
     const cleaned = value.toString().replace(/\./g, "").replace(",", ".");
     return parseFloat(cleaned) || 0;
@@ -147,7 +149,7 @@ export default function EditarVendaPage() {
 
         // 2. Carregar Pedido
         setPaymentMethod(orderDataOriginal.paymentMethod || "");
-        setDueDate(orderDataOriginal.dueDate || "");
+        setOrderDate(orderDataOriginal.orderDate ? new Date(orderDataOriginal.orderDate).toISOString().split('T')[0] : "");
         setSaleNotes(orderDataOriginal.notes || "");
         setDiscount(Number(orderDataOriginal.discountAmount) || 0);
         setAdditionalFee(Number(orderDataOriginal.additionalFeeAmount) || 0);
@@ -188,7 +190,7 @@ export default function EditarVendaPage() {
       if (item.tempId !== tempId) return item;
       const updatedItem = { ...item, [field]: value };
       
-      // Lógica de cálculo automático de custo
+      // Lógica de cálculo automático de lucro
       if (field === "catalogPrice" || field === "brand") {
         const catalog = unmaskCurrency(updatedItem.catalogPrice);
         const brand = updatedItem.brand;
@@ -251,13 +253,19 @@ export default function EditarVendaPage() {
     setIsLoading(true);
 
     try {
+      // Calcula Vencimento: Dia 05 do mês seguinte à venda
+      const d = new Date(orderDate);
+      d.setMonth(d.getMonth() + 1);
+      const dueDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-05`;
+
       // 1. Atualizar Pedido
       const orderRef = doc(db, "users", user.uid, "orders", orderId as string);
       const updatedOrder = {
         clientName: clientData.fullName,
         paymentMethod,
         paymentStatus: paymentMethod === "a prazo" ? "Pendente" : "Pago",
-        dueDate: dueDate || null,
+        orderDate: new Date(orderDate).toISOString(),
+        dueDate: dueDate,
         notes: saleNotes,
         totalAmount: subtotal,
         discountAmount: discount,
@@ -383,9 +391,9 @@ export default function EditarVendaPage() {
                     <Input placeholder="Categoria" className="h-16 text-xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted px-4 placeholder:text-muted-foreground/30" value={item.category} onChange={(e) => handleItemChange(item.tempId, "category", e.target.value)} />
                   </div>
                   <div className="grid grid-cols-3">
-                    <div className="relative"><Input placeholder="00,00" className="h-16 text-center font-black bg-sky-100 border-b-4 border-sky-400" value={item.catalogPrice} onChange={(e) => handleItemChange(item.tempId, "catalogPrice", maskCurrency(e.target.value))} /><span className="absolute top-1 left-1 text-[7px] font-black uppercase text-sky-700/60">Revista</span></div>
-                    <div className="relative"><Input placeholder="00,00" className="h-16 text-center font-black bg-orange-100 border-b-4 border-orange-400" value={item.costPrice} onChange={(e) => handleItemChange(item.tempId, "costPrice", maskCurrency(e.target.value))} /><span className="absolute top-1 left-1 text-[7px] font-black uppercase text-orange-700/60">Custo</span></div>
-                    <div className="relative"><Input placeholder="00,00" className="h-16 text-center font-black bg-green-100 border-none" value={item.salePrice} onChange={(e) => handleItemChange(item.tempId, "salePrice", maskCurrency(e.target.value))} required /><span className="absolute top-1 left-1 text-[7px] font-black uppercase text-green-700/60">Venda</span></div>
+                    <div className="relative"><Input placeholder="00,00" className="h-16 text-center text-3xl font-black text-foreground bg-sky-100 border-b-4 border-sky-400" value={item.catalogPrice} onChange={(e) => handleItemChange(item.tempId, "catalogPrice", maskCurrency(e.target.value))} /><span className="absolute top-1 left-1 text-[7px] font-black uppercase text-sky-700/60">Revista</span></div>
+                    <div className="relative"><Input placeholder="00,00" className="h-16 text-center text-3xl font-black text-foreground bg-orange-100 border-b-4 border-orange-400" value={item.costPrice} onChange={(e) => handleItemChange(item.tempId, "costPrice", maskCurrency(e.target.value))} /><span className="absolute top-1 left-1 text-[7px] font-black uppercase text-orange-700/60">Custo</span></div>
+                    <div className="relative"><Input placeholder="00,00" className="h-16 text-center text-3xl font-black text-foreground bg-green-100 border-none" value={item.salePrice} onChange={(e) => handleItemChange(item.tempId, "salePrice", maskCurrency(e.target.value))} required /><span className="absolute top-1 left-1 text-[7px] font-black uppercase text-green-700/60">Venda</span></div>
                   </div>
                 </div>
               ))}
@@ -429,8 +437,8 @@ export default function EditarVendaPage() {
             </div>
             <div className="grid sm:grid-cols-2">
               <div className="border-b-4 sm:border-b-0 sm:border-r-4 border-muted p-4">
-                <Label className="text-[10px] font-black uppercase opacity-60 flex items-center gap-2">Vencimento <Badge variant="secondary" className="text-[8px] h-4 font-black">FIXO DIA 05</Badge></Label>
-                <Input type="date" className="h-12 text-xl font-black border-none" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+                <Label className="text-[10px] font-black uppercase opacity-60 flex items-center gap-2">Data da Venda <Badge variant="secondary" className="text-[8px] h-4 font-black">VENCIMENTO FIXO DIA 05</Badge></Label>
+                <Input type="date" className="h-12 text-xl font-black border-none" value={orderDate} onChange={(e) => setOrderDate(e.target.value)} />
               </div>
               <div className="p-4"><Label className="text-[10px] font-black uppercase opacity-60">Notas da Venda</Label><Input placeholder="Ex: Ajuste de valor, item esquecido..." className="h-12 text-xl font-black border-none placeholder:text-muted-foreground/30" value={saleNotes} onChange={(e) => setSaleNotes(e.target.value)} /></div>
             </div>
@@ -462,8 +470,8 @@ export default function EditarVendaPage() {
             <div className="space-y-4">
               <div className="flex justify-between border-b-2 border-white/10 pb-1"><span className="text-xs font-black uppercase opacity-60">Subtotal Bruto</span><span className="text-2xl font-black italic">R$ {subtotal.toFixed(2)}</span></div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1"><Label className="text-[10px] font-black uppercase opacity-60 italic">Desconto (R$)</Label><Input type="number" className="h-14 bg-white/10 border-4 border-white/20 text-white font-black text-center" value={discount} onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)} /></div>
-                <div className="space-y-1"><Label className="text-[10px] font-black uppercase opacity-60 italic">Taxas (R$)</Label><Input type="number" className="h-14 bg-white/10 border-4 border-white/20 text-white font-black text-center" value={additionalFee} onChange={(e) => setAdditionalFee(parseFloat(e.target.value) || 0)} /></div>
+                <div className="space-y-1"><Label className="text-[10px] font-black uppercase opacity-60 italic">Desconto (R$)</Label><Input type="number" className="h-14 bg-white/10 border-4 border-white/20 text-white text-2xl font-black text-center" value={discount} onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)} /></div>
+                <div className="space-y-1"><Label className="text-[10px] font-black uppercase opacity-60 italic">Taxas (R$)</Label><Input type="number" className="h-14 bg-white/10 border-4 border-white/20 text-white text-2xl font-black text-center" value={additionalFee} onChange={(e) => setAdditionalFee(parseFloat(e.target.value) || 0)} /></div>
               </div>
             </div>
             <div className="p-6 rounded-[2rem] bg-white text-primary text-center border-8 border-white animate-in zoom-in duration-500 shadow-2xl">
