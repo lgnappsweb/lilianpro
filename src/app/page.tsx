@@ -374,8 +374,8 @@ export default function DashboardPage() {
         {/* GESTÃO DE CICLO */}
         <Card className="w-full border-4 border-primary/20 shadow-xl rounded-[2.5rem] overflow-hidden bg-background mb-4">
           <CardHeader className="bg-primary/5 p-4 sm:p-6 border-b-2 border-primary/10">
-            <CardTitle className="text-base sm:text-xl font-black flex items-center justify-center gap-2 sm:gap-3 uppercase italic text-primary whitespace-nowrap">
-              <RefreshCw className="size-5 sm:size-6" /> GESTÃO DE CICLO ATUAL
+            <CardTitle className="text-sm sm:text-xl font-black flex items-center justify-center gap-2 sm:gap-3 uppercase italic text-primary whitespace-nowrap">
+              <RefreshCw className="size-4 sm:size-6" /> GESTÃO DE CICLO ATUAL
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 space-y-6">
@@ -456,7 +456,7 @@ export default function DashboardPage() {
             <Button 
               variant="ghost" 
               onClick={() => setShowResetConfirm(true)}
-              className="w-full h-auto min-h-14 py-4 text-sm sm:text-xl text-destructive font-black uppercase tracking-tight sm:tracking-widest gap-3 hover:bg-destructive/5 rounded-2xl border-4 border-destructive/10 transition-all active:scale-95 px-6"
+              className="w-full h-auto min-h-14 py-4 text-base sm:text-xl text-destructive font-black uppercase tracking-tight sm:tracking-widest gap-3 hover:bg-destructive/5 rounded-2xl border-4 border-destructive/10 transition-all active:scale-95 px-6"
             >
               <Trash2 className="size-5 sm:size-6 shrink-0" /> 
               <span className="flex-1 text-center">ENCERRAR CICLO ATUAL</span>
@@ -497,20 +497,20 @@ export default function DashboardPage() {
       {/* MONITOR DE SAÚDE FINANCEIRA DINÂMICO */}
       {healthStatus && (
         <Card className={cn("border-4 shadow-2xl rounded-[2.5rem] overflow-hidden transition-all duration-700", healthStatus.bg)}>
-          <CardHeader className="p-8 pb-4">
+          <CardHeader className="p-4 sm:p-8 pb-4">
             <div className="flex items-center gap-4">
               <div className={cn("p-3 rounded-2xl bg-white dark:bg-white/10 shadow-sm", healthStatus.iconColor)}>
-                <healthStatus.icon className="size-8" />
+                <healthStatus.icon className="size-6 sm:size-8" />
               </div>
-              <div>
-                <CardTitle className={cn("text-lg sm:text-2xl font-black uppercase tracking-tighter italic whitespace-nowrap", healthStatus.iconColor)}>
+              <div className="min-w-0">
+                <CardTitle className={cn("text-sm sm:text-2xl font-black uppercase tracking-tighter italic whitespace-nowrap", healthStatus.iconColor)}>
                   {healthStatus.title}
                 </CardTitle>
-                <CardDescription className="font-bold opacity-70">Monitoramento automático de cobranças</CardDescription>
+                <CardDescription className="font-bold opacity-70 text-xs sm:text-sm">Monitoramento de cobranças</CardDescription>
               </div>
             </div>
           </CardHeader>
-          <CardContent className="p-8 pt-4">
+          <CardContent className="p-4 sm:p-8 pt-4">
             <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
               <div className="bg-white/60 dark:bg-white/5 p-2 sm:p-4 rounded-2xl text-center shadow-inner border border-white/20 min-w-0">
                 <p className="text-[8px] sm:text-[10px] font-black text-muted-foreground uppercase tracking-tighter sm:tracking-widest mb-1 truncate">Pagos</p>
