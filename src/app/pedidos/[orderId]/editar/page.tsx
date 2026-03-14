@@ -7,7 +7,6 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,6 +46,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc, setDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase";
 import { doc, collection, getDocs, getDoc } from "firebase/firestore";
 import { useRouter, useParams } from "next/navigation";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 interface SaleItem {
@@ -268,7 +268,7 @@ export default function EditarVendaPage() {
       };
       setDocumentNonBlocking(orderRef, updatedOrder, { merge: true });
 
-      // 2. Atualizar Dados da Cliente (Opcional, mas recomendado já que permitimos editar no card 1)
+      // 2. Atualizar Dados da Cliente
       const clientRef = doc(db, "users", user.uid, "clients", orderDataOriginal?.clientId);
       setDocumentNonBlocking(clientRef, clientData, { merge: true });
 
@@ -337,7 +337,7 @@ export default function EditarVendaPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-10">
-        {/* CARD 1: IDENTIFICAÇÃO (MESMO DA NOVA VENDA) */}
+        {/* CARD 1: IDENTIFICAÇÃO */}
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
           <CardHeader className="bg-muted/80 p-4 border-b-2">
             <CardTitle className="flex flex-row items-center gap-3 text-xl sm:text-3xl font-black text-left uppercase px-2">
@@ -359,7 +359,7 @@ export default function EditarVendaPage() {
           </CardContent>
         </Card>
 
-        {/* CARD 2: PRODUTOS VENDIDOS (REPLICA COMPLETA) */}
+        {/* CARD 2: PRODUTOS VENDIDOS */}
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
           <CardHeader className="bg-muted/80 p-4 border-b-2">
             <CardTitle className="flex flex-row items-center gap-3 text-xl sm:text-3xl font-black text-left uppercase px-2">
@@ -457,7 +457,7 @@ export default function EditarVendaPage() {
           </div>
         </Card>
 
-        {/* CARD 5: FINALIZAÇÃO (CONSOLIDADO) */}
+        {/* CARD 5: FINALIZAÇÃO */}
         <Card className="border-none shadow-2xl rounded-[1.5rem] bg-primary text-primary-foreground p-8 space-y-8">
           <div className="grid lg:grid-cols-2 gap-8 items-center">
             <div className="space-y-4">
