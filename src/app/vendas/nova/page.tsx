@@ -36,10 +36,12 @@ import {
   Loader2,
   Info,
   Tag,
+  Search,
+  UserCheck,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useUser, useFirestore, setDocumentNonBlocking } from "@/firebase";
-import { doc } from "firebase/firestore";
+import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from "@/firebase";
+import { doc, collection } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
@@ -63,7 +65,24 @@ export default function NovaVendaPage() {
 
   const [isLoading, setIsLoading] = useState(false);
 
-  // --- ESTADO DO CLIENTE ---
+  // --- BUSCA DE CLIENTES EXISTENTES ---
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedClient, setSelectedClient] = useState<any | null>(null);
+
+  const clientsQuery = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return collection(db, "users", user.uid, "clients");
+  }, [db, user]);
+  const { data: existingClients } = useCollection(clientsQuery);
+
+  const filteredClients = useMemo(() => {
+    if (!existingClients || !searchTerm) return [];
+    return existingClients.filter(c => 
+      c.fullName?.toLowerCase().includes(searchTerm.toLowerCase())
+    ).slice(0, 5);
+  }, [existingClients, searchTerm]);
+
+  // --- ESTADO DO CLIENTE (FORM) ---
   const [clientData, setClientData] = useState({
     fullName: "",
     phone: "",
@@ -74,7 +93,6 @@ export default function NovaVendaPage() {
   });
 
   // --- ESTADO DOS PRODUTOS (LISTA) ---
-  // Começa sem itens conforme solicitado
   const [saleItems, setSaleItems] = useState<SaleItem[]>([]);
 
   // --- ESTADO DO PAGAMENTO E TOTAIS ---
@@ -84,7 +102,7 @@ export default function NovaVendaPage() {
   const [discount, setDiscount] = useState(0);
   const [additionalFee, setAdditionalFee] = useState(0);
 
-  // Define data atual no fuso horário do Brasil
+  // Define data atual no fuso horário do Brasil para o vencimento padrão
   useEffect(() => {
     const now = new Date();
     const formatter = new Intl.DateTimeFormat('en-CA', {
@@ -117,10 +135,37 @@ export default function NovaVendaPage() {
 
   const unmaskCurrency = (value: string) => {
     if (!value) return 0;
-    return parseFloat(value.replace(/\./g, "").replace(",", ".")) || 0;
+    const cleaned = value.toString().replace(/\./g, "").replace(",", ".");
+    return parseFloat(cleaned) || 0;
   };
 
-  // Funções de Gerenciamento de Itens
+  // --- GERENCIAMENTO DE CLIENTE ---
+  const handleSelectClient = (client: any) => {
+    setSelectedClient(client);
+    setClientData({
+      fullName: client.fullName,
+      phone: client.phone,
+      city: client.city || "",
+      neighborhood: client.neighborhood || "",
+      address: client.address || "",
+      notes: client.notes || "",
+    });
+    setSearchTerm("");
+  };
+
+  const handleClearClient = () => {
+    setSelectedClient(null);
+    setClientData({
+      fullName: "",
+      phone: "",
+      city: "",
+      neighborhood: "",
+      address: "",
+      notes: "",
+    });
+  };
+
+  // --- GERENCIAMENTO DE ITENS ---
   const addItem = () => {
     setSaleItems([...saleItems, {
       tempId: `item-${Date.now()}-${Math.random()}`,
@@ -196,23 +241,25 @@ export default function NovaVendaPage() {
     setIsLoading(true);
 
     try {
-      const clientId = `cli-${Date.now()}`;
+      const finalClientId = selectedClient ? selectedClient.id : `cli-${Date.now()}`;
       const orderId = `ord-${Date.now()}`;
 
-      // 1. Salvar Novo Cliente
-      const finalClientData = {
-        ...clientData,
-        id: clientId,
-        adminId: user.uid,
-        registrationDate: new Date().toISOString(),
-      };
-      setDocumentNonBlocking(doc(db, "users", user.uid, "clients", clientId), finalClientData, { merge: true });
+      // 1. Salvar Novo Cliente (se não for selecionado um existente)
+      if (!selectedClient) {
+        const finalClientData = {
+          ...clientData,
+          id: finalClientId,
+          adminId: user.uid,
+          registrationDate: new Date().toISOString(),
+        };
+        setDocumentNonBlocking(doc(db, "users", user.uid, "clients", finalClientId), finalClientData, { merge: true });
+      }
 
-      // 2. Salvar Pedido Root
+      // 2. Salvar Pedido Root (Exatamente como funciona no app)
       const orderData = {
         id: orderId,
         adminId: user.uid,
-        clientId: clientId,
+        clientId: finalClientId,
         clientName: clientData.fullName,
         orderDate: new Date().toISOString(),
         totalAmount: subtotal,
@@ -232,7 +279,7 @@ export default function NovaVendaPage() {
         const productId = `prod-${Date.now()}-${index}`;
         const itemId = `item-${Date.now()}-${index}`;
 
-        // Salvar Produto no Catálogo
+        // Salvar Produto no Catálogo (sempre salvamos como novo produto para esta venda rápida)
         const finalProductData = {
           id: productId,
           name: item.name,
@@ -247,7 +294,7 @@ export default function NovaVendaPage() {
         };
         setDocumentNonBlocking(doc(db, "users", user.uid, "products", productId), finalProductData, { merge: true });
 
-        // Salvar Item dentro do Pedido
+        // Salvar Item detalhado dentro do Pedido (Exatamente como o app exige)
         const orderItemData = {
           id: itemId,
           adminId: user.uid,
@@ -262,8 +309,8 @@ export default function NovaVendaPage() {
       });
 
       toast({
-        title: "Venda Concluída com Sucesso!",
-        description: `Cadastro de cliente e ${saleItems.length} produtos realizado.`,
+        title: "Venda Concluída!",
+        description: `Registro salvo para ${clientData.fullName}.`,
       });
       
       router.push("/pedidos");
@@ -272,7 +319,7 @@ export default function NovaVendaPage() {
       toast({
         variant: "destructive",
         title: "Erro ao processar",
-        description: "Ocorreu um problema ao salvar os dados da venda múltipla.",
+        description: "Ocorreu um problema ao salvar os dados da venda.",
       });
     } finally {
       setIsLoading(false);
@@ -295,26 +342,75 @@ export default function NovaVendaPage() {
         
         {/* 1. IDENTIFICAÇÃO DA CLIENTE */}
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="bg-muted/80 p-6 sm:p-8 border-b-2">
+          <CardHeader className="bg-muted/80 p-6 sm:p-8 border-b-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <CardTitle className="flex flex-row items-center gap-3 text-xl sm:text-3xl font-black text-left uppercase px-2">
               <User className="size-6 sm:size-8 text-primary" />
               1. Identificação da Cliente
             </CardTitle>
+            {selectedClient && (
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={handleClearClient}
+                className="rounded-full font-black text-[10px] uppercase tracking-widest border-primary/20 text-primary"
+              >
+                Trocar Cliente
+              </Button>
+            )}
           </CardHeader>
           <CardContent className="p-0 space-y-0">
+            {/* BUSCA DE CLIENTE */}
+            {!selectedClient && (
+              <div className="relative border-b-4 border-muted group">
+                <Search className="absolute left-8 top-1/2 -translate-y-1/2 size-6 text-primary group-focus-within:scale-110 transition-transform" />
+                <Input
+                  placeholder="Buscar cliente existente..."
+                  className="h-20 sm:h-24 pl-20 pr-8 text-xl sm:text-2xl font-black rounded-none border-none focus:ring-0 w-full bg-primary/5 italic placeholder:text-primary/20"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                {filteredClients.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 z-50 bg-background border-x-4 border-b-4 border-primary/20 shadow-2xl animate-in slide-in-from-top-2 duration-200">
+                    {filteredClients.map((client) => (
+                      <button
+                        key={client.id}
+                        type="button"
+                        onClick={() => handleSelectClient(client)}
+                        className="w-full p-6 text-left hover:bg-primary/10 border-b last:border-none flex items-center justify-between group/item"
+                      >
+                        <div>
+                          <p className="font-black text-xl uppercase italic group-hover/item:text-primary transition-colors">{client.fullName}</p>
+                          <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{client.phone}</p>
+                        </div>
+                        <UserCheck className="size-6 text-primary opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="grid sm:grid-cols-2">
               <Input
                 placeholder="Nome Completo"
-                className="h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-8 bg-background"
+                className={cn(
+                  "h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-8 bg-background",
+                  selectedClient && "bg-muted/30 opacity-80"
+                )}
                 value={clientData.fullName}
-                onChange={(e) => setClientData(prev => ({ ...prev, fullName: e.target.value }))}
+                onChange={(e) => !selectedClient && setClientData(prev => ({ ...prev, fullName: e.target.value }))}
+                readOnly={!!selectedClient}
                 required
               />
               <Input
                 placeholder="WhatsApp"
-                className="h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-8 bg-background"
+                className={cn(
+                  "h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-8 bg-background",
+                  selectedClient && "bg-muted/30 opacity-80"
+                )}
                 value={clientData.phone}
-                onChange={(e) => setClientData(prev => ({ ...prev, phone: formatPhone(e.target.value) }))}
+                onChange={(e) => !selectedClient && setClientData(prev => ({ ...prev, phone: formatPhone(e.target.value) }))}
+                readOnly={!!selectedClient}
                 required
               />
             </div>
@@ -322,23 +418,35 @@ export default function NovaVendaPage() {
             <div className="grid sm:grid-cols-2">
               <Input
                 placeholder="Cidade"
-                className="h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-8 bg-background"
+                className={cn(
+                  "h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-8 bg-background",
+                  selectedClient && "bg-muted/30 opacity-80"
+                )}
                 value={clientData.city}
-                onChange={(e) => setClientData(prev => ({ ...prev, city: e.target.value }))}
+                onChange={(e) => !selectedClient && setClientData(prev => ({ ...prev, city: e.target.value }))}
+                readOnly={!!selectedClient}
               />
               <Input
                 placeholder="Bairro"
-                className="h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-8 bg-background"
+                className={cn(
+                  "h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-8 bg-background",
+                  selectedClient && "bg-muted/30 opacity-80"
+                )}
                 value={clientData.neighborhood}
-                onChange={(e) => setClientData(prev => ({ ...prev, neighborhood: e.target.value }))}
+                onChange={(e) => !selectedClient && setClientData(prev => ({ ...prev, neighborhood: e.target.value }))}
+                readOnly={!!selectedClient}
               />
             </div>
 
             <Input
               placeholder="Endereço / Referência"
-              className="h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-none focus:border-primary w-full px-8 bg-background"
+              className={cn(
+                "h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-none focus:border-primary w-full px-8 bg-background",
+                selectedClient && "bg-muted/30 opacity-80"
+              )}
               value={clientData.address}
-              onChange={(e) => setClientData(prev => ({ ...prev, address: e.target.value }))}
+              onChange={(e) => !selectedClient && setClientData(prev => ({ ...prev, address: e.target.value }))}
+              readOnly={!!selectedClient}
             />
           </CardContent>
         </Card>
