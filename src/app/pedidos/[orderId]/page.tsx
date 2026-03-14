@@ -27,6 +27,7 @@ import {
   DollarSign,
   Tag,
   MessageCircle,
+  RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -52,6 +53,13 @@ export default function DetalhesPedidoPage() {
   }, [db, user]);
   const { data: settings } = useDoc(settingsRef);
   const appName = settings?.appName || "LilianPro";
+
+  // Busca configurações do ciclo
+  const cycleRef = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return doc(db, "users", user.uid, "config", "cycle");
+  }, [db, user]);
+  const { data: cycleData } = useDoc(cycleRef);
 
   // Busca os itens do pedido
   const itemsQuery = useMemoFirebase(() => {
@@ -89,7 +97,12 @@ export default function DetalhesPedidoPage() {
       itemsList += `• ${item.quantity}x ${item.productName} - R$ ${Number(item.subtotal).toFixed(2)}\n`;
     });
 
+    const cycleInfo = cycleData?.name 
+      ? `🔄 *Ciclo:* ${cycleData.name}\n` + (cycleData.from ? `📅 *Período:* ${new Date(cycleData.from).toLocaleDateString('pt-BR')} - ${new Date(cycleData.to).toLocaleDateString('pt-BR')}\n` : "")
+      : "";
+
     const message = `✨ *RESUMO DA VENDA - ${appName}* ✨\n\n` +
+      cycleInfo +
       `👤 *Cliente:* ${order.clientName}\n` +
       `📄 *Protocolo:* #${order.id?.slice(-8)}\n` +
       `📅 *Data:* ${formatDateBR(order.orderDate)}\n` +
@@ -150,6 +163,15 @@ export default function DetalhesPedidoPage() {
             </h1>
           </div>
           <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Protocolo Elite: #{order.id?.slice(-8)}</p>
+          
+          {cycleData?.name && (
+            <div className="mt-4 flex items-center justify-center gap-2">
+              <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary font-black uppercase tracking-widest px-4 py-1 gap-2 rounded-xl">
+                <RefreshCw className="size-3" />
+                {cycleData.name}
+              </Badge>
+            </div>
+          )}
         </div>
       </div>
 

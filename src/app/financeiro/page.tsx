@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
@@ -24,6 +23,7 @@ import {
   Package,
   Trophy,
   CheckCircle2,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -89,6 +89,13 @@ export default function FinanceiroPage() {
   }, [db, user]);
   const { data: settings } = useDoc(settingsRef);
   const appName = settings?.appName || "LilianPro";
+
+  // Busca configurações do ciclo
+  const cycleRef = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return doc(db, "users", user.uid, "config", "cycle");
+  }, [db, user]);
+  const { data: cycleData } = useDoc(cycleRef);
 
   const productsQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -245,7 +252,15 @@ export default function FinanceiroPage() {
     const toStr = format(date.to, "dd/MM/yyyy");
 
     let message = `📊 *RELATÓRIO FINANCEIRO ELITE - ${appName}*\n`;
-    message += `📅 *Período:* ${fromStr} - ${toStr}\n\n`;
+    
+    if (cycleData?.name) {
+      message += `🔄 *Ciclo:* ${cycleData.name}\n`;
+      if (cycleData.from) {
+        message += `📅 *Vigência Ciclo:* ${new Date(cycleData.from).toLocaleDateString('pt-BR')} - ${new Date(cycleData.to).toLocaleDateString('pt-BR')}\n`;
+      }
+    }
+    
+    message += `📅 *Período do Relatório:* ${fromStr} - ${toStr}\n\n`;
     
     message += `💰 *RESUMO FINANCEIRO*\n`;
     message += `✅ Entradas: R$ ${financialStats.recebido.toFixed(2)}\n`;
@@ -295,11 +310,23 @@ export default function FinanceiroPage() {
     
     doc.setFontSize(10);
     doc.setTextColor(100);
-    doc.text(`Período: ${fromStr} - ${toStr}`, 14, 28);
-    doc.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy HH:mm")}`, 14, 34);
+    
+    let currentY = 28;
+    if (cycleData?.name) {
+      doc.text(`Ciclo Atual: ${cycleData.name}`, 14, currentY);
+      currentY += 6;
+      if (cycleData.from) {
+        doc.text(`Período do Ciclo: ${new Date(cycleData.from).toLocaleDateString('pt-BR')} até ${new Date(cycleData.to).toLocaleDateString('pt-BR')}`, 14, currentY);
+        currentY += 6;
+      }
+    }
+    
+    doc.text(`Período Relatório: ${fromStr} - ${toStr}`, 14, currentY);
+    currentY += 6;
+    doc.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy HH:mm")}`, 14, currentY);
 
     autoTable(doc, {
-      startY: 40,
+      startY: currentY + 10,
       head: [['RESUMO FINANCEIRO', 'VALOR']],
       body: [
         ['Entradas Confirmadas', `R$ ${financialStats.recebido.toFixed(2)}`],
@@ -379,6 +406,15 @@ export default function FinanceiroPage() {
             <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap px-2">FINANCEIRO</h1>
           </div>
           <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Controle real de entradas e contas a receber.</p>
+          
+          {cycleData?.name && (
+            <div className="mt-4 flex items-center justify-center gap-2">
+              <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary font-black uppercase tracking-widest px-4 py-1 gap-2 rounded-xl">
+                <RefreshCw className="size-3" />
+                {cycleData.name}
+              </Badge>
+            </div>
+          )}
         </div>
         
         <div className="w-full sm:w-auto flex flex-col gap-6 items-center">
@@ -600,7 +636,7 @@ export default function FinanceiroPage() {
                   <div className="size-10 sm:size-16 rounded-[1.2rem] bg-green-100 flex items-center justify-center text-green-700 shadow-inner shrink-0"><ArrowDownCircle className="size-5 sm:size-8" /></div>
                   <div className="min-w-0 flex-1">
                     <p className="font-black text-lg sm:text-xl px-1 uppercase italic text-green-800 truncate">{p.clientName}</p>
-                    <p className="text-[10px] sm:text-xs text-green-600/60 font-black flex items-center gap-2 mt-1 uppercase tracking-widest"><CalendarIcon className="size-3" /> {formatDateBR(p.orderDate)}</p>
+                    <p className="text-[10px] sm:text-xs text-green-600/60 font-black flex items-center gap-2 mt-1 uppercase tracking-widest"><CalendarIcon className="size-3" /> {formatDateBR(order.orderDate)}</p>
                   </div>
                 </div>
                 <div className="sm:text-right text-left shrink-0 border-t sm:border-t-0 pt-2 w-full sm:w-auto">
