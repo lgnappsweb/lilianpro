@@ -451,7 +451,7 @@ export default function NovaVendaPage() {
             />
 
             <Textarea
-              placeholder="Notas Fixas do Perfil (Preferências permanentes, alergias, horários de entrega...)"
+              placeholder="Notas do Perfil (Preferências, horários...)"
               className={cn(
                 "min-h-[120px] text-lg sm:text-xl font-bold rounded-none border-none focus:border-primary w-full px-4 bg-background py-4 placeholder:text-muted-foreground/30",
                 selectedClient && "bg-muted/30 opacity-80"
@@ -639,7 +639,7 @@ export default function NovaVendaPage() {
               <div className="p-2 sm:p-4 space-y-1">
                 <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block px-2 italic">Notas da Venda</Label>
                 <Input
-                  placeholder="Observações desta Venda (Ex: Embrulho presente, levar troco para R$ 100...)"
+                  placeholder="Ex: Presente, troco..."
                   className="h-12 text-xl sm:text-2xl font-black border-none w-full px-2 bg-transparent placeholder:text-muted-foreground/30"
                   value={saleNotes}
                   onChange={(e) => setSaleNotes(e.target.value)}
