@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
@@ -29,17 +30,111 @@ import {
   FileText,
   AlertCircle,
   ReceiptText,
+  RefreshCw,
+  Trash2,
+  Calendar as CalendarIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection } from "firebase/firestore";
+import { 
+  useUser, 
+  useFirestore, 
+  useCollection, 
+  useMemoFirebase, 
+  useDoc, 
+  setDocumentNonBlocking, 
+  deleteDocumentNonBlocking 
+} from "@/firebase";
+import { collection, doc, getDocs } from "firebase/firestore";
 import { cn } from "@/lib/utils";
+import { 
+  format, 
+  startOfMonth, 
+  endOfMonth, 
+  isWithinInterval, 
+  setDay, 
+  setMonth, 
+  setYear, 
+  getDate, 
+  getMonth, 
+  getYear 
+} from "date-fns";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import type { DateRange } from "react-day-picker";
+
+const DAYS = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
+const MONTHS = [
+  { value: "0", label: "Janeiro" },
+  { value: "1", label: "Fevereiro" },
+  { value: "2", label: "Março" },
+  { value: "3", label: "Abril" },
+  { value: "4", label: "Maio" },
+  { value: "5", label: "Junho" },
+  { value: "6", label: "Julho" },
+  { value: "7", label: "Agosto" },
+  { value: "8", label: "Setembro" },
+  { value: "9", label: "Outubro" },
+  { value: "10", label: "Novembro" },
+  { value: "11", label: "Dezembro" },
+];
+const YEARS = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - 2 + i).toString());
 
 export default function DashboardPage() {
   const { user } = useUser();
   const db = useFirestore();
+  const { toast } = useToast();
+
+  const [cycleName, setCycleName] = useState("");
+  const [cycleDate, setCycleDate] = useState<DateRange | undefined>({
+    from: startOfMonth(new Date()),
+    to: endOfMonth(new Date()),
+  });
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+
+  // Busca configurações do ciclo
+  const cycleRef = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return doc(db, "users", user.uid, "config", "cycle");
+  }, [db, user]);
+  const { data: cycleData } = useDoc(cycleRef);
+
+  useEffect(() => {
+    if (cycleData) {
+      setCycleName(cycleData.name || "");
+      if (cycleData.from && cycleData.to) {
+        setCycleDate({
+          from: new Date(cycleData.from),
+          to: new Date(cycleData.to)
+        });
+      }
+    }
+  }, [cycleData]);
 
   const ordersQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -47,35 +142,46 @@ export default function DashboardPage() {
   }, [db, user]);
   const { data: ordersData, isLoading: ordersLoading } = useCollection(ordersQuery);
 
-  // Filtra apenas pedidos ativos (não excluídos logicamente)
-  const orders = useMemo(() => {
-    if (!ordersData) return [];
-    return ordersData.filter(o => !o.isDeleted);
-  }, [ordersData]);
-
   const clientsQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
     return collection(db, "users", user.uid, "clients");
   }, [db, user]);
   const { data: clients, isLoading: clientsLoading } = useCollection(clientsQuery);
 
+  // Filtra ordens pelo ciclo e ativos
+  const filteredOrders = useMemo(() => {
+    if (!ordersData) return [];
+    let result = ordersData.filter(o => !o.isDeleted);
+    
+    if (cycleDate?.from && cycleDate?.to) {
+      result = result.filter(order => {
+        const orderDate = new Date(order.orderDate);
+        return isWithinInterval(orderDate, { 
+          start: cycleDate.from!, 
+          end: cycleDate.to! 
+        });
+      });
+    }
+    return result;
+  }, [ordersData, cycleDate]);
+
   const stats = useMemo(() => {
-    const totalVendido = orders?.reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0) || 0;
-    const totalRecebido = orders?.filter(o => o.paymentStatus === "Pago").reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0) || 0;
-    const totalPendente = orders?.filter(o => o.paymentStatus !== "Pago").reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0) || 0;
+    const totalVendido = filteredOrders?.reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0) || 0;
+    const totalRecebido = filteredOrders?.filter(o => o.paymentStatus === "Pago").reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0) || 0;
+    const totalPendente = filteredOrders?.filter(o => o.paymentStatus !== "Pago").reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0) || 0;
 
     return [
       {
-        title: "Total Vendido",
+        title: "Vendido no Ciclo",
         value: `R$ ${totalVendido.toFixed(2)}`,
-        description: "Faturamento total ativo",
+        description: "Faturamento do período",
         icon: TrendingUp,
         color: "text-primary",
         bg: "bg-primary/10",
         href: "/pedidos",
       },
       {
-        title: "Total Recebido",
+        title: "Recebido no Ciclo",
         value: `R$ ${totalRecebido.toFixed(2)}`,
         description: "Dinheiro em caixa",
         icon: Wallet,
@@ -84,7 +190,7 @@ export default function DashboardPage() {
         href: "/financeiro",
       },
       {
-        title: "Total Pendente",
+        title: "Pendente no Ciclo",
         value: `R$ ${totalPendente.toFixed(2)}`,
         description: "Contas a receber",
         icon: Clock,
@@ -102,23 +208,22 @@ export default function DashboardPage() {
         href: "/clientes",
       },
     ];
-  }, [orders, clients]);
+  }, [filteredOrders, clients]);
 
-  // Lógica do Card de Monitoramento de Saúde Financeira
   const healthStatus = useMemo(() => {
-    if (!orders || orders.length === 0) return null;
+    if (!filteredOrders || filteredOrders.length === 0) return null;
 
     const counts = {
-      pago: orders.filter(o => o.paymentStatus === "Pago").length,
-      pendente: orders.filter(o => o.paymentStatus === "Pendente").length,
-      atrasado: orders.filter(o => o.paymentStatus === "Atrasado").length,
+      pago: filteredOrders.filter(o => o.paymentStatus === "Pago").length,
+      pendente: filteredOrders.filter(o => o.paymentStatus === "Pendente").length,
+      atrasado: filteredOrders.filter(o => o.paymentStatus === "Atrasado").length,
     };
 
     let theme = {
       bg: "bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-500/30",
       iconColor: "text-green-600",
       title: "TUDO EM DIA",
-      desc: "Excelente! Todas as suas vendas ativas estão liquidadas.",
+      desc: "Excelente! Todas as suas vendas do ciclo estão liquidadas.",
       icon: CheckCircle2,
     };
 
@@ -127,7 +232,7 @@ export default function DashboardPage() {
         bg: "bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-green-500/30",
         iconColor: "text-red-600",
         title: "ALERTA DE ATRASOS",
-        desc: "Atenção! Existem pagamentos vencidos que precisam de cobrança.",
+        desc: "Atenção! Existem pagamentos vencidos no ciclo.",
         icon: AlertTriangle,
       };
     } else if (counts.pendente > 0) {
@@ -135,18 +240,87 @@ export default function DashboardPage() {
         bg: "bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:border-green-500/30",
         iconColor: "text-orange-600",
         title: "PAGAMENTOS PENDENTES",
-        desc: "Você tem valores a receber dentro do prazo.",
+        desc: "Você tem valores a receber dentro do prazo do ciclo.",
         icon: Clock,
       };
     }
 
     return { counts, ...theme };
-  }, [orders]);
+  }, [filteredOrders]);
 
   const recentOrders = useMemo(() => {
-    if (!orders) return [];
-    return [...orders].sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()).slice(0, 5);
-  }, [orders]);
+    if (!filteredOrders) return [];
+    return [...filteredOrders].sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()).slice(0, 5);
+  }, [filteredOrders]);
+
+  const handleUpdateCycleName = (name: string) => {
+    setCycleName(name);
+    if (user && db) {
+      setDocumentNonBlocking(doc(db, "users", user.uid, "config", "cycle"), { name }, { merge: true });
+    }
+  };
+
+  const updateCycleDatePart = (type: 'from' | 'to', part: 'day' | 'month' | 'year', value: string) => {
+    if (!cycleDate) return;
+    const current = cycleDate[type] || new Date();
+    let newDate = new Date(current);
+
+    if (part === 'day') newDate = setDay(newDate, parseInt(value));
+    if (part === 'month') newDate = setMonth(newDate, parseInt(value));
+    if (part === 'year') newDate = setYear(newDate, parseInt(value));
+
+    const updatedDate = { ...cycleDate, [type]: newDate };
+    setCycleDate(updatedDate);
+    
+    if (user && db && updatedDate.from && updatedDate.to) {
+      setDocumentNonBlocking(doc(db, "users", user.uid, "config", "cycle"), {
+        from: updatedDate.from.toISOString(),
+        to: updatedDate.to.toISOString()
+      }, { merge: true });
+    }
+  };
+
+  const handleResetCycle = async () => {
+    if (!user || !db) return;
+    setIsResetting(true);
+    try {
+      const ordersRef = collection(db, "users", user.uid, "orders");
+      const snapshot = await getDocs(ordersRef);
+      
+      for (const orderDoc of snapshot.docs) {
+        const itemsRef = collection(db, "users", user.uid, "orders", orderDoc.id, "orderItems");
+        const itemsSnap = await getDocs(itemsRef);
+        itemsSnap.forEach(itemDoc => {
+          deleteDocumentNonBlocking(doc(db, "users", user.uid, "orders", orderDoc.id, "orderItems", itemDoc.id));
+        });
+        deleteDocumentNonBlocking(doc(db, "users", user.uid, "orders", orderDoc.id));
+      }
+
+      setDocumentNonBlocking(doc(db, "users", user.uid, "config", "cycle"), {
+        name: "",
+        from: null,
+        to: null
+      }, { merge: true });
+
+      setCycleName("");
+      setCycleDate({ from: startOfMonth(new Date()), to: endOfMonth(new Date()) });
+
+      toast({
+        title: "Ciclo Reiniciado",
+        description: "Todos os pedidos foram apagados. Clientes mantidos.",
+      });
+      setShowResetConfirm(false);
+    } catch (error) {
+      console.error("Error resetting cycle:", error);
+      toast({
+        variant: "destructive",
+        title: "Erro ao reiniciar",
+        description: "Ocorreu um problema ao apagar os dados.",
+      });
+    } finally {
+      setIsResetting(false);
+    }
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -195,6 +369,92 @@ export default function DashboardPage() {
           </div>
           <p className="text-base sm:text-xl text-muted-foreground mt-4 font-bold opacity-80 uppercase tracking-widest">Veja como está o seu negócio hoje.</p>
         </div>
+
+        {/* GESTÃO DE CICLO */}
+        <Card className="w-full border-4 border-primary/20 shadow-xl rounded-[2.5rem] overflow-hidden bg-background mb-4">
+          <CardHeader className="bg-primary/5 p-6 border-b-2 border-primary/10">
+            <CardTitle className="text-xl font-black flex items-center justify-center gap-3 uppercase italic text-primary">
+              <RefreshCw className="size-6" /> GESTÃO DE CICLO ATUAL
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 space-y-6">
+            <div className="grid sm:grid-cols-2 gap-6 text-left">
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-2">Nome do Ciclo</Label>
+                <Input 
+                  placeholder="Ex: Ciclo 05/2024"
+                  className="h-14 sm:h-16 text-lg font-black rounded-2xl border-4 border-muted focus:border-primary px-4"
+                  value={cycleName}
+                  onChange={(e) => handleUpdateCycleName(e.target.value)}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-2">Período do Ciclo</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full h-14 sm:h-16 text-sm font-black rounded-2xl border-4 border-muted justify-between px-4">
+                      <div className="flex items-center gap-2">
+                        <CalendarIcon className="size-4 text-primary" />
+                        {cycleDate?.from && cycleDate?.to ? (
+                          <span>{format(cycleDate.from, "dd/MM/yyyy")} - {format(cycleDate.to, "dd/MM/yyyy")}</span>
+                        ) : "Selecionar Datas"}
+                      </div>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[300px] sm:w-[450px] p-6 rounded-[2rem] border-4 shadow-2xl space-y-6" align="center">
+                    <div className="space-y-6">
+                      <div className="space-y-3">
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 px-2">Início do Ciclo</p>
+                        <div className="grid grid-cols-3 gap-3">
+                          <Select value={cycleDate?.from ? getDate(cycleDate.from).toString() : ""} onValueChange={(v) => updateCycleDatePart('from', 'day', v)}>
+                            <SelectTrigger className="h-14 font-black rounded-xl border-2"><SelectValue placeholder="Dia" /></SelectTrigger>
+                            <SelectContent className="rounded-xl font-bold">{DAYS.map(d => <SelectItem key={d} value={d}>{d.padStart(2, '0')}</SelectItem>)}</SelectContent>
+                          </Select>
+                          <Select value={cycleDate?.from ? getMonth(cycleDate.from).toString() : ""} onValueChange={(v) => updateCycleDatePart('from', 'month', v)}>
+                            <SelectTrigger className="h-14 font-black rounded-xl border-2"><SelectValue placeholder="Mês" /></SelectTrigger>
+                            <SelectContent className="rounded-xl font-bold">{MONTHS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
+                          </Select>
+                          <Select value={cycleDate?.from ? getYear(cycleDate.from).toString() : ""} onValueChange={(v) => updateCycleDatePart('from', 'year', v)}>
+                            <SelectTrigger className="h-14 font-black rounded-xl border-2"><SelectValue placeholder="Ano" /></SelectTrigger>
+                            <SelectContent className="rounded-xl font-bold">{YEARS.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 px-2">Fim do Ciclo</p>
+                        <div className="grid grid-cols-3 gap-3">
+                          <Select value={cycleDate?.to ? getDate(cycleDate.to).toString() : ""} onValueChange={(v) => updateCycleDatePart('to', 'day', v)}>
+                            <SelectTrigger className="h-14 font-black rounded-xl border-2"><SelectValue placeholder="Dia" /></SelectTrigger>
+                            <SelectContent className="rounded-xl font-bold">{DAYS.map(d => <SelectItem key={d} value={d}>{d.padStart(2, '0')}</SelectItem>)}</SelectContent>
+                          </Select>
+                          <Select value={cycleDate?.to ? getMonth(cycleDate.to).toString() : ""} onValueChange={(v) => updateCycleDatePart('to', 'month', v)}>
+                            <SelectTrigger className="h-14 font-black rounded-xl border-2"><SelectValue placeholder="Mês" /></SelectTrigger>
+                            <SelectContent className="rounded-xl font-bold">{MONTHS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
+                          </Select>
+                          <Select value={cycleDate?.to ? getYear(cycleDate.to).toString() : ""} onValueChange={(v) => updateCycleDatePart('to', 'year', v)}>
+                            <SelectTrigger className="h-14 font-black rounded-xl border-2"><SelectValue placeholder="Ano" /></SelectTrigger>
+                            <SelectContent className="rounded-xl font-bold">{YEARS.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+                    <Button className="w-full h-14 rounded-2xl font-black uppercase tracking-widest bg-primary shadow-xl">Confirmar Datas</Button>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+            
+            <Button 
+              variant="ghost" 
+              onClick={() => setShowResetConfirm(true)}
+              className="w-full h-12 text-destructive font-black uppercase tracking-widest gap-2 hover:bg-destructive/5 rounded-xl border-2 border-destructive/10 transition-all active:scale-95"
+            >
+              <Trash2 className="size-4" /> ENCERRAR E APAGAR PEDIDOS DO CICLO
+            </Button>
+          </CardContent>
+        </Card>
+
         <Button asChild className="w-full h-16 sm:h-20 px-10 text-xl font-black shadow-xl rounded-2xl bg-primary hover:bg-primary/90 transition-all hover:scale-105">
           <Link href="/vendas/nova">
             <PlusCircle className="mr-3 size-7 sm:size-8" />
@@ -291,7 +551,7 @@ export default function DashboardPage() {
 
       <div className="w-full space-y-8">
         <div className="flex flex-row items-center justify-between px-2">
-          <h2 className="text-3xl sm:text-4xl font-black text-primary uppercase italic tracking-tighter">Vendas Recentes</h2>
+          <h2 className="text-3xl sm:text-4xl font-black text-primary uppercase italic tracking-tighter">Vendas do Ciclo</h2>
           <Button variant="ghost" size="lg" className="text-base font-black text-primary hover:bg-primary/10 rounded-xl" asChild>
             <Link href="/pedidos">Ver Histórico</Link>
           </Button>
@@ -303,7 +563,6 @@ export default function DashboardPage() {
               key={order.id} 
               className="bg-background border-4 border-muted rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 shadow-xl hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)] hover:-translate-y-2 hover:border-primary/40 transition-all duration-500 flex flex-col justify-between w-full relative overflow-hidden group transform-gpu"
             >
-              {/* LINHA SUPERIOR: ID E DATA */}
               <div className="flex items-center justify-between w-full mb-4">
                 <Badge variant="outline" className="font-mono text-[10px] sm:text-xs font-black text-primary/60 bg-primary/5 border-2 border-primary/10 rounded-lg px-3 py-1">
                   #{order.id?.slice(-6)}
@@ -314,7 +573,6 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* CONTEÚDO CENTRAL: CLIENTE E PAGAMENTO */}
               <div className="flex flex-col gap-1 mb-4 text-left">
                 <h3 className="font-black text-2xl sm:text-4xl text-primary uppercase tracking-tighter italic leading-none px-1 line-clamp-1 drop-shadow-md">
                   {order.clientName}
@@ -329,7 +587,6 @@ export default function DashboardPage() {
                 </div>
               </div>
               
-              {/* LINHA DE VALOR E STATUS */}
               <div className="flex items-center justify-between w-full mb-6 px-1">
                 <div className="flex flex-col">
                   <p className="text-2xl sm:text-4xl font-black text-green-600 tracking-tighter leading-none italic">
@@ -346,7 +603,6 @@ export default function DashboardPage() {
                 </Badge>
               </div>
 
-              {/* BOTÕES DE AÇÃO ELITE */}
               <div className="flex flex-row items-center justify-center gap-2 w-full pt-4 border-t-2 border-muted/30">
                 <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[10px] uppercase tracking-widest rounded-xl border-2 hover:bg-primary/5 px-2 flex-1 shadow-sm transition-all active:scale-95">
                   <Link href={`/pedidos/${order.id}`}>
@@ -360,12 +616,35 @@ export default function DashboardPage() {
           {recentOrders.length === 0 && (
             <div className="text-center py-20 bg-muted/10 rounded-[2.5rem] border-4 border-dashed border-muted w-full">
               <ReceiptText className="size-24 text-muted-foreground/20 mx-auto mb-6" />
-              <h3 className="font-black text-3xl text-muted-foreground uppercase tracking-tighter">Sem vendas aqui</h3>
-              <p className="text-xl text-muted-foreground mt-4 font-bold italic opacity-60 px-4">Cadastre sua primeira venda para começar o faturamento.</p>
+              <h3 className="font-black text-3xl text-muted-foreground uppercase tracking-tighter">Sem vendas no ciclo</h3>
+              <p className="text-xl text-muted-foreground mt-4 font-bold italic opacity-60 px-4">Cadastre sua primeira venda para começar o faturamento deste ciclo.</p>
             </div>
           )}
         </div>
       </div>
+
+      {/* Alerta de Confirmação para Reiniciar Ciclo */}
+      <AlertDialog open={showResetConfirm} onOpenChange={setShowResetConfirm}>
+        <AlertDialogContent className="rounded-[2.5rem] p-8 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-3xl sm:text-5xl font-black tracking-tighter text-destructive uppercase leading-none text-left px-2">Encerrar Ciclo Atual?</AlertDialogTitle>
+            <AlertDialogDescription className="text-xl sm:text-2xl font-bold mt-6 leading-relaxed text-muted-foreground text-left">
+              <span className="text-destructive font-black">ATENÇÃO:</span> Esta ação apagará permanentemente <strong className="text-foreground border-b-4 border-primary px-1">TODOS OS PEDIDOS</strong> e registros financeiros salvos. <br /><br />
+              Os <span className="text-primary font-black uppercase">DADOS DOS CLIENTES</span> continuarão salvos normalmente. Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-4 mt-12 flex-col sm:flex-row">
+            <AlertDialogCancel className="h-16 sm:h-24 px-10 text-xl font-black rounded-2xl sm:rounded-3xl border-4 border-muted hover:bg-muted/50">Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleResetCycle} 
+              disabled={isResetting}
+              className="h-16 sm:h-24 px-10 text-xl font-black bg-destructive text-white hover:bg-destructive/90 rounded-2xl sm:rounded-3xl shadow-xl active:scale-95 transition-all"
+            >
+              {isResetting ? "APAGANDO..." : "SIM, LIMPAR TUDO"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
