@@ -33,6 +33,7 @@ import {
   Calendar as CalendarIcon,
   Plus,
   Check,
+  Edit,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -580,6 +581,11 @@ export default function DashboardPage() {
                 <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[10px] uppercase tracking-widest rounded-xl border-2 hover:bg-primary/5 px-2 flex-1 shadow-sm transition-all active:scale-95">
                   <Link href={`/pedidos/${order.id}`}>
                     <ReceiptText className="mr-1 size-3" /> Detalhes
+                  </Link>
+                </Button>
+                <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[10px] uppercase tracking-widest rounded-xl border-2 hover:bg-primary/5 px-2 flex-1 shadow-sm transition-all active:scale-95">
+                  <Link href={`/pedidos/${order.id}/editar`}>
+                    <Edit className="mr-1 size-3" /> Editar
                   </Link>
                 </Button>
               </div>

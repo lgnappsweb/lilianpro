@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -28,6 +29,7 @@ import {
   Tag,
   MessageCircle,
   RefreshCw,
+  Edit,
 } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -56,9 +58,9 @@ export default function DetalhesPedidoPage() {
 
   // Busca configurações do ciclo
   const cycleRef = useMemoFirebase(() => {
-    if (!db || !user) return null;
-    return doc(db, "users", user.uid, "config", "cycle");
-  }, [db, user]);
+    if (!db || !user || !order?.cycleId) return null;
+    return doc(db, "users", user.uid, "cycles", order.cycleId);
+  }, [db, user, order?.cycleId]);
   const { data: cycleData } = useDoc(cycleRef);
 
   // Busca os itens do pedido
@@ -337,16 +339,27 @@ export default function DetalhesPedidoPage() {
           <span className="truncate">COMPARTILHAR VENDA</span>
         </Button>
 
-        <Button
-          asChild
-          variant="outline"
-          className="w-full h-20 px-10 text-xl font-black rounded-3xl border-4 border-muted hover:bg-muted/50 transition-all shadow-lg"
-        >
-          <Link href="/pedidos">
-            <ArrowLeft className="mr-3 size-6" />
-            VOLTAR AOS PEDIDOS
-          </Link>
-        </Button>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <Button
+            asChild
+            variant="outline"
+            className="h-20 px-10 text-xl font-black rounded-3xl border-4 border-muted hover:bg-muted/50 transition-all shadow-lg"
+          >
+            <Link href="/pedidos">
+              <ArrowLeft className="mr-3 size-6" />
+              VOLTAR
+            </Link>
+          </Button>
+          <Button
+            asChild
+            className="h-20 px-10 text-xl font-black rounded-3xl bg-primary text-white shadow-lg"
+          >
+            <Link href={`/pedidos/${orderId}/editar`}>
+              <Edit className="mr-3 size-6" />
+              EDITAR PEDIDO
+            </Link>
+          </Button>
+        </div>
       </div>
     </div>
   );
