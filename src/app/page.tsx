@@ -374,7 +374,7 @@ export default function DashboardPage() {
         {/* GESTÃO DE CICLO */}
         <Card className="w-full border-4 border-primary/20 shadow-xl rounded-[2.5rem] overflow-hidden bg-background mb-4">
           <CardHeader className="bg-primary/5 p-4 sm:p-6 border-b-2 border-primary/10">
-            <CardTitle className="text-sm sm:text-xl font-black flex items-center justify-center gap-2 sm:gap-3 uppercase italic text-primary whitespace-nowrap">
+            <CardTitle className="text-base sm:text-xl font-black flex items-center justify-center gap-2 sm:gap-3 uppercase italic text-primary whitespace-nowrap">
               <RefreshCw className="size-4 sm:size-6" /> GESTÃO DE CICLO ATUAL
             </CardTitle>
           </CardHeader>
@@ -503,7 +503,7 @@ export default function DashboardPage() {
                 <healthStatus.icon className="size-6 sm:size-8" />
               </div>
               <div className="min-w-0">
-                <CardTitle className={cn("text-sm sm:text-2xl font-black uppercase tracking-tighter italic whitespace-nowrap", healthStatus.iconColor)}>
+                <CardTitle className={cn("text-base sm:text-2xl font-black uppercase tracking-tighter italic whitespace-nowrap", healthStatus.iconColor)}>
                   {healthStatus.title}
                 </CardTitle>
                 <CardDescription className="font-bold opacity-70 text-xs sm:text-sm">Monitoramento de cobranças</CardDescription>
