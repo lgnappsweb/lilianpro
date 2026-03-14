@@ -42,6 +42,16 @@ import {
   ArrowLeft,
   Calendar,
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc, setDocumentNonBlocking, deleteDocumentNonBlocking } from "@/firebase";
 import { doc, collection, getDocs, getDoc } from "firebase/firestore";
@@ -71,6 +81,7 @@ export default function EditarVendaPage() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [isFetchingData, setIsFetchingData] = useState(true);
+  const [itemToRemove, setItemToRemove] = useState<string | null>(null);
 
   // Busca Ciclos
   const cyclesQuery = useMemoFirebase(() => {
@@ -125,13 +136,12 @@ export default function EditarVendaPage() {
     return parseFloat(cleaned) || 0;
   };
 
-  // Carregar dados detalhados (inclusive do cliente e produtos)
+  // Carregar dados detalhados
   useEffect(() => {
     const loadAllData = async () => {
       if (!orderDataOriginal || !itemsOriginal || !user || !db) return;
 
       try {
-        // 1. Carregar dados do Cliente
         const clientSnap = await getDoc(doc(db, "users", user.uid, "clients", orderDataOriginal.clientId));
         if (clientSnap.exists()) {
           const c = clientSnap.data();
@@ -147,7 +157,6 @@ export default function EditarVendaPage() {
           setClientData(prev => ({ ...prev, fullName: orderDataOriginal.clientName }));
         }
 
-        // 2. Carregar Pedido
         setPaymentMethod(orderDataOriginal.paymentMethod || "");
         setOrderDate(orderDataOriginal.orderDate ? new Date(orderDataOriginal.orderDate).toISOString().split('T')[0] : "");
         setSaleNotes(orderDataOriginal.notes || "");
@@ -155,7 +164,6 @@ export default function EditarVendaPage() {
         setAdditionalFee(Number(orderDataOriginal.additionalFeeAmount) || 0);
         setCurrentCycleId(orderDataOriginal.cycleId || "");
 
-        // 3. Carregar Itens com Detalhes dos Produtos
         const mappedItems: SaleItem[] = [];
         for (const item of itemsOriginal) {
           const prodSnap = await getDoc(doc(db, "users", user.uid, "products", item.productId));
@@ -190,7 +198,6 @@ export default function EditarVendaPage() {
       if (item.tempId !== tempId) return item;
       const updatedItem = { ...item, [field]: value };
       
-      // Lógica de cálculo automático de lucro
       if (field === "catalogPrice" || field === "brand") {
         const catalog = unmaskCurrency(updatedItem.catalogPrice);
         const brand = updatedItem.brand;
@@ -223,8 +230,11 @@ export default function EditarVendaPage() {
     }]);
   };
 
-  const removeItem = (tempId: string) => {
-    setSaleItems(saleItems.filter(item => item.tempId !== tempId));
+  const removeItem = () => {
+    if (itemToRemove) {
+      setSaleItems(saleItems.filter(item => item.tempId !== itemToRemove));
+      setItemToRemove(null);
+    }
   };
 
   const subtotal = useMemo(() => saleItems.reduce((acc, item) => acc + unmaskCurrency(item.salePrice), 0), [saleItems]);
@@ -253,12 +263,10 @@ export default function EditarVendaPage() {
     setIsLoading(true);
 
     try {
-      // Calcula Vencimento: Dia 05 do mês seguinte à venda
       const d = new Date(orderDate);
       d.setMonth(d.getMonth() + 1);
       const dueDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-05`;
 
-      // 1. Atualizar Pedido
       const orderRef = doc(db, "users", user.uid, "orders", orderId as string);
       const updatedOrder = {
         clientName: clientData.fullName,
@@ -275,22 +283,18 @@ export default function EditarVendaPage() {
       };
       setDocumentNonBlocking(orderRef, updatedOrder, { merge: true });
 
-      // 2. Atualizar Dados da Cliente
       const clientRef = doc(db, "users", user.uid, "clients", orderDataOriginal?.clientId);
       setDocumentNonBlocking(clientRef, clientData, { merge: true });
 
-      // 3. Limpar Itens Antigos do Pedido
       const itemsSnap = await getDocs(collection(db, "users", user.uid, "orders", orderId as string, "orderItems"));
       for (const itemDoc of itemsSnap.docs) {
         deleteDocumentNonBlocking(doc(db, "users", user.uid, "orders", orderId as string, "orderItems", itemDoc.id));
       }
 
-      // 4. Salvar Novos Itens e Atualizar Produtos
       saleItems.forEach((item, index) => {
         const productId = item.id || `prod-${Date.now()}-${index}`;
         const itemId = `item-${Date.now()}-${index}`;
         
-        // Atualiza o produto global
         setDocumentNonBlocking(doc(db, "users", user.uid, "products", productId), {
           id: productId, name: item.name, brand: item.brand, category: item.category,
           catalogPrice: unmaskCurrency(item.catalogPrice), costPrice: unmaskCurrency(item.costPrice),
@@ -298,7 +302,6 @@ export default function EditarVendaPage() {
           description: item.description, adminId: user.uid
         }, { merge: true });
 
-        // Salva o novo item da ordem
         setDocumentNonBlocking(doc(db, "users", user.uid, "orders", orderId as string, "orderItems", itemId), {
           id: itemId, adminId: user.uid, orderId: orderId, productId: productId,
           productName: item.name, quantity: 1, unitPrice: unmaskCurrency(item.salePrice), subtotal: unmaskCurrency(item.salePrice)
@@ -380,7 +383,7 @@ export default function EditarVendaPage() {
                 <div key={item.tempId} className="relative">
                   <div className="bg-primary/5 px-4 h-12 flex items-center justify-between text-xs font-black text-primary uppercase tracking-widest border-b-4 border-primary/10">
                     <span>Item #{(index + 1).toString().padStart(2, '0')}</span>
-                    <Button type="button" variant="destructive" size="sm" onClick={() => removeItem(item.tempId)} className="h-8 rounded-xl font-black text-[9px]">REMOVER</Button>
+                    <Button type="button" variant="destructive" size="sm" onClick={() => setItemToRemove(item.tempId)} className="h-8 rounded-xl font-black text-[9px]">REMOVER</Button>
                   </div>
                   <Input placeholder="Nome do Produto" className="h-16 text-xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary px-4 placeholder:text-muted-foreground/30" value={item.name} onChange={(e) => handleItemChange(item.tempId, "name", e.target.value)} required />
                   <div className="grid sm:grid-cols-2">
@@ -489,6 +492,24 @@ export default function EditarVendaPage() {
           </div>
         </Card>
       </form>
+
+      {/* Alerta de Confirmação para Remover Item do Carrinho na Edição */}
+      <AlertDialog open={!!itemToRemove} onOpenChange={(open) => !open && setItemToRemove(null)}>
+        <AlertDialogContent className="rounded-[2.5rem] p-8 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-3xl sm:text-5xl font-black tracking-tighter text-primary uppercase leading-none text-left px-2">Remover Item Ajustado?</AlertDialogTitle>
+            <AlertDialogDescription className="text-xl sm:text-2xl font-bold mt-6 leading-relaxed text-muted-foreground text-left">
+              Este produto será <strong className="text-primary font-black uppercase">retirado</strong> deste pedido permanentemente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-4 mt-12 flex-col sm:flex-row">
+            <AlertDialogCancel className="h-16 sm:h-24 px-10 text-xl font-black rounded-2xl sm:rounded-3xl border-4 border-muted hover:bg-muted/50">Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={removeItem} className="h-16 sm:h-24 px-10 text-xl font-black bg-destructive text-white hover:bg-destructive/90 rounded-2xl sm:rounded-3xl shadow-xl active:scale-95 transition-all">
+              SIM, REMOVER AGORA
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -40,6 +40,16 @@ import {
   AlertTriangle,
   Calendar,
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc, setDocumentNonBlocking } from "@/firebase";
 import { doc, collection } from "firebase/firestore";
@@ -65,6 +75,7 @@ export default function NovaVendaPage() {
   const { toast } = useToast();
 
   const [isLoading, setIsLoading] = useState(false);
+  const [itemToRemove, setItemToRemove] = useState<string | null>(null);
 
   // Busca Ciclos e Ciclo Ativo
   const cyclesQuery = useMemoFirebase(() => {
@@ -168,8 +179,11 @@ export default function NovaVendaPage() {
     }]);
   };
 
-  const removeItem = (tempId: string) => {
-    setSaleItems(saleItems.filter(item => item.tempId !== tempId));
+  const removeItem = () => {
+    if (itemToRemove) {
+      setSaleItems(saleItems.filter(item => item.tempId !== itemToRemove));
+      setItemToRemove(null);
+    }
   };
 
   const handleItemChange = (tempId: string, field: keyof SaleItem, value: string) => {
@@ -221,7 +235,6 @@ export default function NovaVendaPage() {
       const finalClientId = selectedClient ? selectedClient.id : `cli-${Date.now()}`;
       const orderId = `ord-${Date.now()}`;
 
-      // Calcula Vencimento: Dia 05 do mês seguinte à venda
       const d = new Date(orderDate);
       d.setMonth(d.getMonth() + 1);
       const dueDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-05`;
@@ -368,7 +381,7 @@ export default function NovaVendaPage() {
                   <div key={item.tempId} className="relative">
                     <div className="bg-primary/5 px-4 h-12 flex items-center justify-between text-xs font-black text-primary uppercase tracking-widest border-b-4 border-primary/10">
                       <span>Item #{(index + 1).toString().padStart(2, '0')}</span>
-                      <Button type="button" variant="destructive" size="sm" onClick={() => removeItem(item.tempId)} className="h-8 rounded-xl font-black text-[9px]">REMOVER</Button>
+                      <Button type="button" variant="destructive" size="sm" onClick={() => setItemToRemove(item.tempId)} className="h-8 rounded-xl font-black text-[9px]">REMOVER</Button>
                     </div>
                     <Input placeholder="Nome do Produto" className="h-16 text-xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary px-4 placeholder:text-muted-foreground/30" value={item.name} onChange={(e) => handleItemChange(item.tempId, "name", e.target.value)} required />
                     <div className="grid sm:grid-cols-2">
@@ -379,8 +392,8 @@ export default function NovaVendaPage() {
                       <Input placeholder="Categoria" className="h-16 text-xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted px-4 placeholder:text-muted-foreground/30" value={item.category} onChange={(e) => handleItemChange(item.tempId, "category", e.target.value)} />
                     </div>
                     <div className="grid grid-cols-1">
-                      <div className="relative"><Input placeholder="00,00" className="h-16 text-center text-2xl font-black text-black bg-sky-100 border-b-4 border-sky-400" value={item.catalogPrice} onChange={(e) => handleItemChange(item.tempId, "catalogPrice", maskCurrency(e.target.value))} /><span className="absolute top-1 left-1 text-[7px] font-black uppercase text-sky-700/60">Revista</span></div>
-                      <div className="relative"><Input placeholder="00,00" className="h-16 text-center text-2xl font-black text-black bg-orange-100 border-b-4 border-orange-400" value={item.costPrice} onChange={(e) => handleItemChange(item.tempId, "costPrice", maskCurrency(e.target.value))} /><span className="absolute top-1 left-1 text-[7px] font-black uppercase text-orange-700/60">Custo</span></div>
+                      <div className="relative border-b-4 border-muted/30"><Input placeholder="00,00" className="h-16 text-center text-2xl font-black text-black bg-sky-100 border-none" value={item.catalogPrice} onChange={(e) => handleItemChange(item.tempId, "catalogPrice", maskCurrency(e.target.value))} /><span className="absolute top-1 left-1 text-[7px] font-black uppercase text-sky-700/60">Revista</span></div>
+                      <div className="relative border-b-4 border-muted/30"><Input placeholder="00,00" className="h-16 text-center text-2xl font-black text-black bg-orange-100 border-none" value={item.costPrice} onChange={(e) => handleItemChange(item.tempId, "costPrice", maskCurrency(e.target.value))} /><span className="absolute top-1 left-1 text-[7px] font-black uppercase text-orange-700/60">Custo</span></div>
                       <div className="relative"><Input placeholder="00,00" className="h-16 text-center text-2xl font-black text-black bg-green-100 border-none" value={item.salePrice} onChange={(e) => handleItemChange(item.tempId, "salePrice", maskCurrency(e.target.value))} required /><span className="absolute top-1 left-1 text-[7px] font-black uppercase text-green-700/60">Venda</span></div>
                     </div>
                   </div>
@@ -464,6 +477,24 @@ export default function NovaVendaPage() {
           </Button>
         </Card>
       </form>
+
+      {/* Alerta de Confirmação para Remover Item do Carrinho */}
+      <AlertDialog open={!!itemToRemove} onOpenChange={(open) => !open && setItemToRemove(null)}>
+        <AlertDialogContent className="rounded-[2.5rem] p-8 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-3xl sm:text-5xl font-black tracking-tighter text-primary uppercase leading-none text-left px-2">Remover do Carrinho?</AlertDialogTitle>
+            <AlertDialogDescription className="text-xl sm:text-2xl font-bold mt-6 leading-relaxed text-muted-foreground text-left">
+              Este produto será <strong className="text-primary font-black uppercase">excluído</strong> da lista atual de vendas.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-4 mt-12 flex-col sm:flex-row">
+            <AlertDialogCancel className="h-16 sm:h-24 px-10 text-xl font-black rounded-2xl sm:rounded-3xl border-4 border-muted hover:bg-muted/50">Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={removeItem} className="h-16 sm:h-24 px-10 text-xl font-black bg-destructive text-white hover:bg-destructive/90 rounded-2xl sm:rounded-3xl shadow-xl active:scale-95 transition-all">
+              SIM, REMOVER AGORA
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
