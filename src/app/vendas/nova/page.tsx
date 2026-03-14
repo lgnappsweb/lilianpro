@@ -34,7 +34,6 @@ import {
   Trash2,
   Plus,
   Loader2,
-  Info,
   Tag,
   Search,
   UserCheck,
@@ -93,6 +92,7 @@ export default function NovaVendaPage() {
   });
 
   // --- ESTADO DOS PRODUTOS (LISTA) ---
+  // Inicialmente vazio como solicitado
   const [saleItems, setSaleItems] = useState<SaleItem[]>([]);
 
   // --- ESTADO DO PAGAMENTO E TOTAIS ---
@@ -255,7 +255,7 @@ export default function NovaVendaPage() {
         setDocumentNonBlocking(doc(db, "users", user.uid, "clients", finalClientId), finalClientData, { merge: true });
       }
 
-      // 2. Salvar Pedido Root (Exatamente como funciona no app)
+      // 2. Salvar Pedido Root
       const orderData = {
         id: orderId,
         adminId: user.uid,
@@ -279,7 +279,7 @@ export default function NovaVendaPage() {
         const productId = `prod-${Date.now()}-${index}`;
         const itemId = `item-${Date.now()}-${index}`;
 
-        // Salvar Produto no Catálogo (sempre salvamos como novo produto para esta venda rápida)
+        // Salvar Produto no Catálogo
         const finalProductData = {
           id: productId,
           name: item.name,
@@ -294,7 +294,7 @@ export default function NovaVendaPage() {
         };
         setDocumentNonBlocking(doc(db, "users", user.uid, "products", productId), finalProductData, { merge: true });
 
-        // Salvar Item detalhado dentro do Pedido (Exatamente como o app exige)
+        // Salvar Item detalhado dentro do Pedido
         const orderItemData = {
           id: itemId,
           adminId: user.uid,
