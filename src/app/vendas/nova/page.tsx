@@ -35,6 +35,7 @@ import {
   Plus,
   Loader2,
   Info,
+  Tag,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore, setDocumentNonBlocking } from "@/firebase";
@@ -303,7 +304,7 @@ export default function NovaVendaPage() {
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-10">
         
-        {/* 1. CADASTRO RÁPIDO DE CLIENTE */}
+        {/* 1. IDENTIFICAÇÃO DA CLIENTE */}
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
           <CardHeader className="bg-muted/80 p-6 sm:p-8 border-b-2">
             <CardTitle className="flex flex-row items-center gap-3 text-xl sm:text-3xl font-black text-left uppercase px-2">
@@ -353,7 +354,7 @@ export default function NovaVendaPage() {
           </CardContent>
         </Card>
 
-        {/* 2. PRODUTOS VENDIDOS (LISTA DINÂMICA) */}
+        {/* 2. PRODUTOS VENDIDOS */}
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
           <CardHeader className="bg-muted/80 p-6 sm:p-8 border-b-2">
             <CardTitle className="flex flex-row items-center gap-3 text-xl sm:text-3xl font-black text-left uppercase px-2">
@@ -371,15 +372,18 @@ export default function NovaVendaPage() {
                 {saleItems.map((item, index) => (
                   <div key={item.tempId} className="p-0 space-y-0 relative group">
                     
-                    <div className="bg-primary/5 px-8 h-16 flex items-center justify-between text-xs sm:text-lg font-black text-primary uppercase tracking-widest border-b-4 border-primary/10">
-                      <span className="italic">Item #{(index + 1).toString().padStart(2, '0')}</span>
+                    <div className="bg-primary/5 px-8 h-16 sm:h-20 flex items-center justify-between text-xs sm:text-xl font-black text-primary uppercase tracking-widest border-b-4 border-primary/10">
+                      <span className="italic flex items-center gap-3">
+                        <Tag className="size-5 hidden sm:block" />
+                        Item #{(index + 1).toString().padStart(2, '0')}
+                      </span>
                       {saleItems.length > 1 && (
                         <Button
                           type="button"
                           variant="destructive"
                           size="sm"
                           onClick={() => removeItem(item.tempId)}
-                          className="h-10 px-4 rounded-xl font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all"
+                          className="h-10 sm:h-12 px-4 sm:px-6 rounded-xl font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all text-[10px] sm:text-xs"
                         >
                           <Trash2 className="size-4 mr-2" /> APAGAR
                         </Button>
@@ -469,9 +473,9 @@ export default function NovaVendaPage() {
               <Button 
                 type="button" 
                 onClick={addItem}
-                className="w-full h-20 sm:h-24 bg-primary text-white hover:bg-primary/90 font-black rounded-2xl sm:rounded-[2rem] gap-4 text-xl sm:text-2xl uppercase tracking-widest shadow-2xl transition-all active:scale-95"
+                className="w-full h-20 sm:h-24 bg-primary text-white hover:bg-primary/90 font-black rounded-2xl sm:rounded-[2rem] gap-2 sm:gap-4 text-sm sm:text-2xl uppercase tracking-wide sm:tracking-widest shadow-2xl transition-all active:scale-95"
               >
-                <Plus className="size-8" /> ADICIONAR NOVO PRODUTO
+                <Plus className="size-6 sm:size-8" /> ADICIONAR NOVO PRODUTO
               </Button>
             </div>
           </CardContent>
@@ -627,7 +631,7 @@ export default function NovaVendaPage() {
               type="submit" 
               size="lg"
               className={cn(
-                "w-full h-24 sm:h-32 text-2xl sm:text-5xl font-black rounded-2xl sm:rounded-[3rem] shadow-2xl transition-all active:scale-95 uppercase tracking-widest bg-white text-primary hover:bg-white/90 border-8 border-white",
+                "w-full h-24 sm:h-32 text-xl sm:text-5xl font-black rounded-2xl sm:rounded-[3rem] shadow-2xl transition-all active:scale-95 uppercase tracking-wide sm:tracking-widest bg-white text-primary hover:bg-white/90 border-8 border-white",
                 (!isReady || isLoading) && "opacity-50 cursor-not-allowed"
               )}
               disabled={!isReady || isLoading}
