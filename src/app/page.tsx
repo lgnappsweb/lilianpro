@@ -393,12 +393,14 @@ export default function DashboardPage() {
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-2">Período do Ciclo</Label>
                 <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full h-14 sm:h-16 text-sm font-black rounded-2xl border-4 border-muted justify-between px-4">
-                      <div className="flex items-center gap-2">
-                        <CalendarIcon className="size-4 text-primary" />
-                        {cycleDate?.from && cycleDate?.to ? (
-                          <span>{format(cycleDate.from, "dd/MM/yyyy")} - {format(cycleDate.to, "dd/MM/yyyy")}</span>
-                        ) : "Selecionar Datas"}
+                    <Button variant="outline" className="w-full h-14 sm:h-16 text-[10px] sm:text-sm font-black rounded-2xl border-4 border-muted justify-between px-4">
+                      <div className="flex items-center gap-2 overflow-hidden">
+                        <CalendarIcon className="size-4 text-primary shrink-0" />
+                        <span className="truncate">
+                          {cycleDate?.from && cycleDate?.to ? (
+                            `${format(cycleDate.from, "dd/MM/yyyy")} - ${format(cycleDate.to, "dd/MM/yyyy")}`
+                          ) : "Selecionar Datas"}
+                        </span>
                       </div>
                     </Button>
                   </PopoverTrigger>
@@ -453,9 +455,10 @@ export default function DashboardPage() {
             <Button 
               variant="ghost" 
               onClick={() => setShowResetConfirm(true)}
-              className="w-full h-12 text-destructive font-black uppercase tracking-widest gap-2 hover:bg-destructive/5 rounded-xl border-2 border-destructive/10 transition-all active:scale-95"
+              className="w-full h-auto min-h-12 py-3 text-[10px] sm:text-xs text-destructive font-black uppercase tracking-tighter sm:tracking-widest gap-2 hover:bg-destructive/5 rounded-xl border-2 border-destructive/10 transition-all active:scale-95 px-4"
             >
-              <Trash2 className="size-4" /> ENCERRAR E APAGAR PEDIDOS DO CICLO
+              <Trash2 className="size-4 shrink-0" /> 
+              <span className="flex-1 text-center">ENCERRAR E APAGAR PEDIDOS DO CICLO</span>
             </Button>
           </CardContent>
         </Card>
