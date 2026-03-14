@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useMemo } from "react";
@@ -34,6 +33,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, doc } from "firebase/firestore";
 import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
+import { cn } from "@/lib/utils";
 
 export default function ClientesPage() {
   const { user } = useUser();
@@ -109,60 +109,68 @@ export default function ClientesPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6 w-full">
-            {filteredClientes.map((cliente) => (
-              <Card key={cliente.id} className="bg-background border-4 border-muted rounded-2xl p-6 sm:p-4 space-y-4 shadow-xl hover:border-primary/20 transition-all flex flex-col justify-between w-full max-w-none">
-                <div className="flex flex-col items-center justify-center gap-2 mb-2">
-                  <div className="size-12 sm:size-16 rounded-full bg-primary/10 flex items-center justify-center text-primary shadow-inner">
-                    <User className="size-6 sm:size-10" />
-                  </div>
-                  <h3 className="font-black text-2xl sm:text-4xl text-primary uppercase tracking-tighter italic text-center line-clamp-2 leading-tight px-2">
-                    {cliente.fullName}
-                  </h3>
-                </div>
+            {filteredClientes.map((cliente) => {
+              const nameParts = cliente.fullName?.trim().split(/\s+/) || [];
+              const isShortName = nameParts.length <= 2;
 
-                <div className="space-y-4">
-                  {/* BOTÕES DE AÇÃO ELITE */}
-                  <div className="grid grid-cols-2 gap-2 w-full">
-                    <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2">
-                      <Link href={`/clientes/${cliente.id}`}>
-                        <FileText className="mr-1 size-3 sm:size-4" />
-                        Detalhes
-                      </Link>
-                    </Button>
-                    <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2">
-                      <Link href={`/clientes/${cliente.id}/historico`}>
-                        <History className="mr-1 size-3 sm:size-4" />
-                        Histórico
-                      </Link>
-                    </Button>
-                    <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2">
-                      <Link href={`/clientes/${cliente.id}/editar`}>
-                        <Edit className="mr-1 size-3 sm:size-4" />
-                        Editar
-                      </Link>
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 text-destructive border-destructive/20 hover:bg-destructive/5 hover:border-destructive px-2"
-                      onClick={() => setClientToDelete(cliente)}
+              return (
+                <Card key={cliente.id} className="bg-background border-4 border-muted rounded-2xl p-6 sm:p-4 space-y-4 shadow-xl hover:border-primary/20 transition-all flex flex-col justify-between w-full max-w-none">
+                  <div className="flex flex-col items-center justify-center gap-2 mb-2">
+                    <div className="size-12 sm:size-16 rounded-full bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                      <User className="size-6 sm:size-10" />
+                    </div>
+                    <h3 className={cn(
+                      "font-black text-2xl sm:text-4xl text-primary uppercase tracking-tighter italic text-center leading-tight px-2",
+                      isShortName ? "whitespace-nowrap" : "line-clamp-2"
+                    )}>
+                      {cliente.fullName}
+                    </h3>
+                  </div>
+
+                  <div className="space-y-4">
+                    {/* BOTÕES DE AÇÃO ELITE */}
+                    <div className="grid grid-cols-2 gap-2 w-full">
+                      <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2">
+                        <Link href={`/clientes/${cliente.id}`}>
+                          <FileText className="mr-1 size-3 sm:size-4" />
+                          Detalhes
+                        </Link>
+                      </Button>
+                      <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2">
+                        <Link href={`/clientes/${cliente.id}/historico`}>
+                          <History className="mr-1 size-3 sm:size-4" />
+                          Histórico
+                        </Link>
+                      </Button>
+                      <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2">
+                        <Link href={`/clientes/${cliente.id}/editar`}>
+                          <Edit className="mr-1 size-3 sm:size-4" />
+                          Editar
+                        </Link>
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 text-destructive border-destructive/20 hover:bg-destructive/5 hover:border-destructive px-2"
+                        onClick={() => setClientToDelete(cliente)}
+                      >
+                        <Trash2 className="mr-1 size-3 sm:size-4" />
+                        Excluir
+                      </Button>
+                    </div>
+
+                    <Button
+                      variant="default"
+                      size="lg"
+                      className="w-full bg-green-600 hover:bg-green-700 h-14 sm:h-16 rounded-xl sm:rounded-2xl font-black text-sm sm:text-lg gap-3 shadow-xl transition-all active:scale-95 uppercase tracking-widest"
+                      onClick={() => openWhatsApp(cliente.phone)}
                     >
-                      <Trash2 className="mr-1 size-3 sm:size-4" />
-                      Excluir
+                      <MessageCircle className="size-6 sm:size-7" />
+                      Chamar no WhatsApp
                     </Button>
                   </div>
-
-                  <Button
-                    variant="default"
-                    size="lg"
-                    className="w-full bg-green-600 hover:bg-green-700 h-14 sm:h-16 rounded-xl sm:rounded-2xl font-black text-sm sm:text-lg gap-3 shadow-xl transition-all active:scale-95 uppercase tracking-widest"
-                    onClick={() => openWhatsApp(cliente.phone)}
-                  >
-                    <MessageCircle className="size-6 sm:size-7" />
-                    Chamar no WhatsApp
-                  </Button>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              );
+            })}
           </div>
         )}
 

@@ -17,6 +17,7 @@ import {
 import Link from "next/link";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection } from "firebase/firestore";
+import { cn } from "@/lib/utils";
 
 export default function HistoricoGlobalPage() {
   const { user } = useUser();
@@ -68,33 +69,41 @@ export default function HistoricoGlobalPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:gap-6">
-            {filteredClients.map((cliente) => (
-              <div key={cliente.id} className="group relative">
-                <Link href={`/clientes/${cliente.id}/historico`}>
-                  <Card className="bg-background border-4 border-muted rounded-[1.5rem] sm:rounded-[2rem] p-6 shadow-lg group-hover:border-primary/40 group-hover:shadow-2xl transition-all flex items-center justify-between">
-                    <div className="flex items-center gap-6">
-                      <div className="size-14 sm:size-20 rounded-full bg-primary/10 flex items-center justify-center text-primary shadow-inner shrink-0 group-hover:scale-110 transition-transform">
-                        <User className="size-8 sm:size-10" />
-                      </div>
-                      <div className="text-left">
-                        <h3 className="font-black text-xl sm:text-4xl text-primary uppercase tracking-tighter italic leading-none px-1">
-                          {cliente.fullName}
-                        </h3>
-                        <div className="flex items-center gap-2 mt-2 px-1">
-                          <Calendar className="size-3 text-muted-foreground opacity-60" />
-                          <p className="text-[10px] sm:text-xs text-muted-foreground font-black uppercase tracking-widest opacity-60">
-                            Clique para ver a jornada de compras
-                          </p>
+            {filteredClients.map((cliente) => {
+              const nameParts = cliente.fullName?.trim().split(/\s+/) || [];
+              const isShortName = nameParts.length <= 2;
+
+              return (
+                <div key={cliente.id} className="group relative">
+                  <Link href={`/clientes/${cliente.id}/historico`}>
+                    <Card className="bg-background border-4 border-muted rounded-[1.5rem] sm:rounded-[2rem] p-6 shadow-lg group-hover:border-primary/40 group-hover:shadow-2xl transition-all flex items-center justify-between">
+                      <div className="flex items-center gap-6">
+                        <div className="size-14 sm:size-20 rounded-full bg-primary/10 flex items-center justify-center text-primary shadow-inner shrink-0 group-hover:scale-110 transition-transform">
+                          <User className="size-8 sm:size-10" />
+                        </div>
+                        <div className="text-left">
+                          <h3 className={cn(
+                            "font-black text-xl sm:text-4xl text-primary uppercase tracking-tighter italic leading-none px-1",
+                            isShortName && "whitespace-nowrap"
+                          )}>
+                            {cliente.fullName}
+                          </h3>
+                          <div className="flex items-center gap-2 mt-2 px-1">
+                            <Calendar className="size-3 text-muted-foreground opacity-60" />
+                            <p className="text-[10px] sm:text-xs text-muted-foreground font-black uppercase tracking-widest opacity-60">
+                              Clique para ver a jornada de compras
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <ChevronRight className="size-8 sm:size-12 text-muted-foreground group-hover:text-primary group-hover:translate-x-2 transition-all opacity-20 group-hover:opacity-100" />
-                    </div>
-                  </Card>
-                </Link>
-              </div>
-            ))}
+                      <div className="flex items-center gap-4">
+                        <ChevronRight className="size-8 sm:size-12 text-muted-foreground group-hover:text-primary group-hover:translate-x-2 transition-all opacity-20 group-hover:opacity-100" />
+                      </div>
+                    </Card>
+                  </Link>
+                </div>
+              );
+            })}
           </div>
         )}
 
