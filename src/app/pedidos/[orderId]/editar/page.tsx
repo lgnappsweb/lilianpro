@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
@@ -158,7 +159,7 @@ export default function EditarVendaPage() {
         }
 
         setPaymentMethod(orderDataOriginal.paymentMethod || "");
-        setOrderDate(orderDataOriginal.orderDate ? new Date(orderDataOriginal.orderDate).toISOString().split('T')[0] : "");
+        setOrderDate(orderDataOriginal.orderDate ? orderDataOriginal.orderDate.split('T')[0] : "");
         setSaleNotes(orderDataOriginal.notes || "");
         setDiscount(Number(orderDataOriginal.discountAmount) || 0);
         setAdditionalFee(Number(orderDataOriginal.additionalFeeAmount) || 0);
@@ -272,7 +273,7 @@ export default function EditarVendaPage() {
         clientName: clientData.fullName,
         paymentMethod,
         paymentStatus: paymentMethod === "a prazo" ? "Pendente" : "Pago",
-        orderDate: new Date(orderDate).toISOString(),
+        orderDate: new Date(orderDate + "T12:00:00").toISOString(),
         dueDate: dueDate,
         notes: saleNotes,
         totalAmount: subtotal,
@@ -393,10 +394,10 @@ export default function EditarVendaPage() {
                     </Select>
                     <Input placeholder="Categoria" className="h-16 text-xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted px-4 placeholder:text-muted-foreground/30" value={item.category} onChange={(e) => handleItemChange(item.tempId, "category", e.target.value)} />
                   </div>
-                  <div className="grid grid-cols-1">
-                    <div className="relative border-b-4 border-muted/30"><Input placeholder="00,00" className="h-16 text-center text-2xl font-black text-black bg-sky-100 border-none" value={item.catalogPrice} onChange={(e) => handleItemChange(item.tempId, "catalogPrice", maskCurrency(e.target.value))} /><span className="absolute top-1 left-1 text-[7px] font-black uppercase text-sky-700/60">Revista</span></div>
-                    <div className="relative border-b-4 border-muted/30"><Input placeholder="00,00" className="h-16 text-center text-2xl font-black text-black bg-orange-100 border-none" value={item.costPrice} onChange={(e) => handleItemChange(item.tempId, "costPrice", maskCurrency(e.target.value))} /><span className="absolute top-1 left-1 text-[7px] font-black uppercase text-orange-700/60">Custo</span></div>
-                    <div className="relative"><Input placeholder="00,00" className="h-16 text-center text-2xl font-black text-black bg-green-100 border-none" value={item.salePrice} onChange={(e) => handleItemChange(item.tempId, "salePrice", maskCurrency(e.target.value))} required /><span className="absolute top-1 left-1 text-[7px] font-black uppercase text-green-700/60">Venda</span></div>
+                  <div className="flex flex-col">
+                    <div className="relative border-b-4 border-muted/30"><Input placeholder="00,00" className="h-16 text-center text-2xl font-black text-black bg-white border-none" value={item.catalogPrice} onChange={(e) => handleItemChange(item.tempId, "catalogPrice", maskCurrency(e.target.value))} /><span className="absolute top-1 left-1 text-[7px] font-black uppercase text-sky-700/60">Revista</span></div>
+                    <div className="relative border-b-4 border-muted/30"><Input placeholder="00,00" className="h-16 text-center text-2xl font-black text-black bg-white border-none" value={item.costPrice} onChange={(e) => handleItemChange(item.tempId, "costPrice", maskCurrency(e.target.value))} /><span className="absolute top-1 left-1 text-[7px] font-black uppercase text-orange-700/60">Custo</span></div>
+                    <div className="relative"><Input placeholder="00,00" className="h-16 text-center text-2xl font-black text-black bg-white border-none" value={item.salePrice} onChange={(e) => handleItemChange(item.tempId, "salePrice", maskCurrency(e.target.value))} required /><span className="absolute top-1 left-1 text-[7px] font-black uppercase text-green-700/60">Venda</span></div>
                   </div>
                 </div>
               ))}
@@ -472,7 +473,7 @@ export default function EditarVendaPage() {
           <div className="grid lg:grid-cols-2 gap-8 items-center">
             <div className="space-y-4">
               <div className="flex justify-between border-b-2 border-white/10 pb-1"><span className="text-xs font-black uppercase opacity-60">Subtotal Bruto</span><span className="text-2xl font-black italic">R$ {subtotal.toFixed(2)}</span></div>
-              <div className="grid grid-cols-1 gap-4">
+              <div className="flex flex-col gap-4">
                 <div className="space-y-1"><Label className="text-[10px] font-black uppercase opacity-60 italic">Desconto (R$)</Label><Input type="number" className="h-14 bg-white border-4 border-white text-black text-2xl font-black text-center" value={discount} onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)} /></div>
                 <div className="space-y-1"><Label className="text-[10px] font-black uppercase opacity-60 italic">Taxas (R$)</Label><Input type="number" className="h-14 bg-white border-4 border-white text-black text-2xl font-black text-center" value={additionalFee} onChange={(e) => setAdditionalFee(parseFloat(e.target.value) || 0)} /></div>
               </div>

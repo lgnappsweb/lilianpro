@@ -254,6 +254,14 @@ export default function DashboardPage() {
     return [...cycles].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
   }, [cycles]);
 
+  const formatDateBR = (isoString: string) => {
+    if (!isoString) return "";
+    // Extrai a parte da data YYYY-MM-DD para evitar problemas de fuso horário
+    const datePart = isoString.split('T')[0];
+    const [year, month, day] = datePart.split('-');
+    return `${day}/${month}/${year}`;
+  };
+
   // Ações de Ciclo
   const handleCreateCycle = () => {
     if (!user || !db || !newCycleName) {
@@ -365,7 +373,7 @@ export default function DashboardPage() {
         <Card className="w-full border-4 border-primary/20 shadow-xl rounded-[2.5rem] overflow-hidden bg-background mb-4">
           <CardHeader className="bg-primary/5 p-4 sm:p-6 border-b-2 border-primary/10">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <CardTitle className="text-base sm:text-xl font-black flex items-center gap-2 sm:gap-3 uppercase italic text-primary whitespace-nowrap">
+              <CardTitle className="text-base sm:text-xl font-black flex items-center justify-center sm:justify-start gap-2 sm:gap-3 uppercase italic text-primary whitespace-nowrap">
                 <RefreshCw className="size-4 sm:size-6" /> GESTÃO DE CICLOS
               </CardTitle>
               <Popover open={isNewCyclePopoverOpen} onOpenChange={setIsNewCyclePopoverOpen}>
@@ -543,7 +551,7 @@ export default function DashboardPage() {
                 </Badge>
                 <div className="flex items-center gap-2 text-muted-foreground font-black text-[10px] sm:text-xs uppercase tracking-widest opacity-60">
                   <Calendar className="size-3" />
-                  {new Date(order.orderDate).toLocaleDateString()}
+                  {formatDateBR(order.orderDate)}
                 </div>
               </div>
 

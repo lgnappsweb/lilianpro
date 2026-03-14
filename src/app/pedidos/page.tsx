@@ -83,7 +83,6 @@ export default function PedidosPage() {
     switch (method?.toLowerCase()) {
       case "pix": return <Smartphone className="size-4" />;
       case "dinheiro": return <Banknote className="size-4" />;
-      case "cartao": return <CreditCard className="size-4" />;
       case "a prazo": return <HandCoins className="size-4" />;
       default: return <CreditCard className="size-4" />;
     }
@@ -124,14 +123,17 @@ export default function PedidosPage() {
       });
       toast({
         title: "Pagamento confirmado!",
-        description: `O pedido de ${orderToPay.clientName} foi pago em ${new Date(paymentDate).toLocaleDateString('pt-BR')}.`,
+        description: `O pedido de ${orderToPay.clientName} foi pago em ${new Date(paymentDate + "T12:00:00").toLocaleDateString('pt-BR')}.`,
       });
       setOrderToPay(null);
     }
   };
 
   const formatDateBR = (isoString: string) => {
-    return new Date(isoString).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+    if (!isoString) return "";
+    const datePart = isoString.split('T')[0];
+    const [year, month, day] = datePart.split('-');
+    return `${day}/${month}/${year}`;
   };
 
   return (

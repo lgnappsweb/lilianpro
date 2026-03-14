@@ -81,7 +81,10 @@ export default function DetalhesPedidoPage() {
   };
 
   const formatDateBR = (isoString: string) => {
-    return new Date(isoString).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+    if (!isoString) return "";
+    const datePart = isoString.split('T')[0];
+    const [year, month, day] = datePart.split('-');
+    return `${day}/${month}/${year}`;
   };
 
   const formatDueDateBR = (dateString: string) => {
@@ -104,7 +107,7 @@ export default function DetalhesPedidoPage() {
       : "";
 
     const paymentInfo = order.paymentStatus === "Pago" 
-      ? `✅ *Recebido em:* ${order.paymentDate ? new Date(order.paymentDate).toLocaleDateString('pt-BR') : formatDateBR(order.orderDate)}\n`
+      ? `✅ *Recebido em:* ${order.paymentDate ? formatDateBR(order.paymentDate) : formatDateBR(order.orderDate)}\n`
       : order.dueDate ? `⏰ *Vencimento:* ${formatDueDateBR(order.dueDate)}\n` : "";
 
     const message = `✨ *RESUMO DA VENDA - ${appName}* ✨\n\n` +
@@ -230,7 +233,7 @@ export default function DetalhesPedidoPage() {
                     <CheckCircle2 className="size-3" /> RECEBIDO EM
                   </p>
                   <p className="text-2xl font-black text-green-700">
-                    {new Date(order.paymentDate).toLocaleDateString('pt-BR')}
+                    {formatDateBR(order.paymentDate)}
                   </p>
                 </div>
               )}

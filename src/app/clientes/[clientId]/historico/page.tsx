@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useMemo, useState } from "react";
@@ -182,12 +183,10 @@ export default function HistoricoClientePage() {
   };
 
   const formatDateBR = (isoString: string) => {
-    return new Date(isoString).toLocaleDateString('pt-BR', { 
-      day: '2-digit', 
-      month: 'long', 
-      year: 'numeric',
-      timeZone: 'America/Sao_Paulo' 
-    });
+    if (!isoString) return "";
+    const datePart = isoString.split('T')[0];
+    const [year, month, day] = datePart.split('-');
+    return `${day}/${month}/${year}`;
   };
 
   const handleShareHistory = () => {
@@ -202,7 +201,7 @@ export default function HistoricoClientePage() {
     sortedOrders.forEach((order) => {
       const statusLabel = order.paymentStatus === "Pago" ? "✅ PAGO" : order.paymentStatus === "Atrasado" ? "❌ ATRASADO" : "⏳ PENDENTE";
       message += `--------------------------\n`;
-      message += `🛒 Compra em ${new Date(order.orderDate).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}\n`;
+      message += `🛒 Compra em ${formatDateBR(order.orderDate)}\n`;
       message += `💰 Valor: R$ ${Number(order.finalAmount).toFixed(2)}\n`;
       message += `📊 Status: ${statusLabel}\n`;
     });
@@ -217,7 +216,7 @@ export default function HistoricoClientePage() {
     const statusLabel = order.paymentStatus === "Pago" ? "✅ PAGO" : order.paymentStatus === "Atrasado" ? "❌ ATRASADO" : "⏳ PENDENTE";
     let message = `🛍️ *DETALHE DE COMPRA - ${appName}*\n\n`;
     message += `👤 *Cliente:* ${cliente?.fullName}\n`;
-    message += `📅 *Data:* ${new Date(order.orderDate).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}\n`;
+    message += `📅 *Data:* ${formatDateBR(order.orderDate)}\n`;
     message += `💳 *Pagamento:* ${order.paymentMethod?.toUpperCase()}\n`;
     message += `📊 *Status:* ${statusLabel}\n`;
     message += `💰 *TOTAL: R$ ${Number(order.finalAmount).toFixed(2)}*\n\n`;
