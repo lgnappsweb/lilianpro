@@ -5,14 +5,12 @@ import React, { useMemo, useState, useEffect } from "react";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import {
   TrendingUp,
   Users,
-  ShoppingBag,
   Wallet,
   Clock,
   ChevronRight,
@@ -141,7 +139,7 @@ export default function DashboardPage() {
   }, [db, user]);
   const { data: clients, isLoading: clientsLoading } = useCollection(clientsQuery);
 
-  // Busca Pedidos do Ciclo Ativo
+  // Busca Pedidos do Ciclo Ativo (em ordem alfabética)
   const ordersQuery = useMemoFirebase(() => {
     if (!db || !user || !activeCycleId) return null;
     return query(
@@ -150,7 +148,12 @@ export default function DashboardPage() {
       where("isDeleted", "==", false)
     );
   }, [db, user, activeCycleId]);
-  const { data: filteredOrders, isLoading: ordersLoading } = useCollection(ordersQuery);
+  const { data: filteredOrdersRaw, isLoading: ordersLoading } = useCollection(ordersQuery);
+
+  const filteredOrders = useMemo(() => {
+    if (!filteredOrdersRaw) return [];
+    return [...filteredOrdersRaw].sort((a, b) => (a.clientName || "").localeCompare(b.clientName || ""));
+  }, [filteredOrdersRaw]);
 
   const activeCycle = useMemo(() => {
     if (!cycles || !activeCycleId) return null;
@@ -242,9 +245,7 @@ export default function DashboardPage() {
 
   const recentOrders = useMemo(() => {
     if (!filteredOrders) return [];
-    return [...filteredOrders]
-      .sort((a, b) => (a.clientName || "").localeCompare(b.clientName || ""))
-      .slice(0, 10);
+    return [...filteredOrders].slice(0, 10);
   }, [filteredOrders]);
 
   const sortedCycles = useMemo(() => {
@@ -363,13 +364,13 @@ export default function DashboardPage() {
         {/* NOVA GESTÃO DE CICLOS (MULTI-CICLOS) */}
         <Card className="w-full border-4 border-primary/20 shadow-xl rounded-[2.5rem] overflow-hidden bg-background mb-4">
           <CardHeader className="bg-primary/5 p-4 sm:p-6 border-b-2 border-primary/10">
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <CardTitle className="text-base sm:text-xl font-black flex items-center gap-2 sm:gap-3 uppercase italic text-primary whitespace-nowrap">
                 <RefreshCw className="size-4 sm:size-6" /> GESTÃO DE CICLOS
               </CardTitle>
               <Popover open={isNewCyclePopoverOpen} onOpenChange={setIsNewCyclePopoverOpen}>
                 <PopoverTrigger asChild>
-                  <Button size="sm" className="rounded-full bg-primary font-black uppercase text-[10px] tracking-widest gap-2 shadow-lg">
+                  <Button size="sm" className="w-full sm:w-auto h-12 sm:h-10 rounded-full bg-primary font-black uppercase text-[10px] tracking-widest gap-2 shadow-lg">
                     <Plus className="size-3" /> NOVO CICLO
                   </Button>
                 </PopoverTrigger>
@@ -423,16 +424,16 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 gap-3">
               {sortedCycles.map((cycle) => (
                 <div key={cycle.id} className={cn(
-                  "p-4 rounded-2xl border-4 flex items-center justify-between group transition-all",
+                  "p-4 rounded-2xl border-4 flex flex-row items-center justify-between group transition-all",
                   activeCycleId === cycle.id ? "bg-primary/5 border-primary shadow-inner" : "bg-background border-muted hover:border-primary/20"
                 )}>
                   <div className="flex items-center gap-4 flex-1 min-w-0" onClick={() => handleSelectCycle(cycle.id)}>
                     <div className={cn("size-10 rounded-xl flex items-center justify-center shrink-0", activeCycleId === cycle.id ? "bg-primary text-white" : "bg-muted text-muted-foreground")}>
                       {activeCycleId === cycle.id ? <Check className="size-6" /> : <CalendarIcon className="size-5" />}
                     </div>
-                    <div className="truncate">
-                      <p className={cn("font-black text-lg uppercase italic truncate leading-tight", activeCycleId === cycle.id ? "text-primary" : "text-foreground")}>{cycle.name}</p>
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <p className={cn("font-black text-lg uppercase italic leading-tight break-words", activeCycleId === cycle.id ? "text-primary" : "text-foreground")}>{cycle.name}</p>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest break-words">
                         {cycle.from ? `${format(new Date(cycle.from), "dd/MM/yy")} - ${format(new Date(cycle.to), "dd/MM/yy")}` : "Sem data definida"}
                       </p>
                     </div>
