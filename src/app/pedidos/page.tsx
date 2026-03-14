@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useMemo } from "react";
@@ -87,7 +88,6 @@ export default function PedidosPage() {
   const filteredOrders = useMemo(() => {
     if (!orders) return [];
     return orders.filter(o => {
-      // Oculta pedidos arquivados (soft-deleted) da lista ativa
       if (o.isDeleted) return false;
 
       const searchStr = searchTerm.toLowerCase();
@@ -96,13 +96,12 @@ export default function PedidosPage() {
         o.clientName?.toLowerCase().includes(searchStr);
       const matchesFilter = activeFilter === "todos" || o.paymentStatus?.toLowerCase() === activeFilter;
       return matchesSearch && matchesFilter;
-    }).sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
+    }).sort((a, b) => (a.clientName || "").localeCompare(b.clientName || ""));
   }, [orders, searchTerm, activeFilter]);
 
   const handleDeleteConfirm = () => {
     if (orderToDelete && user && db) {
       const docRef = doc(db, "users", user.uid, "orders", orderToDelete.id);
-      // Implementação de Soft Delete: apenas marca como deletado para manter no histórico
       updateDocumentNonBlocking(docRef, { isDeleted: true });
       toast({
         title: "Pedido removido",
@@ -182,7 +181,6 @@ export default function PedidosPage() {
               key={order.id} 
               className="bg-background border-4 border-muted rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 shadow-xl hover:shadow-[0_20px_40px_rgba(0,0,0,0.1)] hover:-translate-y-2 hover:border-primary/40 transition-all duration-500 flex flex-col justify-between w-full relative overflow-hidden group transform-gpu"
             >
-              {/* LINHA SUPERIOR: ID E DATA */}
               <div className="flex items-center justify-between w-full mb-4">
                 <Badge variant="outline" className="font-mono text-[10px] sm:text-xs font-black text-primary/60 bg-primary/5 border-2 border-primary/10 rounded-lg px-3 py-1">
                   #{order.id?.slice(-6)}
@@ -193,7 +191,6 @@ export default function PedidosPage() {
                 </div>
               </div>
 
-              {/* CONTEÚDO CENTRAL: CLIENTE E PAGAMENTO */}
               <div className="flex flex-col gap-1 mb-4 text-left">
                 <h3 className="font-black text-2xl sm:text-4xl text-primary uppercase tracking-tighter italic leading-none px-1 line-clamp-1 drop-shadow-md">
                   {order.clientName}
@@ -208,7 +205,6 @@ export default function PedidosPage() {
                 </div>
               </div>
               
-              {/* LINHA DE VALOR E STATUS */}
               <div className="flex items-center justify-between w-full mb-6 px-1">
                 <div className="flex flex-col">
                   <p className="text-2xl sm:text-4xl font-black text-green-600 tracking-tighter leading-none italic">
@@ -225,7 +221,6 @@ export default function PedidosPage() {
                 </Badge>
               </div>
 
-              {/* BOTÕES DE AÇÃO ELITE */}
               <div className="flex flex-row items-center justify-center gap-2 w-full pt-4 border-t-2 border-muted/30">
                 <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[10px] uppercase tracking-widest rounded-xl border-2 hover:bg-primary/5 px-2 flex-1 shadow-sm transition-all active:scale-95">
                   <Link href={`/pedidos/${order.id}`}>
@@ -267,7 +262,6 @@ export default function PedidosPage() {
         </div>
       )}
 
-      {/* Alerta de Confirmação para Excluir Pedido */}
       <AlertDialog open={!!orderToDelete} onOpenChange={(open) => !open && setOrderToDelete(null)}>
         <AlertDialogContent className="rounded-[2.5rem] p-8 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto">
           <AlertDialogHeader>

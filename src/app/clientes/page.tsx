@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useMemo } from "react";
@@ -52,9 +53,9 @@ export default function ClientesPage() {
 
   const filteredClientes = useMemo(() => {
     if (!clients) return [];
-    return clients.filter(c =>
-      c.fullName?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    return clients
+      .filter(c => c.fullName?.toLowerCase().includes(searchTerm.toLowerCase()))
+      .sort((a, b) => (a.fullName || "").localeCompare(b.fullName || ""));
   }, [clients, searchTerm]);
 
   const openWhatsApp = (phone: string) => {
@@ -128,7 +129,6 @@ export default function ClientesPage() {
                   </div>
 
                   <div className="space-y-4">
-                    {/* BOTÕES DE AÇÃO ELITE */}
                     <div className="grid grid-cols-2 gap-2 w-full">
                       <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2">
                         <Link href={`/clientes/${cliente.id}`}>
