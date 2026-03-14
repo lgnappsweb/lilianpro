@@ -276,7 +276,7 @@ export default function NovaVendaPage() {
               1. Identificação da Cliente
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-8 sm:p-12 space-y-8">
+          <CardContent className="px-4 sm:px-6 py-8 sm:py-12 space-y-8">
             <div className="grid sm:grid-cols-2 gap-8">
               <div className="space-y-4 text-left">
                 <Label htmlFor="fullName" className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Nome Completo</Label>
@@ -355,9 +355,9 @@ export default function NovaVendaPage() {
               2. Detalhes do Produto Vendido
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-8 sm:p-12 space-y-10">
+          <CardContent className="px-4 sm:px-6 py-8 sm:py-12 space-y-10">
             <div className="space-y-4 text-left">
-              <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Nome do Produto</Label>
+              <Label htmlFor="name" className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Nome do Produto</Label>
               <Input
                 placeholder="Ex: Perfume Kaiak 100ml"
                 className="h-16 text-xl font-black rounded-xl border-4 border-muted"
