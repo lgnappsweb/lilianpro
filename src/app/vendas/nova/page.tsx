@@ -756,7 +756,7 @@ export default function NovaVendaPage() {
 
                <div className="p-6 rounded-[2rem] shadow-2xl text-center bg-white text-primary border-8 border-white animate-in zoom-in duration-500">
                   <p className="text-[10px] font-black uppercase tracking-[0.4em] mb-1 opacity-60 text-primary">VALOR FINAL DA VENDA</p>
-                  <p className="text-4xl sm:text-7xl font-black tracking-tighter leading-none italic px-2">R$ {finalTotal.toFixed(2)}</p>
+                  <p className="text-4xl sm:text-7xl font-black tracking-tighter leading-none italic px-2 text-green-600">R$ {finalTotal.toFixed(2)}</p>
                 </div>
             </div>
           </CardContent>
