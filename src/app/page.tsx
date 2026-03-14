@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
@@ -26,12 +27,12 @@ import {
   Banknote,
   CreditCard,
   HandCoins,
-  FileText,
-  AlertCircle,
   ReceiptText,
   RefreshCw,
   Trash2,
   Calendar as CalendarIcon,
+  Plus,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -45,13 +46,12 @@ import {
   setDocumentNonBlocking, 
   deleteDocumentNonBlocking 
 } from "@/firebase";
-import { collection, doc, getDocs } from "firebase/firestore";
+import { collection, doc, getDocs, query, where } from "firebase/firestore";
 import { cn } from "@/lib/utils";
 import { 
   format, 
   startOfMonth, 
   endOfMonth, 
-  isWithinInterval, 
   setDate, 
   setMonth, 
   setYear, 
@@ -108,62 +108,53 @@ export default function DashboardPage() {
   const db = useFirestore();
   const { toast } = useToast();
 
-  const [cycleName, setCycleName] = useState("");
-  const [cycleDate, setCycleDate] = useState<DateRange | undefined>({
+  // Estados para Gerenciamento de Ciclos
+  const [newCycleName, setNewCycleName] = useState("");
+  const [newCycleDate, setNewCycleDate] = useState<DateRange | undefined>({
     from: startOfMonth(new Date()),
     to: endOfMonth(new Date()),
   });
-  const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const [isResetting, setIsResetting] = useState(false);
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isNewCyclePopoverOpen, setIsNewCyclePopoverOpen] = useState(false);
+  const [cycleToDelete, setCycleToDelete] = useState<any | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  // Busca configurações do ciclo
-  const cycleRef = useMemoFirebase(() => {
+  // Busca Configurações (Ciclo Ativo)
+  const settingsRef = useMemoFirebase(() => {
     if (!db || !user) return null;
-    return doc(db, "users", user.uid, "config", "cycle");
+    return doc(db, "users", user.uid, "config", "settings");
   }, [db, user]);
-  const { data: cycleData } = useDoc(cycleRef);
+  const { data: settings } = useDoc(settingsRef);
+  const activeCycleId = settings?.activeCycleId;
 
-  useEffect(() => {
-    if (cycleData) {
-      setCycleName(cycleData.name || "");
-      if (cycleData.from && cycleData.to) {
-        setCycleDate({
-          from: new Date(cycleData.from),
-          to: new Date(cycleData.to)
-        });
-      }
-    }
-  }, [cycleData]);
-
-  const ordersQuery = useMemoFirebase(() => {
+  // Busca Todos os Ciclos
+  const cyclesQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
-    return collection(db, "users", user.uid, "orders");
+    return collection(db, "users", user.uid, "cycles");
   }, [db, user]);
-  const { data: ordersData, isLoading: ordersLoading } = useCollection(ordersQuery);
+  const { data: cycles, isLoading: cyclesLoading } = useCollection(cyclesQuery);
 
+  // Busca Clientes (para o contador)
   const clientsQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
     return collection(db, "users", user.uid, "clients");
   }, [db, user]);
   const { data: clients, isLoading: clientsLoading } = useCollection(clientsQuery);
 
-  // Filtra ordens pelo ciclo e ativos
-  const filteredOrders = useMemo(() => {
-    if (!ordersData) return [];
-    let result = ordersData.filter(o => !o.isDeleted);
-    
-    if (cycleDate?.from && cycleDate?.to) {
-      result = result.filter(order => {
-        const orderDate = new Date(order.orderDate);
-        return isWithinInterval(orderDate, { 
-          start: cycleDate.from!, 
-          end: cycleDate.to! 
-        });
-      });
-    }
-    return result;
-  }, [ordersData, cycleDate]);
+  // Busca Pedidos do Ciclo Ativo
+  const ordersQuery = useMemoFirebase(() => {
+    if (!db || !user || !activeCycleId) return null;
+    return query(
+      collection(db, "users", user.uid, "orders"),
+      where("cycleId", "==", activeCycleId),
+      where("isDeleted", "==", false)
+    );
+  }, [db, user, activeCycleId]);
+  const { data: filteredOrders, isLoading: ordersLoading } = useCollection(ordersQuery);
+
+  const activeCycle = useMemo(() => {
+    if (!cycles || !activeCycleId) return null;
+    return cycles.find(c => c.id === activeCycleId);
+  }, [cycles, activeCycleId]);
 
   const stats = useMemo(() => {
     const totalVendido = filteredOrders?.reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0) || 0;
@@ -174,7 +165,7 @@ export default function DashboardPage() {
       {
         title: "Vendido no Ciclo",
         value: `R$ ${totalVendido.toFixed(2)}`,
-        description: "Faturamento do período",
+        description: activeCycle ? activeCycle.name : "Nenhum ciclo selecionado",
         icon: TrendingUp,
         color: "text-primary",
         bg: "bg-primary/10",
@@ -208,7 +199,7 @@ export default function DashboardPage() {
         href: "/clientes",
       },
     ];
-  }, [filteredOrders, clients]);
+  }, [filteredOrders, clients, activeCycle]);
 
   const healthStatus = useMemo(() => {
     if (!filteredOrders || filteredOrders.length === 0) return null;
@@ -223,7 +214,7 @@ export default function DashboardPage() {
       bg: "bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-500/30",
       iconColor: "text-green-600",
       title: "TUDO EM DIA",
-      desc: "Excelente! Todas as suas vendas do ciclo estão liquidadas.",
+      desc: "Excelente! Todas as suas vendas deste ciclo estão liquidadas.",
       icon: CheckCircle2,
     };
 
@@ -232,7 +223,7 @@ export default function DashboardPage() {
         bg: "bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-green-500/30",
         iconColor: "text-red-600",
         title: "ALERTA DE ATRASOS",
-        desc: "Atenção! Existem pagamentos vencidos no ciclo.",
+        desc: "Atenção! Existem pagamentos vencidos neste ciclo.",
         icon: AlertTriangle,
       };
     } else if (counts.pendente > 0) {
@@ -240,7 +231,7 @@ export default function DashboardPage() {
         bg: "bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:border-green-500/30",
         iconColor: "text-orange-600",
         title: "PAGAMENTOS PENDENTES",
-        desc: "Você tem valores a receber dentro do prazo do ciclo.",
+        desc: "Você tem valores a receber dentro do prazo deste ciclo.",
         icon: Clock,
       };
     }
@@ -250,45 +241,56 @@ export default function DashboardPage() {
 
   const recentOrders = useMemo(() => {
     if (!filteredOrders) return [];
-    // Ordenação alfabética conforme solicitação "sempre ordem alfabética"
     return [...filteredOrders]
       .sort((a, b) => (a.clientName || "").localeCompare(b.clientName || ""))
-      .slice(0, 5);
+      .slice(0, 10);
   }, [filteredOrders]);
 
-  const handleUpdateCycleName = (name: string) => {
-    setCycleName(name);
-    if (user && db) {
-      setDocumentNonBlocking(doc(db, "users", user.uid, "config", "cycle"), { name }, { merge: true });
+  const sortedCycles = useMemo(() => {
+    if (!cycles) return [];
+    return [...cycles].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+  }, [cycles]);
+
+  // Ações de Ciclo
+  const handleCreateCycle = () => {
+    if (!user || !db || !newCycleName) {
+      toast({ variant: "destructive", title: "Erro", description: "Informe o nome do ciclo." });
+      return;
     }
-  };
 
-  const updateCycleDatePart = (type: 'from' | 'to', part: 'day' | 'month' | 'year', value: string) => {
-    if (!cycleDate) return;
-    const current = cycleDate[type] || new Date();
-    let newDate = new Date(current);
+    const cycleId = `cyc-${Date.now()}`;
+    const cycleData = {
+      id: cycleId,
+      name: newCycleName,
+      from: newCycleDate?.from?.toISOString() || null,
+      to: newCycleDate?.to?.toISOString() || null,
+      adminId: user.uid,
+    };
 
-    if (part === 'day') newDate = setDate(newDate, parseInt(value));
-    if (part === 'month') newDate = setMonth(newDate, parseInt(value));
-    if (part === 'year') newDate = setYear(newDate, parseInt(value));
-
-    const updatedDate = { ...cycleDate, [type]: newDate };
-    setCycleDate(updatedDate);
+    setDocumentNonBlocking(doc(db, "users", user.uid, "cycles", cycleId), cycleData, { merge: true });
     
-    if (user && db && updatedDate.from && updatedDate.to) {
-      setDocumentNonBlocking(doc(db, "users", user.uid, "config", "cycle"), {
-        from: updatedDate.from.toISOString(),
-        to: updatedDate.to.toISOString()
-      }, { merge: true });
-    }
+    // Auto-selecionar o novo ciclo
+    setDocumentNonBlocking(settingsRef!, { activeCycleId: cycleId }, { merge: true });
+
+    toast({ title: "Ciclo criado!", description: `${newCycleName} agora está ativo.` });
+    setNewCycleName("");
+    setIsNewCyclePopoverOpen(false);
   };
 
-  const handleResetCycle = async () => {
-    if (!user || !db) return;
-    setIsResetting(true);
+  const handleSelectCycle = (cycleId: string) => {
+    if (!user || !db || !settingsRef) return;
+    setDocumentNonBlocking(settingsRef, { activeCycleId: cycleId }, { merge: true });
+    toast({ title: "Ciclo alterado!", description: "Dados atualizados." });
+  };
+
+  const handleDeleteCycle = async () => {
+    if (!user || !db || !cycleToDelete) return;
+    setIsDeleting(true);
     try {
+      // 1. Apagar Itens dos Pedidos do Ciclo
       const ordersRef = collection(db, "users", user.uid, "orders");
-      const snapshot = await getDocs(ordersRef);
+      const q = query(ordersRef, where("cycleId", "==", cycleToDelete.id));
+      const snapshot = await getDocs(q);
       
       for (const orderDoc of snapshot.docs) {
         const itemsRef = collection(db, "users", user.uid, "orders", orderDoc.id, "orderItems");
@@ -299,48 +301,32 @@ export default function DashboardPage() {
         deleteDocumentNonBlocking(doc(db, "users", user.uid, "orders", orderDoc.id));
       }
 
-      setDocumentNonBlocking(doc(db, "users", user.uid, "config", "cycle"), {
-        name: "",
-        from: null,
-        to: null
-      }, { merge: true });
+      // 2. Apagar o Ciclo
+      deleteDocumentNonBlocking(doc(db, "users", user.uid, "cycles", cycleToDelete.id));
 
-      setCycleName("");
-      setCycleDate({ from: startOfMonth(new Date()), to: endOfMonth(new Date()) });
+      // 3. Limpar activeCycleId se for o excluído
+      if (activeCycleId === cycleToDelete.id) {
+        setDocumentNonBlocking(settingsRef!, { activeCycleId: null }, { merge: true });
+      }
 
-      toast({
-        title: "Ciclo Reiniciado",
-        description: "Todos os pedidos foram apagados. Clientes mantidos.",
-      });
-      setShowResetConfirm(false);
-    } catch (error) {
-      console.error("Error resetting cycle:", error);
-      toast({
-        variant: "destructive",
-        title: "Erro ao reiniciar",
-        description: "Ocorreu um problema ao apagar os dados.",
-      });
+      toast({ title: "Ciclo Removido", description: "Todos os pedidos deste ciclo foram apagados." });
+      setCycleToDelete(null);
+    } catch (e) {
+      console.error(e);
+      toast({ variant: "destructive", title: "Erro", description: "Falha ao remover ciclo." });
     } finally {
-      setIsResetting(false);
+      setIsDeleting(false);
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "Pago": return <CheckCircle2 className="size-3" />;
-      case "Pendente": return <Clock className="size-3" />;
-      case "Atrasado": return <AlertCircle className="size-3" />;
-      default: return null;
-    }
-  };
-
-  const getStatusClass = (status: string) => {
-    switch (status) {
-      case "Pago": return "bg-green-600 text-white";
-      case "Pendente": return "bg-orange-50 text-orange-600 border-orange-200";
-      case "Atrasado": return "bg-red-600 text-white";
-      default: return "bg-muted text-muted-foreground";
-    }
+  const updateDatePart = (type: 'from' | 'to', part: 'day' | 'month' | 'year', value: string) => {
+    if (!newCycleDate) return;
+    const current = newCycleDate[type] || new Date();
+    let newDate = new Date(current);
+    if (part === 'day') newDate = setDate(newDate, parseInt(value));
+    if (part === 'month') newDate = setMonth(newDate, parseInt(value));
+    if (part === 'year') newDate = setYear(newDate, parseInt(value));
+    setNewCycleDate({ ...newCycleDate, [type]: newDate });
   };
 
   const getPaymentIcon = (method: string) => {
@@ -353,11 +339,11 @@ export default function DashboardPage() {
     }
   };
 
-  if (ordersLoading || clientsLoading) {
+  if (cyclesLoading || clientsLoading || ordersLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[40vh] gap-3">
         <Loader2 className="size-10 animate-spin text-primary" />
-        <p className="text-muted-foreground animate-pulse font-medium">Sincronizando dados...</p>
+        <p className="text-muted-foreground animate-pulse font-medium">Sincronizando gestão...</p>
       </div>
     );
   }
@@ -373,96 +359,94 @@ export default function DashboardPage() {
           <p className="text-base sm:text-xl text-muted-foreground mt-4 font-bold opacity-80 uppercase tracking-widest">Veja como está o seu negócio hoje.</p>
         </div>
 
-        {/* GESTÃO DE CICLO */}
+        {/* NOVA GESTÃO DE CICLOS (MULTI-CICLOS) */}
         <Card className="w-full border-4 border-primary/20 shadow-xl rounded-[2.5rem] overflow-hidden bg-background mb-4">
           <CardHeader className="bg-primary/5 p-4 sm:p-6 border-b-2 border-primary/10">
-            <CardTitle className="text-base sm:text-xl font-black flex items-center justify-center gap-2 sm:gap-3 uppercase italic text-primary whitespace-nowrap">
-              <RefreshCw className="size-4 sm:size-6" /> GESTÃO DE CICLO ATUAL
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6 space-y-6">
-            <div className="grid sm:grid-cols-2 gap-6 text-left">
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-2">Nome do Ciclo</Label>
-                <Input 
-                  placeholder="Ex: Ciclo 05/2024"
-                  className="h-14 sm:h-16 text-lg font-black rounded-2xl border-4 border-muted focus:border-primary px-4"
-                  value={cycleName}
-                  onChange={(e) => handleUpdateCycleName(e.target.value)}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-2">Período do Ciclo</Label>
-                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full h-14 sm:h-16 text-sm sm:text-xl font-black rounded-2xl border-4 border-muted justify-between px-4">
-                      <div className="flex items-center gap-2 overflow-hidden">
-                        <CalendarIcon className="size-4 text-primary shrink-0" />
-                        <span className="truncate text-sm sm:text-xl">
-                          {cycleDate?.from && cycleDate?.to ? (
-                            `${format(cycleDate.from, "dd/MM/yyyy")} - ${format(cycleDate.to, "dd/MM/yyyy")}`
-                          ) : "Selecionar Datas"}
-                        </span>
-                      </div>
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[300px] sm:w-[450px] p-6 rounded-[2rem] border-4 shadow-2xl space-y-6" align="center">
-                    <div className="space-y-6">
-                      <div className="space-y-3">
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 px-2">Início do Ciclo</p>
-                        <div className="grid grid-cols-3 gap-3">
-                          <Select value={cycleDate?.from ? getDate(cycleDate.from).toString() : ""} onValueChange={(v) => updateCycleDatePart('from', 'day', v)}>
-                            <SelectTrigger className="h-14 font-black rounded-xl border-2"><SelectValue placeholder="Dia" /></SelectTrigger>
-                            <SelectContent className="rounded-xl font-bold">{DAYS.map(d => <SelectItem key={d} value={d}>{d.padStart(2, '0')}</SelectItem>)}</SelectContent>
-                          </Select>
-                          <Select value={cycleDate?.from ? getMonth(cycleDate.from).toString() : ""} onValueChange={(v) => updateCycleDatePart('from', 'month', v)}>
-                            <SelectTrigger className="h-14 font-black rounded-xl border-2"><SelectValue placeholder="Mês" /></SelectTrigger>
-                            <SelectContent className="rounded-xl font-bold">{MONTHS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
-                          </Select>
-                          <Select value={cycleDate?.from ? getYear(cycleDate.from).toString() : ""} onValueChange={(v) => updateCycleDatePart('from', 'year', v)}>
-                            <SelectTrigger className="h-14 font-black rounded-xl border-2"><SelectValue placeholder="Ano" /></SelectTrigger>
-                            <SelectContent className="rounded-xl font-bold">{YEARS.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                      <div className="space-y-3">
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 px-2">Fim do Ciclo</p>
-                        <div className="grid grid-cols-3 gap-3">
-                          <Select value={cycleDate?.to ? getDate(cycleDate.to).toString() : ""} onValueChange={(v) => updateCycleDatePart('to', 'day', v)}>
-                            <SelectTrigger className="h-14 font-black rounded-xl border-2"><SelectValue placeholder="Dia" /></SelectTrigger>
-                            <SelectContent className="rounded-xl font-bold">{DAYS.map(d => <SelectItem key={d} value={d}>{d.padStart(2, '0')}</SelectItem>)}</SelectContent>
-                          </Select>
-                          <Select value={cycleDate?.to ? getMonth(cycleDate.to).toString() : ""} onValueChange={(v) => updateCycleDatePart('to', 'month', v)}>
-                            <SelectTrigger className="h-14 font-black rounded-xl border-2"><SelectValue placeholder="Mês" /></SelectTrigger>
-                            <SelectContent className="rounded-xl font-bold">{MONTHS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
-                          </Select>
-                          <Select value={cycleDate?.to ? getYear(cycleDate.to).toString() : ""} onValueChange={(v) => updateCycleDatePart('to', 'year', v)}>
-                            <SelectTrigger className="h-14 font-black rounded-xl border-2"><SelectValue placeholder="Ano" /></SelectTrigger>
-                            <SelectContent className="rounded-xl font-bold">{YEARS.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
-                          </Select>
-                        </div>
+            <div className="flex items-center justify-between gap-4">
+              <CardTitle className="text-base sm:text-xl font-black flex items-center gap-2 sm:gap-3 uppercase italic text-primary whitespace-nowrap">
+                <RefreshCw className="size-4 sm:size-6" /> GESTÃO DE CICLOS
+              </CardTitle>
+              <Popover open={isNewCyclePopoverOpen} onOpenChange={setIsNewCyclePopoverOpen}>
+                <PopoverTrigger asChild>
+                  <Button size="sm" className="rounded-full bg-primary font-black uppercase text-[10px] tracking-widest gap-2 shadow-lg">
+                    <Plus className="size-3" /> NOVO CICLO
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[300px] sm:w-[400px] p-6 rounded-[2rem] border-4 shadow-2xl space-y-6" align="end">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-2">Nome do Período</Label>
+                      <Input placeholder="Ex: Ciclo 05/2024" className="font-black h-12 rounded-xl" value={newCycleName} onChange={(e) => setNewCycleName(e.target.value)} />
+                    </div>
+                    <div className="space-y-3">
+                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 px-2">Início</p>
+                      <div className="grid grid-cols-3 gap-2">
+                        <Select value={newCycleDate?.from ? getDate(newCycleDate.from).toString() : ""} onValueChange={(v) => updateDatePart('from', 'day', v)}>
+                          <SelectTrigger className="h-10 font-bold rounded-lg"><SelectValue /></SelectTrigger>
+                          <SelectContent>{DAYS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                        </Select>
+                        <Select value={newCycleDate?.from ? getMonth(newCycleDate.from).toString() : ""} onValueChange={(v) => updateDatePart('from', 'month', v)}>
+                          <SelectTrigger className="h-10 font-bold rounded-lg"><SelectValue /></SelectTrigger>
+                          <SelectContent>{MONTHS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
+                        </Select>
+                        <Select value={newCycleDate?.from ? getYear(newCycleDate.from).toString() : ""} onValueChange={(v) => updateDatePart('from', 'year', v)}>
+                          <SelectTrigger className="h-10 font-bold rounded-lg"><SelectValue /></SelectTrigger>
+                          <SelectContent>{YEARS.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
+                        </Select>
                       </div>
                     </div>
-                    <Button 
-                      onClick={() => setIsCalendarOpen(false)}
-                      className="w-full h-14 rounded-2xl font-black uppercase tracking-widest bg-primary shadow-xl"
-                    >
-                      Confirmar Datas
-                    </Button>
-                  </PopoverContent>
-                </Popover>
-              </div>
+                    <div className="space-y-3">
+                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60 px-2">Fim</p>
+                      <div className="grid grid-cols-3 gap-2">
+                        <Select value={newCycleDate?.to ? getDate(newCycleDate.to).toString() : ""} onValueChange={(v) => updateDatePart('to', 'day', v)}>
+                          <SelectTrigger className="h-10 font-bold rounded-lg"><SelectValue /></SelectTrigger>
+                          <SelectContent>{DAYS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                        </Select>
+                        <Select value={newCycleDate?.to ? getMonth(newCycleDate.to).toString() : ""} onValueChange={(v) => updateDatePart('to', 'month', v)}>
+                          <SelectTrigger className="h-10 font-bold rounded-lg"><SelectValue /></SelectTrigger>
+                          <SelectContent>{MONTHS.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
+                        </Select>
+                        <Select value={newCycleDate?.to ? getYear(newCycleDate.to).toString() : ""} onValueChange={(v) => updateDatePart('to', 'year', v)}>
+                          <SelectTrigger className="h-10 font-bold rounded-lg"><SelectValue /></SelectTrigger>
+                          <SelectContent>{YEARS.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}</SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <Button onClick={handleCreateCycle} className="w-full h-14 rounded-xl font-black uppercase bg-primary">ATIVAR CICLO</Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
-            
-            <Button 
-              variant="ghost" 
-              onClick={() => setShowResetConfirm(true)}
-              className="w-full h-auto min-h-14 py-4 text-base sm:text-xl text-destructive font-black uppercase tracking-tight sm:tracking-widest gap-3 hover:bg-destructive/5 rounded-2xl border-4 border-destructive/10 transition-all active:scale-95 px-6"
-            >
-              <Trash2 className="size-5 sm:size-6 shrink-0" /> 
-              <span className="flex-1 text-center">ENCERRAR CICLO ATUAL</span>
-            </Button>
+          </CardHeader>
+          <CardContent className="p-4 sm:p-6 space-y-4">
+            <div className="grid grid-cols-1 gap-3">
+              {sortedCycles.map((cycle) => (
+                <div key={cycle.id} className={cn(
+                  "p-4 rounded-2xl border-4 flex items-center justify-between group transition-all",
+                  activeCycleId === cycle.id ? "bg-primary/5 border-primary shadow-inner" : "bg-background border-muted hover:border-primary/20"
+                )}>
+                  <div className="flex items-center gap-4 flex-1 min-w-0" onClick={() => handleSelectCycle(cycle.id)}>
+                    <div className={cn("size-10 rounded-xl flex items-center justify-center shrink-0", activeCycleId === cycle.id ? "bg-primary text-white" : "bg-muted text-muted-foreground")}>
+                      {activeCycleId === cycle.id ? <Check className="size-6" /> : <CalendarIcon className="size-5" />}
+                    </div>
+                    <div className="truncate">
+                      <p className={cn("font-black text-lg uppercase italic truncate leading-tight", activeCycleId === cycle.id ? "text-primary" : "text-foreground")}>{cycle.name}</p>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                        {cycle.from ? `${format(new Date(cycle.from), "dd/MM/yy")} - ${format(new Date(cycle.to), "dd/MM/yy")}` : "Sem data definida"}
+                      </p>
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={() => setCycleToDelete(cycle)} className="text-muted-foreground hover:text-destructive hover:bg-destructive/5 rounded-xl shrink-0 ml-2">
+                    <Trash2 className="size-5" />
+                  </Button>
+                </div>
+              ))}
+              {sortedCycles.length === 0 && (
+                <div className="text-center py-10 opacity-40">
+                  <p className="font-black uppercase text-xs">Nenhum ciclo cadastrado</p>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
 
@@ -474,6 +458,7 @@ export default function DashboardPage() {
         </Button>
       </div>
 
+      {/* DASHBOARD DE MÉTRICAS */}
       <div className="grid gap-6 grid-cols-1">
         {stats.map((stat, i) => (
           <Link href={stat.href} key={i} className="block group">
@@ -535,31 +520,7 @@ export default function DashboardPage() {
         </Card>
       )}
 
-      <div className="w-full">
-        <Card className="border-4 border-muted shadow-xl rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="p-8 pb-4 bg-muted/50">
-            <CardTitle className="text-2xl md:text-3xl font-black flex flex-col items-center gap-3 px-2">
-              <Users className="size-8 text-primary" />
-              Gestão de Contatos
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-8 space-y-6">
-            <Link href="/clientes" className="block group/card">
-              <div className="flex items-center gap-5 p-5 rounded-[1.5rem] bg-background border-4 border-muted shadow-sm hover:border-accent/20 transition-all relative overflow-hidden">
-                <div className="size-14 rounded-2xl bg-accent/10 flex items-center justify-center text-accent shadow-inner">
-                  <Users className="size-8" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xl font-black uppercase tracking-tight px-2 whitespace-nowrap">Clientes</p>
-                  <p className="text-sm text-muted-foreground font-bold">{clients?.length || 0} contatos</p>
-                </div>
-                <Badge variant="secondary" className="absolute bottom-3 right-4 text-[10px] font-black px-3 py-1 bg-accent/5 text-accent border-none shadow-sm group-hover/card:bg-accent group-hover/card:text-white transition-all">Ver Lista</Badge>
-              </div>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
-
+      {/* VENDAS DO CICLO (A a Z) */}
       <div className="w-full space-y-8">
         <div className="flex flex-row items-center justify-between px-2">
           <h2 className="text-3xl sm:text-4xl font-black text-primary uppercase italic tracking-tighter">Vendas do Ciclo</h2>
@@ -608,8 +569,9 @@ export default function DashboardPage() {
                   </p>
                 </div>
 
-                <Badge className={`flex items-center gap-1 px-4 py-1.5 rounded-xl font-black text-[10px] uppercase tracking-widest border-none shadow-md ${getStatusClass(order.paymentStatus)}`}>
-                  {getStatusIcon(order.paymentStatus)}
+                <Badge className={cn("flex items-center gap-1 px-4 py-1.5 rounded-xl font-black text-[10px] uppercase tracking-widest border-none shadow-md", 
+                  order.paymentStatus === "Pago" ? "bg-green-600 text-white" : 
+                  order.paymentStatus === "Atrasado" ? "bg-red-600 text-white" : "bg-orange-50 text-orange-600 border-orange-200")}>
                   {order.paymentStatus?.toUpperCase()}
                 </Badge>
               </div>
@@ -617,41 +579,47 @@ export default function DashboardPage() {
               <div className="flex flex-row items-center justify-center gap-2 w-full pt-4 border-t-2 border-muted/30">
                 <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[10px] uppercase tracking-widest rounded-xl border-2 hover:bg-primary/5 px-2 flex-1 shadow-sm transition-all active:scale-95">
                   <Link href={`/pedidos/${order.id}`}>
-                    <FileText className="mr-1 size-3" />
-                    Detalhes
+                    <ReceiptText className="mr-1 size-3" /> Detalhes
                   </Link>
                 </Button>
               </div>
             </Card>
           ))}
-          {recentOrders.length === 0 && (
+          {recentOrders.length === 0 && !activeCycleId && (
+            <div className="text-center py-20 bg-muted/10 rounded-[2.5rem] border-4 border-dashed border-muted w-full">
+              <RefreshCw className="size-24 text-muted-foreground/20 mx-auto mb-6" />
+              <h3 className="font-black text-3xl text-muted-foreground uppercase tracking-tighter">Selecione um Ciclo</h3>
+              <p className="text-xl text-muted-foreground mt-4 font-bold italic opacity-60 px-4">Selecione ou crie um ciclo acima para gerenciar as vendas deste período.</p>
+            </div>
+          )}
+          {recentOrders.length === 0 && activeCycleId && (
             <div className="text-center py-20 bg-muted/10 rounded-[2.5rem] border-4 border-dashed border-muted w-full">
               <ReceiptText className="size-24 text-muted-foreground/20 mx-auto mb-6" />
-              <h3 className="font-black text-3xl text-muted-foreground uppercase tracking-tighter">Sem vendas no ciclo</h3>
-              <p className="text-xl text-muted-foreground mt-4 font-bold italic opacity-60 px-4">Cadastre sua primeira venda para começar o faturamento deste ciclo.</p>
+              <h3 className="font-black text-3xl text-muted-foreground uppercase tracking-tighter">Sem vendas neste ciclo</h3>
+              <p className="text-xl text-muted-foreground mt-4 font-bold italic opacity-60 px-4">Cadastre sua primeira venda para o ciclo "{activeCycle?.name}".</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Alerta de Confirmação para Reiniciar Ciclo */}
-      <AlertDialog open={showResetConfirm} onOpenChange={setShowResetConfirm}>
+      {/* Alerta de Confirmação para Remover Ciclo (Individual) */}
+      <AlertDialog open={!!cycleToDelete} onOpenChange={(open) => !open && setCycleToDelete(null)}>
         <AlertDialogContent className="rounded-[2.5rem] p-8 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-3xl sm:text-5xl font-black tracking-tighter text-destructive uppercase leading-none text-left px-2">Encerrar Ciclo Atual?</AlertDialogTitle>
+            <AlertDialogTitle className="text-3xl sm:text-5xl font-black tracking-tighter text-destructive uppercase leading-none text-left px-2">Remover Ciclo Individual?</AlertDialogTitle>
             <AlertDialogDescription className="text-xl sm:text-2xl font-bold mt-6 leading-relaxed text-muted-foreground text-left">
-              <span className="text-destructive font-black">ATENÇÃO:</span> Esta ação apagará permanentemente <strong className="text-foreground border-b-4 border-primary px-1">TODOS OS PEDIDOS</strong> e registros financeiros salvos. <br /><br />
-              Os <span className="text-primary font-black uppercase">DADOS DOS CLIENTES</span> continuarão salvos normalmente. Esta ação não pode ser desfeita.
+              <span className="text-destructive font-black">ATENÇÃO:</span> Esta ação apagará permanentemente o ciclo <strong className="text-foreground border-b-4 border-primary px-1">{cycleToDelete?.name}</strong> e <span className="text-primary font-black uppercase">TODOS OS PEDIDOS</span> vinculados a ele. <br /><br />
+              Os dados dos outros ciclos e clientes serão preservados. Esta ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-4 mt-12 flex-col sm:flex-row">
             <AlertDialogCancel className="h-16 sm:h-24 px-10 text-xl font-black rounded-2xl sm:rounded-3xl border-4 border-muted hover:bg-muted/50">Cancelar</AlertDialogCancel>
             <AlertDialogAction 
-              onClick={handleResetCycle} 
-              disabled={isResetting}
+              onClick={handleDeleteCycle} 
+              disabled={isDeleting}
               className="h-16 sm:h-24 px-10 text-xl font-black bg-destructive text-white hover:bg-destructive/90 rounded-2xl sm:rounded-3xl shadow-xl active:scale-95 transition-all"
             >
-              {isResetting ? "APAGANDO..." : "SIM, LIMPAR TUDO"}
+              {isDeleting ? "APAGANDO..." : "SIM, REMOVER CICLO"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

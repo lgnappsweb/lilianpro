@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "Client": {
@@ -43,6 +44,7 @@
         "id": { "type": "string" },
         "clientId": { "type": "string" },
         "clientName": { "type": "string" },
+        "cycleId": { "type": "string", "description": "ID do ciclo ao qual este pedido pertence." },
         "orderDate": { "type": "string", "format": "date-time" },
         "paymentMethod": { "type": "string" },
         "paymentStatus": { "type": "string" },
@@ -84,13 +86,26 @@
       },
       "required": ["id", "name", "adminId"]
     },
+    "Cycle": {
+      "title": "Cycle",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "from": { "type": "string", "format": "date-time" },
+        "to": { "type": "string", "format": "date-time" },
+        "adminId": { "type": "string" }
+      },
+      "required": ["id", "name", "adminId"]
+    },
     "Settings": {
       "title": "Settings",
       "type": "object",
       "properties": {
         "appName": { "type": "string" },
         "primaryColor": { "type": "string" },
-        "themeMode": { "type": "string", "enum": ["light", "dark"] }
+        "themeMode": { "type": "string", "enum": ["light", "dark"] },
+        "activeCycleId": { "type": "string" }
       }
     }
   },
@@ -112,6 +127,10 @@
     "/users/{userId}/categories/{categoryId}": {
       "schema": { "$ref": "#/backend/entities/Category" },
       "description": "Categorias de produtos."
+    },
+    "/users/{userId}/cycles/{cycleId}": {
+      "schema": { "$ref": "#/backend/entities/Cycle" },
+      "description": "Ciclos de venda do usuário."
     },
     "/users/{userId}/orders/{orderId}": {
       "schema": { "$ref": "#/backend/entities/Order" },

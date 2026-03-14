@@ -37,9 +37,10 @@ import {
   Tag,
   Search,
   UserCheck,
+  RefreshCw,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from "@/firebase";
+import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc, setDocumentNonBlocking } from "@/firebase";
 import { doc, collection } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -64,6 +65,25 @@ export default function NovaVendaPage() {
 
   const [isLoading, setIsLoading] = useState(false);
 
+  // Busca Ciclos e Ciclo Ativo
+  const cyclesQuery = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return collection(db, "users", user.uid, "cycles");
+  }, [db, user]);
+  const { data: cycles } = useCollection(cyclesQuery);
+
+  const settingsRef = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return doc(db, "users", user.uid, "config", "settings");
+  }, [db, user]);
+  const { data: settings } = useDoc(settingsRef);
+  const activeCycleId = settings?.activeCycleId;
+
+  const activeCycle = useMemo(() => {
+    if (!cycles || !activeCycleId) return null;
+    return cycles.find(c => c.id === activeCycleId);
+  }, [cycles, activeCycleId]);
+
   // --- BUSCA DE CLIENTES EXISTENTES ---
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClient, setSelectedClient] = useState<any | null>(null);
@@ -81,7 +101,7 @@ export default function NovaVendaPage() {
     ).sort((a, b) => (a.fullName || "").localeCompare(b.fullName || "")).slice(0, 5);
   }, [existingClients, searchTerm]);
 
-  // --- ESTADO DO CLIENTE (FORM) ---
+  // --- ESTADO DO FORM ---
   const [clientData, setClientData] = useState({
     fullName: "",
     phone: "",
@@ -91,17 +111,13 @@ export default function NovaVendaPage() {
     notes: "",
   });
 
-  // --- ESTADO DOS PRODUTOS (LISTA) ---
   const [saleItems, setSaleItems] = useState<SaleItem[]>([]);
-
-  // --- ESTADO DO PAGAMENTO E TOTAIS ---
   const [paymentMethod, setPaymentMethod] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [saleNotes, setSaleNotes] = useState("");
   const [discount, setDiscount] = useState(0);
   const [additionalFee, setAdditionalFee] = useState(0);
 
-  // Define data atual no fuso horário do Brasil para o vencimento padrão
   useEffect(() => {
     const now = new Date();
     const formatter = new Intl.DateTimeFormat('en-CA', {
@@ -113,7 +129,6 @@ export default function NovaVendaPage() {
     setDueDate(formatter.format(now));
   }, []);
 
-  // --- MÁSCARAS E UTILITÁRIOS ---
   const formatPhone = (value: string) => {
     if (!value) return "";
     const cleaned = value.replace(/\D/g, "");
@@ -126,10 +141,7 @@ export default function NovaVendaPage() {
     const digits = value.replace(/\D/g, "");
     if (!digits) return "";
     const number = parseFloat(digits) / 100;
-    return number.toLocaleString("pt-BR", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
+    return number.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
   const unmaskCurrency = (value: string) => {
@@ -138,7 +150,6 @@ export default function NovaVendaPage() {
     return parseFloat(cleaned) || 0;
   };
 
-  // --- GERENCIAMENTO DE CLIENTE ---
   const handleSelectClient = (client: any) => {
     setSelectedClient(client);
     setClientData({
@@ -152,19 +163,6 @@ export default function NovaVendaPage() {
     setSearchTerm("");
   };
 
-  const handleClearClient = () => {
-    setSelectedClient(null);
-    setClientData({
-      fullName: "",
-      phone: "",
-      city: "",
-      neighborhood: "",
-      address: "",
-      notes: "",
-    });
-  };
-
-  // --- GERENCIAMENTO DE ITENS ---
   const addItem = () => {
     setSaleItems([...saleItems, {
       tempId: `item-${Date.now()}-${Math.random()}`,
@@ -186,10 +184,7 @@ export default function NovaVendaPage() {
   const handleItemChange = (tempId: string, field: keyof SaleItem, value: string) => {
     setSaleItems(prev => prev.map(item => {
       if (item.tempId !== tempId) return item;
-      
       const updatedItem = { ...item, [field]: value };
-
-      // Cálculo automático de custo se mudar marca ou preço de revista
       if (field === "catalogPrice" || field === "brand") {
         const catalog = unmaskCurrency(updatedItem.catalogPrice);
         const brand = updatedItem.brand;
@@ -198,7 +193,6 @@ export default function NovaVendaPage() {
           if (brand === "VERDE (N)") discountPct = 0.30;
           else if (brand === "ROSA (A)") discountPct = 0.35;
           else if (brand === "MARROM (C&E)") discountPct = 0.15;
-
           if (discountPct > 0) {
             const calculatedCost = catalog * (1 - discountPct);
             updatedItem.costPrice = maskCurrency((calculatedCost * 100).toFixed(0));
@@ -209,11 +203,7 @@ export default function NovaVendaPage() {
     }));
   };
 
-  // --- LOGICA DE TOTAIS ---
-  const subtotal = useMemo(() => {
-    return saleItems.reduce((acc, item) => acc + unmaskCurrency(item.salePrice), 0);
-  }, [saleItems]);
-
+  const subtotal = useMemo(() => saleItems.reduce((acc, item) => acc + unmaskCurrency(item.salePrice), 0), [saleItems]);
   const finalTotal = Math.max(0, subtotal - discount + additionalFee);
 
   const isReady = useMemo(() => {
@@ -222,18 +212,15 @@ export default function NovaVendaPage() {
       clientData.phone &&
       saleItems.length > 0 &&
       saleItems.every(item => item.name && item.brand && item.salePrice) &&
-      paymentMethod
+      paymentMethod &&
+      activeCycleId
     );
-  }, [clientData, saleItems, paymentMethod]);
+  }, [clientData, saleItems, paymentMethod, activeCycleId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !db || !isReady) {
-      toast({
-        variant: "destructive",
-        title: "Dados incompletos",
-        description: "Preencha os campos obrigatórios do cliente, produtos e pagamento.",
-      });
+      toast({ variant: "destructive", title: "Dados incompletos", description: "Selecione um ciclo ativo e preencha os campos obrigatórios." });
       return;
     }
 
@@ -243,23 +230,17 @@ export default function NovaVendaPage() {
       const finalClientId = selectedClient ? selectedClient.id : `cli-${Date.now()}`;
       const orderId = `ord-${Date.now()}`;
 
-      // 1. Salvar Novo Cliente (se não for selecionado um existente)
       if (!selectedClient) {
-        const finalClientData = {
-          ...clientData,
-          id: finalClientId,
-          adminId: user.uid,
-          registrationDate: new Date().toISOString(),
-        };
+        const finalClientData = { ...clientData, id: finalClientId, adminId: user.uid, registrationDate: new Date().toISOString() };
         setDocumentNonBlocking(doc(db, "users", user.uid, "clients", finalClientId), finalClientData, { merge: true });
       }
 
-      // 2. Salvar Pedido Root
       const orderData = {
         id: orderId,
         adminId: user.uid,
         clientId: finalClientId,
         clientName: clientData.fullName,
+        cycleId: activeCycleId,
         orderDate: new Date().toISOString(),
         totalAmount: subtotal,
         discountAmount: discount,
@@ -273,53 +254,28 @@ export default function NovaVendaPage() {
       };
       setDocumentNonBlocking(doc(db, "users", user.uid, "orders", orderId), orderData, { merge: true });
 
-      // 3. Salvar Produtos e Itens do Pedido
       saleItems.forEach((item, index) => {
         const productId = `prod-${Date.now()}-${index}`;
         const itemId = `item-${Date.now()}-${index}`;
+        
+        setDocumentNonBlocking(doc(db, "users", user.uid, "products", productId), {
+          id: productId, name: item.name, brand: item.brand, category: item.category,
+          catalogPrice: unmaskCurrency(item.catalogPrice), costPrice: unmaskCurrency(item.costPrice),
+          salePrice: unmaskCurrency(item.salePrice), productCode: item.productCode,
+          description: item.description, adminId: user.uid
+        }, { merge: true });
 
-        // Salvar Produto no Catálogo
-        const finalProductData = {
-          id: productId,
-          name: item.name,
-          brand: item.brand,
-          category: item.category,
-          catalogPrice: unmaskCurrency(item.catalogPrice),
-          costPrice: unmaskCurrency(item.costPrice),
-          salePrice: unmaskCurrency(item.salePrice),
-          productCode: item.productCode,
-          description: item.description,
-          adminId: user.uid,
-        };
-        setDocumentNonBlocking(doc(db, "users", user.uid, "products", productId), finalProductData, { merge: true });
-
-        // Salvar Item detalhado dentro do Pedido
-        const orderItemData = {
-          id: itemId,
-          adminId: user.uid,
-          orderId: orderId,
-          productId: productId,
-          productName: item.name,
-          quantity: 1,
-          unitPrice: unmaskCurrency(item.salePrice),
-          subtotal: unmaskCurrency(item.salePrice),
-        };
-        setDocumentNonBlocking(doc(db, "users", user.uid, "orders", orderId, "orderItems", itemId), orderItemData, { merge: true });
+        setDocumentNonBlocking(doc(db, "users", user.uid, "orders", orderId, "orderItems", itemId), {
+          id: itemId, adminId: user.uid, orderId: orderId, productId: productId,
+          productName: item.name, quantity: 1, unitPrice: unmaskCurrency(item.salePrice), subtotal: unmaskCurrency(item.salePrice)
+        }, { merge: true });
       });
 
-      toast({
-        title: "Venda Concluída!",
-        description: `Registro salvo para ${clientData.fullName}.`,
-      });
-      
+      toast({ title: "Venda Concluída!", description: `Registrada no ciclo: ${activeCycle?.name}` });
       router.push("/pedidos");
     } catch (error) {
-      console.error("Erro na venda rápida:", error);
-      toast({
-        variant: "destructive",
-        title: "Erro ao processar",
-        description: "Ocorreu um problema ao salvar os dados da venda.",
-      });
+      console.error(error);
+      toast({ variant: "destructive", title: "Erro", description: "Falha ao salvar venda." });
     } finally {
       setIsLoading(false);
     }
@@ -334,463 +290,178 @@ export default function NovaVendaPage() {
             <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap px-2">NOVA VENDA</h1>
           </div>
           <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">CADASTRE CLIENTE, PRODUTO E VENDA DE UMA SÓ VEZ</p>
+          
+          {activeCycle ? (
+            <div className="mt-6 flex items-center justify-center gap-2">
+              <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary font-black uppercase tracking-widest px-6 py-2 gap-2 rounded-xl text-xs sm:text-sm">
+                <RefreshCw className="size-4 animate-spin-slow" />
+                VENDENDO NO: {activeCycle.name}
+              </Badge>
+            </div>
+          ) : (
+            <div className="mt-6">
+              <Badge variant="destructive" className="font-black uppercase tracking-widest px-6 py-2 rounded-xl animate-pulse">
+                SELECIONE UM CICLO NO PAINEL ANTES DE VENDER
+              </Badge>
+            </div>
+          )}
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-10">
-        
-        {/* 1. IDENTIFICAÇÃO DA CLIENTE */}
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="bg-muted/80 p-2 sm:p-4 border-b-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <CardHeader className="bg-muted/80 p-4 border-b-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <CardTitle className="flex flex-row items-center gap-3 text-xl sm:text-3xl font-black text-left uppercase px-2">
               <User className="size-6 sm:size-8 text-primary" />
               1. Identificação da Cliente
             </CardTitle>
             {selectedClient && (
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={handleClearClient}
-                className="rounded-full font-black text-[10px] uppercase tracking-widest border-primary/20 text-primary"
-              >
-                Trocar Cliente
-              </Button>
+              <Button type="button" variant="outline" onClick={() => setSelectedClient(null)} className="rounded-full font-black text-[10px] uppercase tracking-widest border-primary/20 text-primary">Trocar Cliente</Button>
             )}
           </CardHeader>
-          <CardContent className="p-0 space-y-0">
-            {/* BUSCA DE CLIENTE */}
+          <CardContent className="p-0">
             {!selectedClient && (
               <div className="relative border-b-4 border-muted group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-6 text-primary group-focus-within:scale-110 transition-transform" />
-                <Input
-                  placeholder="Buscar cliente existente..."
-                  className="h-20 sm:h-24 pl-12 pr-4 text-xl sm:text-2xl font-black rounded-none border-none focus:ring-0 w-full bg-primary/5 italic placeholder:text-primary/30"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-6 text-primary" />
+                <Input placeholder="Buscar cliente existente..." className="h-20 sm:h-24 pl-12 pr-4 text-xl sm:text-2xl font-black rounded-none border-none bg-primary/5 italic placeholder:text-primary/30" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                 {filteredClients.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 z-50 bg-background border-x-4 border-b-4 border-primary/20 shadow-2xl animate-in slide-in-from-top-2 duration-200">
+                  <div className="absolute top-full left-0 right-0 z-50 bg-background border-x-4 border-b-4 border-primary/20 shadow-2xl">
                     {filteredClients.map((client) => (
-                      <button
-                        key={client.id}
-                        type="button"
-                        onClick={() => handleSelectClient(client)}
-                        className="w-full p-6 text-left hover:bg-primary/10 border-b last:border-none flex items-center justify-between group/item"
-                      >
+                      <button key={client.id} type="button" onClick={() => handleSelectClient(client)} className="w-full p-6 text-left hover:bg-primary/10 border-b last:border-none flex items-center justify-between group/item">
                         <div>
-                          <p className="font-black text-xl uppercase italic group-hover/item:text-primary transition-colors">{client.fullName}</p>
+                          <p className="font-black text-xl uppercase italic group-hover/item:text-primary">{client.fullName}</p>
                           <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{client.phone}</p>
                         </div>
-                        <UserCheck className="size-6 text-primary opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                        <UserCheck className="size-6 text-primary opacity-0 group-hover/item:opacity-100" />
                       </button>
                     ))}
                   </div>
                 )}
               </div>
             )}
-
             <div className="grid sm:grid-cols-2">
-              <Input
-                placeholder="Nome Completo"
-                className={cn(
-                  "h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-4 bg-background placeholder:text-muted-foreground/30",
-                  selectedClient && "bg-muted/30 opacity-80"
-                )}
-                value={clientData.fullName}
-                onChange={(e) => !selectedClient && setClientData(prev => ({ ...prev, fullName: e.target.value }))}
-                readOnly={!!selectedClient}
-                required
-              />
-              <Input
-                placeholder="WhatsApp"
-                className={cn(
-                  "h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-4 bg-background placeholder:text-muted-foreground/30",
-                  selectedClient && "bg-muted/30 opacity-80"
-                )}
-                value={clientData.phone}
-                onChange={(e) => !selectedClient && setClientData(prev => ({ ...prev, phone: formatPhone(e.target.value) }))}
-                readOnly={!!selectedClient}
-                required
-              />
+              <Input placeholder="Nome Completo" className={cn("h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary px-4", selectedClient && "bg-muted/30 opacity-80")} value={clientData.fullName} onChange={(e) => !selectedClient && setClientData(p => ({ ...p, fullName: e.target.value }))} readOnly={!!selectedClient} required />
+              <Input placeholder="WhatsApp" className={cn("h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary px-4", selectedClient && "bg-muted/30 opacity-80")} value={clientData.phone} onChange={(e) => !selectedClient && setClientData(p => ({ ...p, phone: formatPhone(e.target.value) }))} readOnly={!!selectedClient} required />
             </div>
-
             <div className="grid sm:grid-cols-2">
-              <Input
-                placeholder="Cidade"
-                className={cn(
-                  "h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-4 bg-background placeholder:text-muted-foreground/30",
-                  selectedClient && "bg-muted/30 opacity-80"
-                )}
-                value={clientData.city}
-                onChange={(e) => !selectedClient && setClientData(prev => ({ ...prev, city: e.target.value }))}
-                readOnly={!!selectedClient}
-              />
-              <Input
-                placeholder="Bairro"
-                className={cn(
-                  "h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-4 bg-background placeholder:text-muted-foreground/30",
-                  selectedClient && "bg-muted/30 opacity-80"
-                )}
-                value={clientData.neighborhood}
-                onChange={(e) => !selectedClient && setClientData(prev => ({ ...prev, neighborhood: e.target.value }))}
-                readOnly={!!selectedClient}
-              />
+              <Input placeholder="Cidade" className={cn("h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary px-4", selectedClient && "bg-muted/30 opacity-80")} value={clientData.city} onChange={(e) => !selectedClient && setClientData(p => ({ ...p, city: e.target.value }))} readOnly={!!selectedClient} />
+              <Input placeholder="Bairro" className={cn("h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary px-4", selectedClient && "bg-muted/30 opacity-80")} value={clientData.neighborhood} onChange={(e) => !selectedClient && setClientData(p => ({ ...p, neighborhood: e.target.value }))} readOnly={!!selectedClient} />
             </div>
-
-            <Input
-              placeholder="Endereço / Referência"
-              className={cn(
-                "h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-4 bg-background placeholder:text-muted-foreground/30",
-                selectedClient && "bg-muted/30 opacity-80"
-              )}
-              value={clientData.address}
-              onChange={(e) => !selectedClient && setClientData(prev => ({ ...prev, address: e.target.value }))}
-              readOnly={!!selectedClient}
-            />
-
-            <Textarea
-              placeholder="Notas do Perfil (Preferências, horários...)"
-              className={cn(
-                "min-h-[120px] text-lg sm:text-xl font-bold rounded-none border-none focus:border-primary w-full px-4 bg-background py-4 placeholder:text-muted-foreground/30",
-                selectedClient && "bg-muted/30 opacity-80"
-              )}
-              value={clientData.notes}
-              onChange={(e) => !selectedClient && setClientData(prev => ({ ...prev, notes: e.target.value }))}
-              readOnly={!!selectedClient}
-            />
+            <Input placeholder="Endereço / Referência" className={cn("h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary px-4", selectedClient && "bg-muted/30 opacity-80")} value={clientData.address} onChange={(e) => !selectedClient && setClientData(p => ({ ...p, address: e.target.value }))} readOnly={!!selectedClient} />
+            <Textarea placeholder="Notas do Perfil (Preferências, horários...)" className={cn("min-h-[120px] text-lg sm:text-xl font-bold rounded-none border-none focus:border-primary px-4 bg-background py-4 placeholder:text-muted-foreground/30", selectedClient && "bg-muted/30 opacity-80")} value={clientData.notes} onChange={(e) => !selectedClient && setClientData(p => ({ ...p, notes: e.target.value }))} readOnly={!!selectedClient} />
           </CardContent>
         </Card>
 
         {/* 2. PRODUTOS VENDIDOS */}
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="bg-muted/80 p-2 sm:p-4 border-b-2">
+          <CardHeader className="bg-muted/80 p-4 border-b-2">
             <CardTitle className="flex flex-row items-center gap-3 text-xl sm:text-3xl font-black text-left uppercase px-2">
               <Package className="size-6 sm:size-8 text-primary" />
               2. Detalhes do Produto Vendido
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-0 space-y-0">
+          <CardContent className="p-0">
             {saleItems.length === 0 ? (
-              <div className="p-16 sm:p-24 text-center space-y-6">
-                <div className="flex justify-center">
-                  <Package className="size-16 sm:size-24 text-muted-foreground opacity-20" />
-                </div>
-                <p className="text-muted-foreground italic font-black text-xl sm:text-2xl uppercase opacity-40 px-4">
-                  Nenhum produto adicionado à venda.
-                </p>
+              <div className="p-16 text-center">
+                <Package className="size-16 mx-auto text-muted-foreground opacity-20 mb-4" />
+                <p className="text-muted-foreground italic font-black uppercase opacity-40 px-4">Nenhum produto adicionado.</p>
               </div>
             ) : (
               <div className="divide-y-8 divide-muted/30">
                 {saleItems.map((item, index) => (
-                  <div key={item.tempId} className="p-0 space-y-0 relative group">
-                    
-                    <div className="bg-primary/5 px-4 sm:px-8 h-12 sm:h-16 flex items-center justify-between text-xs sm:text-xl font-black text-primary uppercase tracking-widest border-b-4 border-primary/10">
-                      <span className="italic flex items-center gap-3">
-                        <Tag className="size-5 hidden sm:block" />
-                        Item #{(index + 1).toString().padStart(2, '0')}
-                      </span>
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => removeItem(item.tempId)}
-                        className="h-8 sm:h-10 px-3 sm:px-4 rounded-xl font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all text-[9px] sm:text-xs"
-                      >
-                        <Trash2 className="size-3 mr-1" /> REMOVER
-                      </Button>
+                  <div key={item.tempId} className="relative">
+                    <div className="bg-primary/5 px-4 h-12 flex items-center justify-between text-xs font-black text-primary uppercase tracking-widest border-b-4 border-primary/10">
+                      <span>Item #{(index + 1).toString().padStart(2, '0')}</span>
+                      <Button type="button" variant="destructive" size="sm" onClick={() => removeItem(item.tempId)} className="h-8 rounded-xl font-black text-[9px]">REMOVER</Button>
                     </div>
-
-                    <Input
-                      placeholder="Nome do Produto"
-                      className="h-16 sm:h-20 text-xl sm:text-3xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-4 bg-background placeholder:text-muted-foreground/30"
-                      value={item.name}
-                      onChange={(e) => handleItemChange(item.tempId, "name", e.target.value)}
-                      required
-                    />
-
+                    <Input placeholder="Nome do Produto" className="h-16 text-xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary px-4 placeholder:text-muted-foreground/30" value={item.name} onChange={(e) => handleItemChange(item.tempId, "name", e.target.value)} required />
                     <div className="grid sm:grid-cols-2">
-                      <Select 
-                        onValueChange={(val) => handleItemChange(item.tempId, "brand", val)} 
-                        value={item.brand}
-                      >
-                        <SelectTrigger className="h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted w-full px-4 bg-background">
-                          <SelectValue placeholder="Marca..." />
-                        </SelectTrigger>
-                        <SelectContent className="font-black text-lg">
-                          <SelectItem value="VERDE (N)" className="font-black">VERDE (N)</SelectItem>
-                          <SelectItem value="ROSA (A)" className="font-black">ROSA (A)</SelectItem>
-                          <SelectItem value="MARROM (C&E)" className="font-black">MARROM (C&E)</SelectItem>
-                        </SelectContent>
+                      <Select onValueChange={(val) => handleItemChange(item.tempId, "brand", val)} value={item.brand}>
+                        <SelectTrigger className="h-16 text-xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted px-4"><SelectValue placeholder="Marca..." /></SelectTrigger>
+                        <SelectContent className="font-black"><SelectItem value="VERDE (N)">VERDE (N)</SelectItem><SelectItem value="ROSA (A)">ROSA (A)</SelectItem><SelectItem value="MARROM (C&E)">MARROM (C&E)</SelectItem></SelectContent>
                       </Select>
-                      <Input
-                        placeholder="Categoria"
-                        className="h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-4 bg-background placeholder:text-muted-foreground/30"
-                        value={item.category}
-                        onChange={(e) => handleItemChange(item.tempId, "category", e.target.value)}
-                      />
+                      <Input placeholder="Categoria" className="h-16 text-xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted px-4 placeholder:text-muted-foreground/30" value={item.category} onChange={(e) => handleItemChange(item.tempId, "category", e.target.value)} />
                     </div>
-
-                    <div className="grid sm:grid-cols-2">
-                      <Input
-                        placeholder="Código/SKU"
-                        className="h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-4 bg-background placeholder:text-muted-foreground/30"
-                        value={item.productCode}
-                        onChange={(e) => handleItemChange(item.tempId, "productCode", e.target.value)}
-                      />
-                      <Input
-                        placeholder="Descrição Breve"
-                        className="h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-4 bg-background placeholder:text-muted-foreground/30"
-                        value={item.description}
-                        onChange={(e) => handleItemChange(item.tempId, "description", e.target.value)}
-                      />
-                    </div>
-
                     <div className="grid grid-cols-3">
-                      <div className="relative">
-                        <Input
-                          placeholder="00,00"
-                          className="h-16 sm:h-20 text-lg sm:text-3xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-sky-400 focus:border-sky-600 w-full px-2 bg-sky-200 text-sky-900 placeholder:text-sky-900/30 text-center"
-                          value={item.catalogPrice}
-                          onChange={(e) => handleItemChange(item.tempId, "catalogPrice", maskCurrency(e.target.value))}
-                        />
-                        <span className="absolute top-1 left-1 text-[7px] sm:text-[8px] font-black uppercase text-sky-700/60">Revista</span>
-                      </div>
-                      <div className="relative">
-                        <Input
-                          placeholder="00,00"
-                          className="h-16 sm:h-20 text-lg sm:text-3xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-orange-400 focus:border-orange-600 w-full px-2 bg-orange-200 text-orange-900 placeholder:text-orange-900/30 text-center"
-                          value={item.costPrice}
-                          onChange={(e) => handleItemChange(item.tempId, "costPrice", maskCurrency(e.target.value))}
-                        />
-                        <span className="absolute top-1 left-1 text-[7px] sm:text-[8px] font-black uppercase text-orange-700/60">Custo</span>
-                      </div>
-                      <div className="relative">
-                        <Input
-                          placeholder="00,00"
-                          className="h-16 sm:h-20 text-lg sm:text-3xl font-black rounded-none border-none focus:border-green-600 w-full px-2 bg-green-200 text-green-900 placeholder:text-green-900/30 text-center"
-                          value={item.salePrice}
-                          onChange={(e) => handleItemChange(item.tempId, "salePrice", maskCurrency(e.target.value))}
-                          required
-                        />
-                        <span className="absolute top-1 left-1 text-[7px] sm:text-[8px] font-black uppercase text-green-700/60">Venda</span>
-                      </div>
+                      <div className="relative"><Input placeholder="00,00" className="h-16 text-center font-black bg-sky-100 border-b-4 border-sky-400" value={item.catalogPrice} onChange={(e) => handleItemChange(item.tempId, "catalogPrice", maskCurrency(e.target.value))} /><span className="absolute top-1 left-1 text-[7px] font-black uppercase text-sky-700/60">Revista</span></div>
+                      <div className="relative"><Input placeholder="00,00" className="h-16 text-center font-black bg-orange-100 border-b-4 border-orange-400" value={item.costPrice} onChange={(e) => handleItemChange(item.tempId, "costPrice", maskCurrency(e.target.value))} /><span className="absolute top-1 left-1 text-[7px] font-black uppercase text-orange-700/60">Custo</span></div>
+                      <div className="relative"><Input placeholder="00,00" className="h-16 text-center font-black bg-green-100 border-none" value={item.salePrice} onChange={(e) => handleItemChange(item.tempId, "salePrice", maskCurrency(e.target.value))} required /><span className="absolute top-1 left-1 text-[7px] font-black uppercase text-green-700/60">Venda</span></div>
                     </div>
                   </div>
                 ))}
               </div>
             )}
             <div className="p-2 bg-muted/20">
-              <Button 
-                type="button" 
-                onClick={addItem}
-                className="w-full h-16 sm:h-20 bg-primary text-white hover:bg-primary/90 font-black rounded-xl sm:rounded-2xl gap-2 sm:gap-4 text-xs sm:text-lg uppercase tracking-tight sm:tracking-widest shadow-2xl transition-all active:scale-95"
-              >
-                <Plus className="size-5 sm:size-6" /> ADICIONAR NOVO PRODUTO
-              </Button>
+              <Button type="button" onClick={addItem} className="w-full h-16 bg-primary text-white font-black rounded-xl gap-4 shadow-xl">ADICIONAR PRODUTO</Button>
             </div>
           </CardContent>
         </Card>
 
         {/* 3. PAGAMENTO */}
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="bg-muted/80 p-2 sm:p-4 border-b-2">
+          <CardHeader className="bg-muted/80 p-4 border-b-2">
             <CardTitle className="flex flex-row items-center gap-3 text-xl sm:text-3xl font-black text-left uppercase px-2">
               <CreditCard className="size-6 sm:size-8 text-primary" />
               3. Forma de Pagamento
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-0 space-y-0">
+          <CardContent className="p-0">
             <div className="grid grid-cols-4 border-b-4 border-muted">
               {[
-                { id: 'pix', label: 'Pix', icon: Smartphone, color: "bg-sky-500", iconColor: "text-sky-500" },
-                { id: 'dinheiro', label: 'Dinheiro', icon: Banknote, color: "bg-emerald-500", iconColor: "text-emerald-500" },
-                { id: 'cartao', label: 'Cartão', icon: CreditCard, color: "bg-violet-500", iconColor: "text-violet-500" },
-                { id: 'a prazo', label: 'A Prazo', icon: HandCoins, color: "bg-amber-500", iconColor: "text-amber-500" },
+                { id: 'pix', label: 'Pix', icon: Smartphone, color: "bg-sky-500" },
+                { id: 'dinheiro', label: 'Dinheiro', icon: Banknote, color: "bg-emerald-500" },
+                { id: 'cartao', label: 'Cartão', icon: CreditCard, color: "bg-violet-500" },
+                { id: 'a prazo', label: 'A Prazo', icon: HandCoins, color: "bg-amber-500" },
               ].map((option) => (
-                <button
-                  key={option.id}
-                  type="button"
-                  onClick={() => setPaymentMethod(option.id)}
-                  className={cn(
-                    "flex flex-col items-center justify-center p-2 transition-all gap-1 h-20 sm:h-32 border-r-4 border-muted last:border-r-0",
-                    paymentMethod === option.id
-                      ? `${option.color} text-white shadow-inner scale-100`
-                      : "bg-background text-muted-foreground hover:bg-muted/20"
-                  )}
-                >
-                  <option.icon className={cn("size-8 sm:size-12", paymentMethod === option.id ? "text-white" : option.iconColor)} />
-                  <span className={cn("text-[9px] sm:text-xs font-black uppercase tracking-tighter", paymentMethod === option.id ? "text-white" : "text-muted-foreground")}>{option.label}</span>
+                <button key={option.id} type="button" onClick={() => setPaymentMethod(option.id)} className={cn("flex flex-col items-center justify-center p-2 transition-all gap-1 h-20 sm:h-32 border-r-4 border-muted last:border-r-0", paymentMethod === option.id ? `${option.color} text-white shadow-inner` : "bg-background text-muted-foreground")}>
+                  <option.icon className="size-8 sm:size-12" /><span className="text-[9px] font-black uppercase">{option.label}</span>
                 </button>
               ))}
             </div>
-
             <div className="grid sm:grid-cols-2">
-              <div className="border-b-4 sm:border-b-0 sm:border-r-4 border-muted p-2 sm:p-4 space-y-1">
-                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block px-2 italic">Data de Vencimento</Label>
-                <Input 
-                  type="date" 
-                  className="h-12 text-xl sm:text-3xl font-black border-none bg-transparent w-full px-2" 
-                  value={dueDate} 
-                  onChange={(e) => setDueDate(e.target.value)} 
-                />
-              </div>
-              <div className="p-2 sm:p-4 space-y-1">
-                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block px-2 italic">Notas da Venda</Label>
-                <Input
-                  placeholder="Ex: Presente, troco..."
-                  className="h-12 text-xl sm:text-2xl font-black border-none w-full px-2 bg-transparent placeholder:text-muted-foreground/30"
-                  value={saleNotes}
-                  onChange={(e) => setSaleNotes(e.target.value)}
-                />
-              </div>
+              <div className="border-b-4 sm:border-b-0 sm:border-r-4 border-muted p-4"><Label className="text-[10px] font-black uppercase opacity-60">Vencimento</Label><Input type="date" className="h-12 text-xl font-black border-none" value={dueDate} onChange={(e) => setDueDate(e.target.value)} /></div>
+              <div className="p-4"><Label className="text-[10px] font-black uppercase opacity-60">Notas da Venda</Label><Input placeholder="Ex: Presente, troco..." className="h-12 text-xl font-black border-none placeholder:text-muted-foreground/30" value={saleNotes} onChange={(e) => setSaleNotes(e.target.value)} /></div>
             </div>
           </CardContent>
         </Card>
 
-        {/* 4. CHECK-IN DA VENDA */}
-        <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden bg-slate-900 text-white border-4 border-primary/20">
-          <CardHeader className="p-4 sm:p-6 border-b border-white/10 bg-white/5">
-            <CardTitle className="flex flex-row items-center gap-3 text-xl sm:text-3xl font-black text-left uppercase italic">
-              <CheckCircle2 className="size-6 sm:size-8 text-[#39FF14]" />
-              4. Check-in Elite
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-8 space-y-8">
-            {/* Cliente */}
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-4">
-                <div className={cn("size-10 rounded-xl border-4 flex items-center justify-center shrink-0 shadow-lg", clientData.fullName ? "bg-[#39FF14]/20 border-[#39FF14]" : "border-white/10")}>
-                  {clientData.fullName ? <CheckCircle2 className="size-5 text-[#39FF14]" /> : <Circle className="size-5 text-white/10" />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-[#39FF14] mb-0.5">Cliente VIP</p>
-                  <p className="text-xl sm:text-3xl font-black italic truncate tracking-tighter">{clientData.fullName || "AGUARDANDO NOME..."}</p>
-                </div>
-              </div>
-              {clientData.phone && (
-                <p className="ml-14 text-xs sm:text-base font-bold opacity-40 uppercase tracking-widest">{clientData.phone}</p>
-              )}
+        {/* 4. CHECK-IN */}
+        <Card className="border-none shadow-2xl rounded-[1.5rem] bg-slate-900 text-white border-4 border-primary/20 p-8 space-y-8">
+          <CardTitle className="text-xl sm:text-3xl font-black uppercase italic flex items-center gap-3 text-[#39FF14]"><CheckCircle2 className="size-8" /> Check-in Elite</CardTitle>
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <div className={cn("size-10 rounded-xl border-4 flex items-center justify-center shrink-0", clientData.fullName ? "border-[#39FF14] bg-[#39FF14]/20" : "border-white/10")}>{clientData.fullName ? <CheckCircle2 className="size-5 text-[#39FF14]" /> : <Circle className="size-5 text-white/10" />}</div>
+              <div className="truncate"><p className="text-[8px] font-black uppercase text-[#39FF14]">Cliente VIP</p><p className="text-xl sm:text-2xl font-black italic truncate tracking-tighter">{clientData.fullName || "AGUARDANDO NOME..."}</p></div>
             </div>
-
-            {/* Carrinho */}
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-4">
-                <div className={cn("size-10 rounded-xl border-4 flex items-center justify-center shrink-0 shadow-lg", saleItems.length > 0 ? "bg-[#39FF14]/20 border-[#39FF14]" : "border-white/10")}>
-                  {saleItems.length > 0 ? <CheckCircle2 className="size-5 text-[#39FF14]" /> : <Circle className="size-5 text-white/10" />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-[#39FF14] mb-0.5">Carrinho de Itens</p>
-                  <p className="text-xl sm:text-3xl font-black italic truncate tracking-tighter">
-                    {saleItems.length > 0 ? `${saleItems.length} PRODUTO(S) LISTADO(S)` : "SEM ITENS..."}
-                  </p>
-                </div>
-              </div>
-              
-              {saleItems.length > 0 && (
-                <div className="ml-14 space-y-3 border-l-2 border-white/10 pl-6 py-2">
-                  {saleItems.map((item, idx) => (
-                    <div key={item.tempId} className="flex justify-between items-center group/checkitem">
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-xs sm:text-lg font-black uppercase italic tracking-tighter truncate text-white/80">
-                          {idx + 1}. {item.name || "Produto sem nome"}
-                        </span>
-                        <span className="text-[8px] sm:text-[10px] font-bold opacity-40 uppercase tracking-widest">
-                          {item.brand || "Marca"} | {item.category || "Categoria"}
-                        </span>
-                      </div>
-                      <span className="text-sm sm:text-2xl font-black text-[#39FF14] italic ml-4">R$ {item.salePrice || "0,00"}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
+            <div className="flex items-center gap-4">
+              <div className={cn("size-10 rounded-xl border-4 flex items-center justify-center shrink-0", saleItems.length > 0 ? "border-[#39FF14] bg-[#39FF14]/20" : "border-white/10")}>{saleItems.length > 0 ? <CheckCircle2 className="size-5 text-[#39FF14]" /> : <Circle className="size-5 text-white/10" />}</div>
+              <div className="truncate"><p className="text-[8px] font-black uppercase text-[#39FF14]">Carrinho</p><p className="text-xl sm:text-2xl font-black italic truncate tracking-tighter">{saleItems.length} PRODUTO(S) LISTADO(S)</p></div>
             </div>
-
-            {/* Pagamento */}
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-4">
-                <div className={cn("size-10 rounded-xl border-4 flex items-center justify-center shrink-0 shadow-lg", paymentMethod ? "bg-[#39FF14]/20 border-[#39FF14]" : "border-white/10")}>
-                  {paymentMethod ? <CheckCircle2 className="size-5 text-[#39FF14]" /> : <Circle className="size-5 text-white/10" />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-[#39FF14] mb-0.5">Pagamento</p>
-                  <p className="text-xl sm:text-3xl font-black italic truncate capitalize tracking-tighter">{paymentMethod || "AGUARDANDO MÉTODO..."}</p>
-                </div>
-              </div>
-              {dueDate && (
-                <p className="ml-14 text-xs sm:text-base font-bold opacity-40 uppercase tracking-widest flex items-center gap-2">
-                  Vencimento: {dueDate.split('-').reverse().join('/')}
-                </p>
-              )}
+            <div className="flex items-center gap-4">
+              <div className={cn("size-10 rounded-xl border-4 flex items-center justify-center shrink-0", activeCycleId ? "border-[#39FF14] bg-[#39FF14]/20" : "border-red-500 bg-red-500/20")}>{activeCycleId ? <CheckCircle2 className="size-5 text-[#39FF14]" /> : <AlertTriangle className="size-5 text-red-500" />}</div>
+              <div className="truncate"><p className="text-[8px] font-black uppercase text-[#39FF14]">Ciclo de Venda</p><p className="text-xl sm:text-2xl font-black italic truncate tracking-tighter">{activeCycle?.name || "NENHUM CICLO SELECIONADO"}</p></div>
             </div>
-          </CardContent>
+          </div>
         </Card>
 
         {/* 5. FINALIZAÇÃO */}
-        <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden bg-primary text-primary-foreground">
-          <CardHeader className="p-4 sm:p-6 bg-white/10">
-             <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-4xl font-black uppercase italic">
-              <div className="bg-white/20 p-2 rounded-2xl mr-2 shadow-inner">
-                <DollarSign className="size-6 sm:size-10" />
+        <Card className="border-none shadow-2xl rounded-[1.5rem] bg-primary text-primary-foreground p-8 space-y-8">
+          <div className="grid lg:grid-cols-2 gap-8 items-center">
+            <div className="space-y-4">
+              <div className="flex justify-between border-b-2 border-white/10 pb-1"><span className="text-xs font-black uppercase opacity-60">Subtotal</span><span className="text-2xl font-black italic">R$ {subtotal.toFixed(2)}</span></div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1"><Label className="text-[10px] font-black uppercase opacity-60 italic">Desconto (R$)</Label><Input type="number" className="h-14 bg-white/10 border-4 border-white/20 text-white font-black text-center" value={discount} onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)} /></div>
+                <div className="space-y-1"><Label className="text-[10px] font-black uppercase opacity-60 italic">Taxas (R$)</Label><Input type="number" className="h-14 bg-white/10 border-4 border-white/20 text-white font-black text-center" value={additionalFee} onChange={(e) => setAdditionalFee(parseFloat(e.target.value) || 0)} /></div>
               </div>
-              5. Consolidado
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-8 space-y-8">
-            <div className="grid lg:grid-cols-2 gap-8 items-center">
-               <div className="space-y-4">
-                  <div className="flex justify-between items-center border-b-2 border-white/10 pb-1">
-                    <span className="text-xs font-black uppercase tracking-widest opacity-60">Subtotal de Itens</span>
-                    <span className="text-2xl font-black italic">R$ {subtotal.toFixed(2)}</span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <Label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 px-2 block italic">Desconto (R$)</Label>
-                      <Input
-                        type="number"
-                        className="h-14 text-center text-xl font-black rounded-xl border-4 bg-white/10 border-white/20 text-white w-full focus:border-white transition-all"
-                        value={discount}
-                        onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 px-2 block italic">Taxas (R$)</Label>
-                      <Input
-                        type="number"
-                        className="h-14 text-center text-xl font-black rounded-xl border-4 bg-white/10 border-white/20 text-white w-full focus:border-white transition-all"
-                        value={additionalFee}
-                        onChange={(e) => setAdditionalFee(parseFloat(e.target.value) || 0)}
-                      />
-                    </div>
-                  </div>
-               </div>
-
-               <div className="p-6 rounded-[2rem] shadow-2xl text-center bg-white text-primary border-8 border-white animate-in zoom-in duration-500">
-                  <p className="text-[10px] font-black uppercase tracking-[0.4em] mb-1 opacity-60 text-primary">VALOR FINAL DA VENDA</p>
-                  <p className="text-4xl sm:text-7xl font-black tracking-tighter leading-none italic px-2 text-green-600">R$ {finalTotal.toFixed(2)}</p>
-                </div>
             </div>
-          </CardContent>
-          <CardFooter className="p-4 sm:p-8 pt-0">
-             <Button 
-              type="submit" 
-              size="lg"
-              className={cn(
-                "w-full h-20 sm:h-28 text-lg sm:text-4xl font-black rounded-xl sm:rounded-[2.5rem] shadow-2xl transition-all active:scale-95 uppercase tracking-tight sm:tracking-widest bg-white text-primary hover:bg-white/90 border-8 border-white",
-                (!isReady || isLoading) && "opacity-50 cursor-not-allowed"
-              )}
-              disabled={!isReady || isLoading}
-            >
-              {isLoading ? (
-                <Loader2 className="animate-spin size-10 sm:size-16" />
-              ) : (
-                <>
-                  <CheckCircle2 className="mr-3 size-6 sm:size-12" />
-                  FECHAR VENDA
-                </>
-              )}
-            </Button>
-          </CardFooter>
+            <div className="p-6 rounded-[2rem] bg-white text-primary text-center border-8 border-white animate-in zoom-in duration-500 shadow-2xl">
+              <p className="text-[10px] font-black uppercase opacity-60 mb-1">VALOR FINAL</p>
+              <p className="text-5xl sm:text-7xl font-black italic text-green-600 tracking-tighter">R$ {finalTotal.toFixed(2)}</p>
+            </div>
+          </div>
+          <Button type="submit" className={cn("w-full h-24 sm:h-28 text-2xl sm:text-4xl font-black rounded-3xl bg-white text-primary hover:bg-white/90 border-8 border-white shadow-2xl transition-all active:scale-95 uppercase", (!isReady || isLoading) && "opacity-50")} disabled={!isReady || isLoading}>
+            {isLoading ? <Loader2 className="animate-spin size-12" /> : <><CheckCircle2 className="mr-3 size-10" /> FECHAR VENDA</>}
+          </Button>
         </Card>
       </form>
     </div>
