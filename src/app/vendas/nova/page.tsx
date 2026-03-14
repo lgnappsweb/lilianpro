@@ -119,15 +119,20 @@ export default function NovaVendaPage() {
   const [discount, setDiscount] = useState(0);
   const [additionalFee, setAdditionalFee] = useState(0);
 
+  // Lógica de Vencimento Fixo no dia 05 do mês seguinte
   useEffect(() => {
     const now = new Date();
-    const formatter = new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'America/Sao_Paulo',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    });
-    setDueDate(formatter.format(now));
+    let nextMonth = now.getMonth() + 1;
+    let year = now.getFullYear();
+    
+    if (nextMonth > 11) {
+      nextMonth = 0;
+      year++;
+    }
+    
+    // Formata YYYY-MM-05 para o input de data
+    const m = String(nextMonth + 1).padStart(2, '0');
+    setDueDate(`${year}-${m}-05`);
   }, []);
 
   const formatPhone = (value: string) => {
@@ -420,7 +425,12 @@ export default function NovaVendaPage() {
               ))}
             </div>
             <div className="grid sm:grid-cols-2">
-              <div className="border-b-4 sm:border-b-0 sm:border-r-4 border-muted p-4"><Label className="text-[10px] font-black uppercase opacity-60">Vencimento</Label><Input type="date" className="h-12 text-xl font-black border-none" value={dueDate} onChange={(e) => setDueDate(e.target.value)} /></div>
+              <div className="border-b-4 sm:border-b-0 sm:border-r-4 border-muted p-4">
+                <Label className="text-[10px] font-black uppercase opacity-60 flex items-center gap-2">
+                  Vencimento <Badge variant="secondary" className="text-[8px] h-4 font-black">FIXO DIA 05</Badge>
+                </Label>
+                <Input type="date" className="h-12 text-xl font-black border-none" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+              </div>
               <div className="p-4"><Label className="text-[10px] font-black uppercase opacity-60">Notas da Venda</Label><Input placeholder="Ex: Presente, troco..." className="h-12 text-xl font-black border-none placeholder:text-muted-foreground/30" value={saleNotes} onChange={(e) => setSaleNotes(e.target.value)} /></div>
             </div>
           </CardContent>

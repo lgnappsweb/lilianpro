@@ -50,6 +50,8 @@ export default function PedidosPage() {
   const [activeFilter, setActiveFilter] = useState("todos");
   const [searchTerm, setSearchTerm] = useState("");
   const [orderToDelete, setOrderToDelete] = useState<any | null>(null);
+  const [orderToPay, setOrderToPay] = useState<any | null>(null);
+  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
 
   const ordersQuery = useMemoFirebase(() => {
     if (!db || !user) return null;
@@ -112,14 +114,18 @@ export default function PedidosPage() {
     }
   };
 
-  const markAsPaid = (order: any) => {
-    if (user && db) {
-      const docRef = doc(db, "users", user.uid, "orders", order.id);
-      updateDocumentNonBlocking(docRef, { paymentStatus: "Pago" });
+  const handleConfirmPayment = () => {
+    if (orderToPay && user && db) {
+      const docRef = doc(db, "users", user.uid, "orders", orderToPay.id);
+      updateDocumentNonBlocking(docRef, { 
+        paymentStatus: "Pago",
+        paymentDate: paymentDate 
+      });
       toast({
         title: "Pagamento confirmado!",
-        description: `O pedido de ${order.clientName} agora está marcado como PAGO.`,
+        description: `O pedido de ${orderToPay.clientName} foi pago em ${new Date(paymentDate).toLocaleDateString('pt-BR')}.`,
       });
+      setOrderToPay(null);
     }
   };
 
@@ -241,7 +247,7 @@ export default function PedidosPage() {
                   <Button 
                     variant="outline" 
                     className="h-10 sm:h-12 font-black text-[9px] sm:text-[10px] uppercase tracking-widest rounded-xl border-2 border-green-200 text-green-600 hover:bg-green-50 hover:border-green-400 px-2 flex-1 shadow-sm transition-all active:scale-95"
-                    onClick={() => markAsPaid(order)}
+                    onClick={() => setOrderToPay(order)}
                   >
                     <CheckCircle2 className="mr-1 size-3" />
                     Pagar
@@ -262,13 +268,32 @@ export default function PedidosPage() {
         </div>
       )}
 
-      {!isLoading && filteredOrders.length === 0 && (
-        <div className="text-center py-32 bg-muted/10 rounded-[2.5rem] border-4 border-dashed border-muted w-full">
-          <ClipboardList className="size-24 text-muted-foreground/20 mx-auto mb-6" />
-          <h3 className="font-black text-3xl text-muted-foreground uppercase tracking-tighter">Sem vendas aqui</h3>
-          <p className="text-xl text-muted-foreground mt-4 font-bold italic opacity-60 px-4">Cadastre sua primeira venda no botão "Nova Venda" para começar o faturamento.</p>
-        </div>
-      )}
+      {/* Diálogo de Confirmação de Pagamento com Data Personalizada */}
+      <AlertDialog open={!!orderToPay} onOpenChange={(open) => !open && setOrderToPay(null)}>
+        <AlertDialogContent className="rounded-[2.5rem] p-8 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-3xl sm:text-5xl font-black tracking-tighter text-primary uppercase leading-none text-left px-2 italic">Confirmar Recebimento</AlertDialogTitle>
+            <AlertDialogDescription className="text-xl sm:text-2xl font-bold mt-6 leading-relaxed text-muted-foreground text-left">
+              Em qual data você recebeu o pagamento de <strong className="text-foreground border-b-4 border-primary px-1">{orderToPay?.clientName}</strong>?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-6 px-2">
+            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2 block">Data do Recebimento</Label>
+            <Input 
+              type="date" 
+              value={paymentDate} 
+              onChange={(e) => setPaymentDate(e.target.value)} 
+              className="h-16 text-2xl font-black rounded-2xl border-4 border-muted focus:border-primary"
+            />
+          </div>
+          <AlertDialogFooter className="gap-4 mt-12 flex-col sm:flex-row">
+            <AlertDialogCancel className="h-16 sm:h-24 px-10 text-xl font-black rounded-2xl sm:rounded-3xl border-4 border-muted hover:bg-muted/50">Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmPayment} className="h-16 sm:h-24 px-10 text-xl font-black bg-green-600 text-white hover:bg-green-700 rounded-2xl sm:rounded-3xl shadow-xl active:scale-95 transition-all">
+              SIM, CONFIRMAR PAGAMENTO
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={!!orderToDelete} onOpenChange={(open) => !open && setOrderToDelete(null)}>
         <AlertDialogContent className="rounded-[2.5rem] p-8 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto">

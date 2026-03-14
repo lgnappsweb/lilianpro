@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
@@ -257,12 +258,9 @@ export default function FinanceiroPage() {
     
     if (cycleData?.name) {
       message += `🔄 *Ciclo:* ${cycleData.name}\n`;
-      if (cycleData.from) {
-        message += `📅 *Vigência Ciclo:* ${new Date(cycleData.from).toLocaleDateString('pt-BR')} - ${new Date(cycleData.to).toLocaleDateString('pt-BR')}\n`;
-      }
     }
     
-    message += `📅 *Período do Relatório:* ${fromStr} - ${toStr}\n\n`;
+    message += `📅 *Período:* ${fromStr} - ${toStr}\n\n`;
     
     message += `💰 *RESUMO FINANCEIRO*\n`;
     message += `✅ Entradas: R$ ${financialStats.recebido.toFixed(2)}\n`;
@@ -286,7 +284,7 @@ export default function FinanceiroPage() {
     }
 
     if (proximosRecebimentos.length > 0) {
-      message += `⏳ *CONTAS A RECEBER*\n`;
+      message += `⏳ *VENCIMENTOS (DIA 05)*\n`;
       proximosRecebimentos.slice(0, 5).forEach(p => {
         message += `• ${p.clientName}: R$ ${Number(p.finalAmount).toFixed(2)} (${formatDueDateBR(p.dueDate)})\n`;
       });
@@ -315,15 +313,13 @@ export default function FinanceiroPage() {
     
     let currentY = 28;
     if (cycleData?.name) {
-      doc.text(`Ciclo Atual: ${cycleData.name}`, 14, currentY);
+      doc.text(`Ciclo: ${cycleData.name}`, 14, currentY);
       currentY += 6;
-      if (cycleData.from) {
-        doc.text(`Período do Ciclo: ${new Date(cycleData.from).toLocaleDateString('pt-BR')} até ${new Date(cycleData.to).toLocaleDateString('pt-BR')}`, 14, currentY);
-        currentY += 6;
-      }
     }
     
     doc.text(`Período Relatório: ${fromStr} - ${toStr}`, 14, currentY);
+    currentY += 6;
+    doc.text(`Vencimentos Fixos: Dia 05 de cada mês`, 14, currentY);
     currentY += 6;
     doc.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy HH:mm")}`, 14, currentY);
 
@@ -370,7 +366,7 @@ export default function FinanceiroPage() {
     if (proximosRecebimentos.length > 0) {
       autoTable(doc, {
         startY: (doc as any).lastAutoTable.finalY + 15,
-        head: [['CONTAS A RECEBER', 'VENCIMENTO', 'VALOR']],
+        head: [['VENCIMENTOS (DIA 05)', 'VENCIMENTO', 'VALOR']],
         body: proximosRecebimentos.map(p => [
           p.clientName,
           formatDueDateBR(p.dueDate),
@@ -380,7 +376,7 @@ export default function FinanceiroPage() {
       });
     }
 
-    doc.save(`Relatorio_Financeiro_Completo_${fromStr.replace(/\//g, '-')}.pdf`);
+    doc.save(`Relatorio_Financeiro_Elite_${fromStr.replace(/\//g, '-')}.pdf`);
   };
 
   const getBrandBadgeColor = (brand: string) => {
@@ -407,7 +403,7 @@ export default function FinanceiroPage() {
             <Wallet className="size-16 sm:size-24 text-primary" />
             <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap px-2">FINANCEIRO</h1>
           </div>
-          <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Controle real de entradas e contas a receber.</p>
+          <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Controle real de entradas e vencimentos fixos (Dia 05).</p>
           
           {cycleData?.name && (
             <div className="mt-4 flex items-center justify-center gap-2">
@@ -605,7 +601,7 @@ export default function FinanceiroPage() {
         <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-background/50 backdrop-blur-sm">
           <CardHeader className="bg-muted/80 pb-8 p-8 border-b-2">
             <CardTitle className="text-2xl font-black px-2 uppercase tracking-tight italic flex items-center gap-3">
-              <Clock className="text-orange-500" /> Pagamentos para Receber
+              <Clock className="text-orange-500" /> Contas a Receber (Vencimento 05)
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 p-4 sm:p-8">
@@ -614,7 +610,7 @@ export default function FinanceiroPage() {
                 <div className="flex-1 min-w-0">
                   <p className="font-black text-lg sm:text-xl px-1 uppercase italic text-primary truncate">{p.clientName}</p>
                   <p className="text-[10px] sm:text-xs text-muted-foreground font-black flex items-center gap-2 mt-1 uppercase tracking-widest">
-                    <CalendarIcon className="size-3" /> Vence em: {formatDueDateBR(p.dueDate)}
+                    <CalendarIcon className="size-3" /> Vencimento: {formatDueDateBR(p.dueDate)}
                   </p>
                 </div>
                 <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 sm:gap-0 shrink-0 border-t sm:border-t-0 pt-2 w-full sm:w-auto">
@@ -638,7 +634,9 @@ export default function FinanceiroPage() {
                   <div className="size-10 sm:size-16 rounded-[1.2rem] bg-green-100 flex items-center justify-center text-green-700 shadow-inner shrink-0"><ArrowDownCircle className="size-5 sm:size-8" /></div>
                   <div className="min-w-0 flex-1">
                     <p className="font-black text-lg sm:text-xl px-1 uppercase italic text-green-800 truncate">{p.clientName}</p>
-                    <p className="text-[10px] sm:text-xs text-green-600/60 font-black flex items-center gap-2 mt-1 uppercase tracking-widest"><CalendarIcon className="size-3" /> {formatDateBR(p.orderDate)}</p>
+                    <p className="text-[10px] sm:text-xs text-green-600/60 font-black flex items-center gap-2 mt-1 uppercase tracking-widest">
+                      <CalendarIcon className="size-3" /> Recebido em: {p.paymentDate ? new Date(p.paymentDate).toLocaleDateString('pt-BR') : formatDateBR(p.orderDate)}
+                    </p>
                   </div>
                 </div>
                 <div className="sm:text-right text-left shrink-0 border-t sm:border-t-0 pt-2 w-full sm:w-auto">

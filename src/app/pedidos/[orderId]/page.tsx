@@ -100,17 +100,21 @@ export default function DetalhesPedidoPage() {
     });
 
     const cycleInfo = cycleData?.name 
-      ? `🔄 *Ciclo:* ${cycleData.name}\n` + (cycleData.from ? `📅 *Período:* ${new Date(cycleData.from).toLocaleDateString('pt-BR')} - ${new Date(cycleData.to).toLocaleDateString('pt-BR')}\n` : "")
+      ? `🔄 *Ciclo:* ${cycleData.name}\n`
       : "";
+
+    const paymentInfo = order.paymentStatus === "Pago" 
+      ? `✅ *Recebido em:* ${order.paymentDate ? new Date(order.paymentDate).toLocaleDateString('pt-BR') : formatDateBR(order.orderDate)}\n`
+      : order.dueDate ? `⏰ *Vencimento:* ${formatDueDateBR(order.dueDate)}\n` : "";
 
     const message = `✨ *RESUMO DA VENDA - ${appName}* ✨\n\n` +
       cycleInfo +
       `👤 *Cliente:* ${order.clientName}\n` +
       `📄 *Protocolo:* #${order.id?.slice(-8)}\n` +
-      `📅 *Data:* ${formatDateBR(order.orderDate)}\n` +
+      `📅 *Data da Compra:* ${formatDateBR(order.orderDate)}\n` +
       `💳 *Pagamento:* ${order.paymentMethod?.toUpperCase()}\n` +
       `📊 *Status:* ${statusInfo.label}\n` +
-      (order.dueDate ? `⏰ *Vencimento:* ${formatDueDateBR(order.dueDate)}\n` : "") +
+      paymentInfo +
       `\n📦 *ITENS:*\n${itemsList}` +
       `\n💰 *FINANCEIRO:*\n` +
       `Subtotal: R$ ${Number(order.totalAmount).toFixed(2)}\n` +
@@ -220,10 +224,21 @@ export default function DetalhesPedidoPage() {
                 </p>
               </div>
 
-              {order.dueDate && (
+              {order.paymentStatus === "Pago" && order.paymentDate && (
+                <div className="space-y-2 text-left pt-6 border-t-2 bg-green-50/50 p-4 rounded-2xl border-green-100">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-green-600 flex items-center gap-2">
+                    <CheckCircle2 className="size-3" /> RECEBIDO EM
+                  </p>
+                  <p className="text-2xl font-black text-green-700">
+                    {new Date(order.paymentDate).toLocaleDateString('pt-BR')}
+                  </p>
+                </div>
+              )}
+
+              {order.paymentStatus !== "Pago" && order.dueDate && (
                 <div className="space-y-2 text-left pt-6 border-t-2 bg-orange-50/50 p-4 rounded-2xl border-orange-100">
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-600 flex items-center gap-2">
-                    <Clock className="size-3" /> DATA DE VENCIMENTO (A PRAZO)
+                    <Clock className="size-3" /> VENCIMENTO (FIXO DIA 05)
                   </p>
                   <p className="text-2xl font-black text-orange-700">
                     {formatDueDateBR(order.dueDate)}
