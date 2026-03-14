@@ -353,24 +353,16 @@ export default function NovaVendaPage() {
 
         {/* 2. PRODUTOS VENDIDOS (LISTA DINÂMICA) */}
         <Card className="border-none shadow-2xl rounded-[1rem] sm:rounded-[2rem] overflow-hidden">
-          <CardHeader className="bg-muted/80 p-3 sm:p-4 border-b-2 flex flex-row items-center justify-between">
+          <CardHeader className="bg-muted/80 p-3 sm:p-4 border-b-2">
             <CardTitle className="flex flex-row items-center gap-2 text-lg sm:text-2xl font-black text-left uppercase px-1">
               <Package className="size-5 sm:size-6 text-primary" />
               2. Detalhes do Produto Vendido
             </CardTitle>
-            <Button 
-              type="button" 
-              onClick={addItem}
-              size="sm"
-              className="bg-primary hover:bg-primary/90 text-white font-black rounded-full px-4 gap-2 h-10 sm:h-12"
-            >
-              <Plus className="size-4" /> ADICIONAR ITEM
-            </Button>
           </CardHeader>
           <CardContent className="p-0 space-y-0">
             {saleItems.length === 0 ? (
               <div className="p-10 text-center text-muted-foreground italic font-bold">
-                Nenhum produto adicionado. Clique em "ADICIONAR ITEM" acima.
+                Nenhum produto adicionado. Clique em "ADICIONAR ITEM" abaixo.
               </div>
             ) : (
               <div className="divide-y-4 divide-primary/10">
@@ -444,6 +436,15 @@ export default function NovaVendaPage() {
                 ))}
               </div>
             )}
+            <div className="p-2 border-t-2 border-muted">
+              <Button 
+                type="button" 
+                onClick={addItem}
+                className="w-full h-14 sm:h-16 bg-primary/10 hover:bg-primary/20 text-primary font-black rounded-xl gap-3 text-lg uppercase tracking-widest transition-all"
+              >
+                <Plus className="size-6" /> ADICIONAR NOVO PRODUTO
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
