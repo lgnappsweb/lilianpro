@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
@@ -23,7 +24,6 @@ import {
   User,
   Package,
   CreditCard,
-  Calendar as CalendarIcon,
   Smartphone,
   Banknote,
   HandCoins,
@@ -31,12 +31,26 @@ import {
   Circle,
   DollarSign,
   ReceiptText,
+  Trash2,
+  Plus,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useUser, useFirestore, useMemoFirebase, setDocumentNonBlocking } from "@/firebase";
+import { useUser, useFirestore, setDocumentNonBlocking } from "@/firebase";
 import { doc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+
+interface SaleItem {
+  tempId: string;
+  name: string;
+  brand: string;
+  category: string;
+  catalogPrice: string;
+  costPrice: string;
+  salePrice: string;
+  productCode: string;
+  description: string;
+}
 
 export default function NovaVendaPage() {
   const { user } = useUser();
@@ -56,17 +70,8 @@ export default function NovaVendaPage() {
     notes: "",
   });
 
-  // --- ESTADO DO PRODUTO ---
-  const [productData, setProductData] = useState({
-    name: "",
-    brand: "",
-    category: "",
-    catalogPrice: "",
-    costPrice: "",
-    salePrice: "",
-    productCode: "",
-    description: "",
-  });
+  // --- ESTADO DOS PRODUTOS (LISTA) ---
+  const [saleItems, setSaleItems] = useState<SaleItem[]>([]);
 
   // --- ESTADO DO PAGAMENTO E TOTAIS ---
   const [paymentMethod, setPaymentMethod] = useState("");
@@ -111,29 +116,55 @@ export default function NovaVendaPage() {
     return parseFloat(value.replace(/\./g, "").replace(",", ".")) || 0;
   };
 
-  // Cálculo automático de custo do produto
-  useEffect(() => {
-    const catalog = unmaskCurrency(productData.catalogPrice);
-    if (catalog === 0 || !productData.brand) return;
+  // Funções de Gerenciamento de Itens
+  const addItem = () => {
+    setSaleItems([...saleItems, {
+      tempId: `item-${Date.now()}-${Math.random()}`,
+      name: "",
+      brand: "",
+      category: "",
+      catalogPrice: "",
+      costPrice: "",
+      salePrice: "",
+      productCode: "",
+      description: ""
+    }]);
+  };
 
-    let discountPct = 0;
-    if (productData.brand === "VERDE (N)") discountPct = 0.30;
-    else if (productData.brand === "ROSA (A)") discountPct = 0.35;
-    else if (productData.brand === "MARROM (C&E)") discountPct = 0.15;
+  const removeItem = (tempId: string) => {
+    setSaleItems(saleItems.filter(item => item.tempId !== tempId));
+  };
 
-    if (discountPct > 0) {
-      const calculatedCost = catalog * (1 - discountPct);
-      setProductData(prev => ({
-        ...prev,
-        costPrice: maskCurrency((calculatedCost * 100).toFixed(0)),
-      }));
-    }
-  }, [productData.brand, productData.catalogPrice]);
+  const handleItemChange = (tempId: string, field: keyof SaleItem, value: string) => {
+    setSaleItems(prev => prev.map(item => {
+      if (item.tempId !== tempId) return item;
+      
+      const updatedItem = { ...item, [field]: value };
+
+      // Cálculo automático de custo se mudar marca ou preço de revista
+      if (field === "catalogPrice" || field === "brand") {
+        const catalog = unmaskCurrency(updatedItem.catalogPrice);
+        const brand = updatedItem.brand;
+        if (catalog > 0 && brand) {
+          let discountPct = 0;
+          if (brand === "VERDE (N)") discountPct = 0.30;
+          else if (brand === "ROSA (A)") discountPct = 0.35;
+          else if (brand === "MARROM (C&E)") discountPct = 0.15;
+
+          if (discountPct > 0) {
+            const calculatedCost = catalog * (1 - discountPct);
+            updatedItem.costPrice = maskCurrency((calculatedCost * 100).toFixed(0));
+          }
+        }
+      }
+      return updatedItem;
+    }));
+  };
 
   // --- LOGICA DE TOTAIS ---
   const subtotal = useMemo(() => {
-    return unmaskCurrency(productData.salePrice);
-  }, [productData.salePrice]);
+    return saleItems.reduce((acc, item) => acc + unmaskCurrency(item.salePrice), 0);
+  }, [saleItems]);
 
   const finalTotal = Math.max(0, subtotal - discount + additionalFee);
 
@@ -141,12 +172,11 @@ export default function NovaVendaPage() {
     return (
       clientData.fullName &&
       clientData.phone &&
-      productData.name &&
-      productData.brand &&
-      productData.salePrice &&
+      saleItems.length > 0 &&
+      saleItems.every(item => item.name && item.brand && item.salePrice) &&
       paymentMethod
     );
-  }, [clientData, productData, paymentMethod]);
+  }, [clientData, saleItems, paymentMethod]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -154,7 +184,7 @@ export default function NovaVendaPage() {
       toast({
         variant: "destructive",
         title: "Dados incompletos",
-        description: "Preencha os campos obrigatórios do cliente, produto e pagamento.",
+        description: "Preencha os campos obrigatórios do cliente, produtos e pagamento.",
       });
       return;
     }
@@ -163,7 +193,6 @@ export default function NovaVendaPage() {
 
     try {
       const clientId = `cli-${Date.now()}`;
-      const productId = `prod-${Date.now()}`;
       const orderId = `ord-${Date.now()}`;
 
       // 1. Salvar Novo Cliente
@@ -175,18 +204,7 @@ export default function NovaVendaPage() {
       };
       setDocumentNonBlocking(doc(db, "users", user.uid, "clients", clientId), finalClientData, { merge: true });
 
-      // 2. Salvar Novo Produto
-      const finalProductData = {
-        ...productData,
-        id: productId,
-        adminId: user.uid,
-        catalogPrice: unmaskCurrency(productData.catalogPrice),
-        costPrice: unmaskCurrency(productData.costPrice),
-        salePrice: unmaskCurrency(productData.salePrice),
-      };
-      setDocumentNonBlocking(doc(db, "users", user.uid, "products", productId), finalProductData, { merge: true });
-
-      // 3. Salvar Pedido
+      // 2. Salvar Pedido Root
       const orderData = {
         id: orderId,
         adminId: user.uid,
@@ -205,23 +223,43 @@ export default function NovaVendaPage() {
       };
       setDocumentNonBlocking(doc(db, "users", user.uid, "orders", orderId), orderData, { merge: true });
 
-      // 4. Salvar Item do Pedido
-      const itemId = `item-${Date.now()}`;
-      const itemData = {
-        id: itemId,
-        adminId: user.uid,
-        orderId: orderId,
-        productId: productId,
-        productName: productData.name,
-        quantity: 1,
-        unitPrice: unmaskCurrency(productData.salePrice),
-        subtotal: unmaskCurrency(productData.salePrice),
-      };
-      setDocumentNonBlocking(doc(db, "users", user.uid, "orders", orderId, "orderItems", itemId), itemData, { merge: true });
+      // 3. Salvar Produtos e Itens do Pedido
+      saleItems.forEach((item, index) => {
+        const productId = `prod-${Date.now()}-${index}`;
+        const itemId = `item-${Date.now()}-${index}`;
+
+        // Salvar Produto no Catálogo
+        const finalProductData = {
+          id: productId,
+          name: item.name,
+          brand: item.brand,
+          category: item.category,
+          catalogPrice: unmaskCurrency(item.catalogPrice),
+          costPrice: unmaskCurrency(item.costPrice),
+          salePrice: unmaskCurrency(item.salePrice),
+          productCode: item.productCode,
+          description: item.description,
+          adminId: user.uid,
+        };
+        setDocumentNonBlocking(doc(db, "users", user.uid, "products", productId), finalProductData, { merge: true });
+
+        // Salvar Item dentro do Pedido
+        const orderItemData = {
+          id: itemId,
+          adminId: user.uid,
+          orderId: orderId,
+          productId: productId,
+          productName: item.name,
+          quantity: 1,
+          unitPrice: unmaskCurrency(item.salePrice),
+          subtotal: unmaskCurrency(item.salePrice),
+        };
+        setDocumentNonBlocking(doc(db, "users", user.uid, "orders", orderId, "orderItems", itemId), orderItemData, { merge: true });
+      });
 
       toast({
-        title: "Venda e Cadastros Concluídos!",
-        description: `Cliente, Produto e Venda de R$ ${finalTotal.toFixed(2)} foram salvos.`,
+        title: "Venda Concluída com Sucesso!",
+        description: `Cadastro de cliente e ${saleItems.length} produtos realizado.`,
       });
       
       router.push("/pedidos");
@@ -230,7 +268,7 @@ export default function NovaVendaPage() {
       toast({
         variant: "destructive",
         title: "Erro ao processar",
-        description: "Ocorreu um problema ao salvar os dados da venda rápida.",
+        description: "Ocorreu um problema ao salvar os dados da venda múltipla.",
       });
     } finally {
       setIsLoading(false);
@@ -245,7 +283,7 @@ export default function NovaVendaPage() {
             <ShoppingBag className="size-10 sm:size-16 text-primary" />
             <h1 className="text-3xl sm:text-6xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm whitespace-nowrap px-2">NOVA VENDA</h1>
           </div>
-          <p className="text-[10px] sm:text-sm text-muted-foreground mt-1 font-bold opacity-60 uppercase tracking-widest text-center">Cadastre cliente, produto e venda de uma só vez.</p>
+          <p className="text-[10px] sm:text-sm text-muted-foreground mt-1 font-bold opacity-60 uppercase tracking-widest text-center">Fluxo simplificado para múltiplos produtos.</p>
         </div>
       </div>
 
@@ -259,153 +297,154 @@ export default function NovaVendaPage() {
               1. Identificação da Cliente
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-1 sm:p-2 space-y-2">
-            <div className="grid sm:grid-cols-2 gap-1.5">
-              <div className="space-y-0.5 text-left">
-                <Label htmlFor="fullName" className="text-[9px] font-black uppercase tracking-widest text-muted-foreground px-1">Nome Completo</Label>
-                <Input
-                  id="fullName"
-                  placeholder="Nome da cliente..."
-                  className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-lg border-2 border-muted focus:border-primary w-full"
-                  value={clientData.fullName}
-                  onChange={(e) => setClientData(prev => ({ ...prev, fullName: e.target.value }))}
-                  required
-                />
-              </div>
-              <div className="space-y-0.5 text-left">
-                <Label htmlFor="phone" className="text-[9px] font-black uppercase tracking-widest text-muted-foreground px-1">WhatsApp</Label>
-                <Input
-                  id="phone"
-                  placeholder="(00) 00000-0000"
-                  className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-lg border-2 border-muted focus:border-primary w-full"
-                  value={clientData.phone}
-                  onChange={(e) => setClientData(prev => ({ ...prev, phone: formatPhone(e.target.value) }))}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="grid sm:grid-cols-2 gap-1.5">
-              <div className="space-y-0.5 text-left">
-                <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground px-1">Cidade</Label>
-                <Input
-                  placeholder="Cidade..."
-                  className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-lg border-2 border-muted w-full"
-                  value={clientData.city}
-                  onChange={(e) => setClientData(prev => ({ ...prev, city: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-0.5 text-left">
-                <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground px-1">Bairro</Label>
-                <Input
-                  placeholder="Bairro..."
-                  className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-lg border-2 border-muted w-full"
-                  value={clientData.neighborhood}
-                  onChange={(e) => setClientData(prev => ({ ...prev, neighborhood: e.target.value }))}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-0.5 text-left">
-              <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground px-1">Endereço / Referência</Label>
+          <CardContent className="p-0 space-y-0">
+            <div className="grid sm:grid-cols-2">
               <Input
-                placeholder="Endereço completo..."
-                className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-lg border-2 border-muted w-full"
-                value={clientData.address}
-                onChange={(e) => setClientData(prev => ({ ...prev, address: e.target.value }))}
+                placeholder="Nome Completo"
+                className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-none border-x-0 border-t-0 border-b-2 border-muted focus:border-primary w-full px-4"
+                value={clientData.fullName}
+                onChange={(e) => setClientData(prev => ({ ...prev, fullName: e.target.value }))}
+                required
               />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 2. CADASTRO RÁPIDO DE PRODUTO */}
-        <Card className="border-none shadow-2xl rounded-[1rem] sm:rounded-[2rem] overflow-hidden">
-          <CardHeader className="bg-muted/80 p-3 sm:p-4 border-b-2">
-            <CardTitle className="flex flex-row items-center gap-2 text-lg sm:text-2xl font-black text-left uppercase">
-              <Package className="size-5 sm:size-6 text-primary" />
-              2. Detalhes do Produto Vendido
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-1 sm:p-2 space-y-2">
-            <div className="space-y-0.5 text-left">
-              <Label htmlFor="name" className="text-[9px] font-black uppercase tracking-widest text-muted-foreground px-1">Nome do Produto</Label>
               <Input
-                placeholder="Nome do item..."
-                className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-lg border-2 border-muted w-full"
-                value={productData.name}
-                onChange={(e) => setProductData(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="WhatsApp"
+                className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-none border-x-0 border-t-0 border-b-2 border-muted focus:border-primary w-full px-4"
+                value={clientData.phone}
+                onChange={(e) => setClientData(prev => ({ ...prev, phone: formatPhone(e.target.value) }))}
                 required
               />
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-1.5">
-              <div className="space-y-0.5 text-left">
-                <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground px-1">Marca</Label>
-                <Select onValueChange={(val) => setProductData(prev => ({ ...prev, brand: val }))} value={productData.brand}>
-                  <SelectTrigger className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-lg border-2 border-muted w-full">
-                    <SelectValue placeholder="Selecione a marca..." />
-                  </SelectTrigger>
-                  <SelectContent className="font-bold">
-                    <SelectItem value="VERDE (N)">VERDE (N)</SelectItem>
-                    <SelectItem value="ROSA (A)">ROSA (A)</SelectItem>
-                    <SelectItem value="MARROM (C&E)">MARROM (C&E)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-0.5 text-left">
-                <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground px-1">Categoria</Label>
-                <Input
-                  placeholder="Categoria..."
-                  className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-lg border-2 border-muted w-full"
-                  value={productData.category}
-                  onChange={(e) => setProductData(prev => ({ ...prev, category: e.target.value }))}
-                />
-              </div>
+            <div className="grid sm:grid-cols-2">
+              <Input
+                placeholder="Cidade"
+                className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-none border-x-0 border-t-0 border-b-2 border-muted focus:border-primary w-full px-4"
+                value={clientData.city}
+                onChange={(e) => setClientData(prev => ({ ...prev, city: e.target.value }))}
+              />
+              <Input
+                placeholder="Bairro"
+                className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-none border-x-0 border-t-0 border-b-2 border-muted focus:border-primary w-full px-4"
+                value={clientData.neighborhood}
+                onChange={(e) => setClientData(prev => ({ ...prev, neighborhood: e.target.value }))}
+              />
             </div>
 
-            <div className="grid grid-cols-3 gap-1.5">
-              <div className="space-y-0.5 text-left">
-                <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground px-1">Preço Revista (R$)</Label>
-                <Input
-                  placeholder="0,00"
-                  className="h-14 sm:h-16 text-lg font-black rounded-lg border-2 border-muted w-full"
-                  value={productData.catalogPrice}
-                  onChange={(e) => setProductData(prev => ({ ...prev, catalogPrice: maskCurrency(e.target.value) }))}
-                />
+            <Input
+              placeholder="Endereço / Referência"
+              className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-none border-none focus:border-primary w-full px-4"
+              value={clientData.address}
+              onChange={(e) => setClientData(prev => ({ ...prev, address: e.target.value }))}
+            />
+          </CardContent>
+        </Card>
+
+        {/* 2. PRODUTOS VENDIDOS (LISTA DINÂMICA) */}
+        <Card className="border-none shadow-2xl rounded-[1rem] sm:rounded-[2rem] overflow-hidden">
+          <CardHeader className="bg-muted/80 p-3 sm:p-4 border-b-2 flex flex-row items-center justify-between">
+            <CardTitle className="flex flex-row items-center gap-2 text-lg sm:text-2xl font-black text-left uppercase">
+              <Package className="size-5 sm:size-6 text-primary" />
+              2. Produtos Vendidos
+            </CardTitle>
+            <Button 
+              type="button" 
+              onClick={addItem}
+              size="sm"
+              className="bg-primary hover:bg-primary/90 text-white font-black rounded-full px-4 gap-2"
+            >
+              <Plus className="size-4" /> ADICIONAR ITEM
+            </Button>
+          </CardHeader>
+          <CardContent className="p-0 space-y-4">
+            {saleItems.length === 0 ? (
+              <div className="p-10 text-center text-muted-foreground italic font-bold">
+                Nenhum produto adicionado. Clique em "Adicionar Item" acima.
               </div>
-              <div className="space-y-0.5 text-left">
-                <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground px-1">Preço Custo (R$)</Label>
-                <Input
-                  placeholder="0,00"
-                  className="h-14 sm:h-16 text-lg font-black rounded-lg border-2 border-muted w-full"
-                  value={productData.costPrice}
-                  onChange={(e) => setProductData(prev => ({ ...prev, costPrice: maskCurrency(e.target.value) }))}
-                />
+            ) : (
+              <div className="divide-y-4 divide-primary/10">
+                {saleItems.map((item, index) => (
+                  <div key={item.tempId} className="p-0 space-y-0 relative group">
+                    {/* Botão de Remover Item */}
+                    <button
+                      type="button"
+                      onClick={() => removeItem(item.tempId)}
+                      className="absolute right-2 top-2 z-10 size-8 rounded-full bg-destructive text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
+
+                    <div className="bg-primary/5 px-4 py-1 text-[10px] font-black text-primary uppercase tracking-widest border-b border-primary/10">
+                      Produto #{index + 1}
+                    </div>
+
+                    <Input
+                      placeholder="Nome do Produto"
+                      className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-none border-x-0 border-t-0 border-b-2 border-muted focus:border-primary w-full px-4"
+                      value={item.name}
+                      onChange={(e) => handleItemChange(item.tempId, "name", e.target.value)}
+                      required
+                    />
+
+                    <div className="grid sm:grid-cols-2">
+                      <Select 
+                        onValueChange={(val) => handleItemChange(item.tempId, "brand", val)} 
+                        value={item.brand}
+                      >
+                        <SelectTrigger className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-none border-x-0 border-t-0 border-b-2 border-muted w-full px-4">
+                          <SelectValue placeholder="Marca..." />
+                        </SelectTrigger>
+                        <SelectContent className="font-bold">
+                          <SelectItem value="VERDE (N)">VERDE (N)</SelectItem>
+                          <SelectItem value="ROSA (A)">ROSA (A)</SelectItem>
+                          <SelectItem value="MARROM (C&E)">MARROM (C&E)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        placeholder="Categoria"
+                        className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-none border-x-0 border-t-0 border-b-2 border-muted focus:border-primary w-full px-4"
+                        value={item.category}
+                        onChange={(e) => handleItemChange(item.tempId, "category", e.target.value)}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-3">
+                      <Input
+                        placeholder="Preço Revista"
+                        className="h-14 text-base font-black rounded-none border-x-0 border-t-0 border-b-2 border-muted focus:border-primary w-full px-4"
+                        value={item.catalogPrice}
+                        onChange={(e) => handleItemChange(item.tempId, "catalogPrice", maskCurrency(e.target.value))}
+                      />
+                      <Input
+                        placeholder="Preço Custo"
+                        className="h-14 text-base font-black rounded-none border-x-0 border-t-0 border-b-2 border-muted focus:border-primary w-full px-4 bg-muted/5"
+                        value={item.costPrice}
+                        onChange={(e) => handleItemChange(item.tempId, "costPrice", maskCurrency(e.target.value))}
+                      />
+                      <Input
+                        placeholder="Preço Venda"
+                        className="h-14 text-base font-black rounded-none border-none focus:border-primary w-full px-4 bg-primary/5 text-primary"
+                        value={item.salePrice}
+                        onChange={(e) => handleItemChange(item.tempId, "salePrice", maskCurrency(e.target.value))}
+                        required
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="space-y-0.5 text-left">
-                <Label className="text-[9px] font-black uppercase tracking-widest text-primary px-1">Preço Venda (R$)</Label>
-                <Input
-                  placeholder="0,00"
-                  className="h-14 sm:h-16 text-lg font-black rounded-lg border-2 border-primary/30 bg-primary/5 w-full"
-                  value={productData.salePrice}
-                  onChange={(e) => setProductData(prev => ({ ...prev, salePrice: maskCurrency(e.target.value) }))}
-                  required
-                />
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
 
         {/* 3. PAGAMENTO */}
         <Card className="border-none shadow-xl rounded-[1rem] sm:rounded-[2rem] overflow-hidden">
-          <CardHeader className="bg-muted/90 p-3 sm:p-4 border-b-2">
+          <CardHeader className="bg-muted/80 p-3 sm:p-4 border-b-2">
             <CardTitle className="flex flex-row items-center gap-2 text-lg sm:text-2xl font-black text-left uppercase">
               <CreditCard className="size-5 sm:size-6 text-primary" />
               3. Forma de Pagamento
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-1 sm:p-2 space-y-2">
-            <div className="grid grid-cols-4 gap-1.5 mb-2">
+          <CardContent className="p-0 space-y-0">
+            <div className="grid grid-cols-4 border-b-2 border-muted">
               {[
                 { id: 'pix', label: 'Pix', icon: Smartphone },
                 { id: 'dinheiro', label: 'Din.', icon: Banknote },
@@ -417,10 +456,10 @@ export default function NovaVendaPage() {
                   type="button"
                   onClick={() => setPaymentMethod(option.id)}
                   className={cn(
-                    "flex flex-col items-center justify-center p-2 rounded-xl border-2 transition-all gap-1 h-16 sm:h-20",
+                    "flex flex-col items-center justify-center p-2 transition-all gap-1 h-16 sm:h-20 border-r last:border-r-0",
                     paymentMethod === option.id
-                      ? "bg-primary text-white border-primary shadow-md scale-105"
-                      : "bg-background border-muted text-muted-foreground"
+                      ? "bg-primary text-white"
+                      : "bg-background text-muted-foreground hover:bg-muted/20"
                   )}
                 >
                   <option.icon className="size-5 sm:size-6" />
@@ -429,25 +468,22 @@ export default function NovaVendaPage() {
               ))}
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-1.5">
-              <div className="space-y-0.5 text-left">
-                <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground px-1">Data de Vencimento</Label>
+            <div className="grid sm:grid-cols-2">
+              <div className="border-b-2 sm:border-b-0 sm:border-r-2 border-muted">
+                <Label className="text-[8px] font-black uppercase tracking-widest text-muted-foreground px-4 pt-2 block">Data de Vencimento</Label>
                 <Input 
                   type="date" 
-                  className="h-14 sm:h-16 text-lg font-black rounded-lg border-2 border-muted bg-background w-full" 
+                  className="h-12 text-lg font-black border-none bg-transparent w-full px-4" 
                   value={dueDate} 
                   onChange={(e) => setDueDate(e.target.value)} 
                 />
               </div>
-              <div className="space-y-0.5 text-left">
-                <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground px-1">Notas da Venda</Label>
-                <Input
-                  placeholder="Observações da venda..."
-                  className="h-14 sm:h-16 text-lg font-bold rounded-lg border-2 border-muted w-full"
-                  value={saleNotes}
-                  onChange={(e) => setSaleNotes(e.target.value)}
-                />
-              </div>
+              <Input
+                placeholder="Notas da Venda (Opcional)"
+                className="h-16 text-lg font-bold border-none w-full px-4"
+                value={saleNotes}
+                onChange={(e) => setSaleNotes(e.target.value)}
+              />
             </div>
           </CardContent>
         </Card>
@@ -457,27 +493,29 @@ export default function NovaVendaPage() {
           <CardHeader className="p-3 border-b border-white/10 bg-white/5">
             <CardTitle className="flex flex-row items-center gap-2 text-lg font-black text-left uppercase">
               <CheckCircle2 className="size-5 text-[#39FF14]" />
-              4. Check-in da Venda
+              4. Resumo da Venda
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-3 space-y-3">
+          <CardContent className="p-4 space-y-3">
             <div className="flex items-center gap-3">
               <div className={cn("size-7 rounded-full border-2 flex items-center justify-center shrink-0", clientData.fullName ? "bg-[#39FF14]/20 border-[#39FF14]" : "border-white/20")}>
                 {clientData.fullName ? <CheckCircle2 className="size-4 text-[#39FF14]" /> : <Circle className="size-4 text-white/20" />}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[8px] font-black uppercase tracking-widest text-[#39FF14]">Cliente Selecionada</p>
-                <p className="text-base sm:text-xl font-black italic truncate">{clientData.fullName || "Aguardando preenchimento..."}</p>
+                <p className="text-[8px] font-black uppercase tracking-widest text-[#39FF14]">Cliente</p>
+                <p className="text-base sm:text-xl font-black italic truncate">{clientData.fullName || "Aguardando..."}</p>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
-              <div className={cn("size-7 rounded-full border-2 flex items-center justify-center shrink-0", productData.name ? "bg-[#39FF14]/20 border-[#39FF14]" : "border-white/20")}>
-                {productData.name ? <CheckCircle2 className="size-4 text-[#39FF14]" /> : <Circle className="size-4 text-white/20" />}
+              <div className={cn("size-7 rounded-full border-2 flex items-center justify-center shrink-0", saleItems.length > 0 ? "bg-[#39FF14]/20 border-[#39FF14]" : "border-white/20")}>
+                {saleItems.length > 0 ? <CheckCircle2 className="size-4 text-[#39FF14]" /> : <Circle className="size-4 text-white/20" />}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[8px] font-black uppercase tracking-widest text-[#39FF14]">Item no Pedido</p>
-                <p className="text-base sm:text-xl font-black italic truncate">{productData.name || "Aguardando preenchimento..."}</p>
+                <p className="text-[8px] font-black uppercase tracking-widest text-[#39FF14]">Itens Adicionados</p>
+                <p className="text-base sm:text-xl font-black italic truncate">
+                  {saleItems.length > 0 ? `${saleItems.length} produto(s) no carrinho` : "Nenhum item..."}
+                </p>
               </div>
             </div>
 
@@ -486,7 +524,7 @@ export default function NovaVendaPage() {
                 {paymentMethod ? <CheckCircle2 className="size-4 text-[#39FF14]" /> : <Circle className="size-4 text-white/20" />}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[8px] font-black uppercase tracking-widest text-[#39FF14]">Forma de Pagamento</p>
+                <p className="text-[8px] font-black uppercase tracking-widest text-[#39FF14]">Pagamento</p>
                 <p className="text-base sm:text-xl font-black italic truncate capitalize">{paymentMethod || "Aguardando..."}</p>
               </div>
             </div>
@@ -501,16 +539,16 @@ export default function NovaVendaPage() {
               5. Finalização
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-3 space-y-4">
-            <div className="grid lg:grid-cols-2 gap-4 items-center">
+          <CardContent className="p-4 space-y-4">
+            <div className="grid lg:grid-cols-2 gap-6 items-center">
                <div className="space-y-3">
                   <div className="flex justify-between items-center border-b border-white/10 pb-1">
-                    <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Subtotal</span>
-                    <span className="text-lg font-black">R$ {subtotal.toFixed(2)}</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Subtotal (Itens)</span>
+                    <span className="text-xl font-black">R$ {subtotal.toFixed(2)}</span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-1.5">
-                    <div className="space-y-0.5">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
                       <Label className="text-[8px] font-black uppercase tracking-widest opacity-60 px-1">Desconto (R$)</Label>
                       <Input
                         type="number"
@@ -519,7 +557,7 @@ export default function NovaVendaPage() {
                         onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
                       />
                     </div>
-                    <div className="space-y-0.5">
+                    <div className="space-y-1">
                       <Label className="text-[8px] font-black uppercase tracking-widest opacity-60 px-1">Taxas (R$)</Label>
                       <Input
                         type="number"
@@ -531,13 +569,13 @@ export default function NovaVendaPage() {
                   </div>
                </div>
 
-               <div className="p-4 sm:p-6 rounded-2xl shadow-xl text-center bg-white text-primary border-4 border-white">
-                  <p className="text-[8px] font-black uppercase tracking-[0.3em] mb-1 opacity-60">Total Final Recebido</p>
+               <div className="p-6 rounded-[1.5rem] shadow-xl text-center bg-white text-primary border-4 border-white">
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-1 opacity-60">Total Final a Receber</p>
                   <p className="text-4xl sm:text-6xl font-black tracking-tighter leading-none italic">R$ {finalTotal.toFixed(2)}</p>
                 </div>
             </div>
           </CardContent>
-          <CardFooter className="p-3 pt-0">
+          <CardFooter className="p-4 pt-0">
              <Button 
               type="submit" 
               size="lg"
