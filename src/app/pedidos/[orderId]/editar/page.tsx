@@ -336,11 +336,10 @@ export default function EditarVendaPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-4 border-b-4 border-muted">
+            <div className="grid grid-cols-3 border-b-4 border-muted">
               {[
                 { id: 'pix', label: 'Pix', icon: Smartphone, color: "bg-sky-500" },
                 { id: 'dinheiro', label: 'Dinheiro', icon: Banknote, color: "bg-emerald-500" },
-                { id: 'cartao', label: 'Cartão', icon: CreditCard, color: "bg-violet-500" },
                 { id: 'a prazo', label: 'A Prazo', icon: HandCoins, color: "bg-amber-500" },
               ].map((option) => (
                 <button key={option.id} type="button" onClick={() => setPaymentMethod(option.id)} className={cn("flex flex-col items-center justify-center p-2 transition-all gap-1 h-20 sm:h-32 border-r-4 border-muted last:border-r-0", paymentMethod === option.id ? `${option.color} text-white shadow-inner` : "bg-background text-muted-foreground")}>
