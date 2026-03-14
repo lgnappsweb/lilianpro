@@ -446,10 +446,10 @@ export default function NovaVendaPage() {
           <CardContent className="p-0 space-y-0">
             <div className="grid grid-cols-4 border-b-2 border-muted">
               {[
-                { id: 'pix', label: 'Pix', icon: Smartphone, color: "bg-sky-500" },
-                { id: 'dinheiro', label: 'Din.', icon: Banknote, color: "bg-emerald-500" },
-                { id: 'cartao', label: 'Card', icon: CreditCard, color: "bg-violet-500" },
-                { id: 'a prazo', label: 'Prazo', icon: HandCoins, color: "bg-amber-500" },
+                { id: 'pix', label: 'Pix', icon: Smartphone, color: "bg-sky-500", iconColor: "text-sky-500" },
+                { id: 'dinheiro', label: 'Din.', icon: Banknote, color: "bg-emerald-500", iconColor: "text-emerald-500" },
+                { id: 'cartao', label: 'Card', icon: CreditCard, color: "bg-violet-500", iconColor: "text-violet-500" },
+                { id: 'a prazo', label: 'Prazo', icon: HandCoins, color: "bg-amber-500", iconColor: "text-amber-500" },
               ].map((option) => (
                 <button
                   key={option.id}
@@ -458,12 +458,12 @@ export default function NovaVendaPage() {
                   className={cn(
                     "flex flex-col items-center justify-center p-2 transition-all gap-1 h-16 sm:h-20 border-r last:border-r-0",
                     paymentMethod === option.id
-                      ? `${option.color} text-white`
+                      ? `${option.color} text-white shadow-inner`
                       : "bg-background text-muted-foreground hover:bg-muted/20"
                   )}
                 >
-                  <option.icon className="size-5 sm:size-6" />
-                  <span className="text-[8px] sm:text-[10px] font-black uppercase">{option.label}</span>
+                  <option.icon className={cn("size-5 sm:size-6", paymentMethod === option.id ? "text-white" : option.iconColor)} />
+                  <span className={cn("text-[8px] sm:text-[10px] font-black uppercase", paymentMethod === option.id ? "text-white" : "text-muted-foreground")}>{option.label}</span>
                 </button>
               ))}
             </div>
