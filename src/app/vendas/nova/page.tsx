@@ -368,17 +368,18 @@ export default function NovaVendaPage() {
               <div className="divide-y-4 divide-primary/10">
                 {saleItems.map((item, index) => (
                   <div key={item.tempId} className="p-0 space-y-0 relative group">
-                    {/* Botão de Remover Item */}
-                    <button
-                      type="button"
-                      onClick={() => removeItem(item.tempId)}
-                      className="absolute right-2 top-2 z-10 size-8 rounded-full bg-destructive text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
-                    >
-                      <Trash2 className="size-4" />
-                    </button>
-
-                    <div className="bg-primary/5 px-4 py-1 text-[10px] font-black text-primary uppercase tracking-widest border-b border-primary/10">
-                      Item #{index + 1}
+                    
+                    <div className="bg-primary/5 px-4 h-12 flex items-center justify-between text-[10px] font-black text-primary uppercase tracking-widest border-b border-primary/10">
+                      <span>Item #{index + 1}</span>
+                      {saleItems.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeItem(item.tempId)}
+                          className="size-8 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive hover:text-white flex items-center justify-center transition-all"
+                        >
+                          <Trash2 className="size-4" />
+                        </button>
+                      )}
                     </div>
 
                     <Input
