@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
@@ -37,6 +38,7 @@ import {
   Tag,
   Search,
   UserCheck,
+  Info,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from "@/firebase";
@@ -78,7 +80,7 @@ export default function NovaVendaPage() {
     if (!existingClients || !searchTerm) return [];
     return existingClients.filter(c => 
       c.fullName?.toLowerCase().includes(searchTerm.toLowerCase())
-    ).slice(0, 5);
+    ).sort((a, b) => (a.fullName || "").localeCompare(b.fullName || "")).slice(0, 5);
   }, [existingClients, searchTerm]);
 
   // --- ESTADO DO CLIENTE (FORM) ---
@@ -364,7 +366,7 @@ export default function NovaVendaPage() {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-6 text-primary group-focus-within:scale-110 transition-transform" />
                 <Input
                   placeholder="Buscar cliente existente..."
-                  className="h-20 sm:h-24 pl-12 pr-4 text-xl sm:text-2xl font-black rounded-none border-none focus:ring-0 w-full bg-primary/5 italic placeholder:text-primary/10"
+                  className="h-20 sm:h-24 pl-12 pr-4 text-xl sm:text-2xl font-black rounded-none border-none focus:ring-0 w-full bg-primary/5 italic placeholder:text-primary/30"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -792,7 +794,7 @@ export default function NovaVendaPage() {
             </Button>
           </CardFooter>
         </Card>
-      </Button>
+      </form>
     </div>
   );
 }
