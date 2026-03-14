@@ -31,14 +31,12 @@ import {
   CheckCircle2,
   Circle,
   DollarSign,
-  ReceiptText,
   Trash2,
   Plus,
   Loader2,
   Tag,
   Search,
   UserCheck,
-  Info,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from "@/firebase";
