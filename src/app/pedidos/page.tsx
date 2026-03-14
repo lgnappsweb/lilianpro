@@ -88,6 +88,13 @@ export default function PedidosPage() {
     }
   };
 
+  const formatDateBR = (isoString: string) => {
+    if (!isoString) return "";
+    const datePart = isoString.split('T')[0];
+    const [year, month, day] = datePart.split('-');
+    return `${day}/${month}/${year}`;
+  };
+
   const filteredOrders = useMemo(() => {
     if (!orders) return [];
     return orders.filter(o => {
@@ -127,13 +134,6 @@ export default function PedidosPage() {
       });
       setOrderToPay(null);
     }
-  };
-
-  const formatDateBR = (isoString: string) => {
-    if (!isoString) return "";
-    const datePart = isoString.split('T')[0];
-    const [year, month, day] = datePart.split('-');
-    return `${day}/${month}/${year}`;
   };
 
   return (
@@ -273,42 +273,43 @@ export default function PedidosPage() {
 
       {/* Diálogo de Confirmação de Pagamento com Data Personalizada */}
       <AlertDialog open={!!orderToPay} onOpenChange={(open) => !open && setOrderToPay(null)}>
-        <AlertDialogContent className="rounded-[2.5rem] p-8 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto">
+        <AlertDialogContent className="rounded-[2.5rem] p-6 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto w-[95vw] sm:w-full">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-3xl sm:text-5xl font-black tracking-tighter text-primary uppercase leading-none text-left px-2 italic">Confirmar Recebimento</AlertDialogTitle>
-            <AlertDialogDescription className="text-xl sm:text-2xl font-bold mt-6 leading-relaxed text-muted-foreground text-left">
-              Em qual data você recebeu o pagamento de <strong className="text-foreground border-b-4 border-primary px-1">{orderToPay?.clientName}</strong>?
+            <AlertDialogTitle className="text-xl sm:text-5xl font-black tracking-tighter text-primary uppercase leading-tight text-left px-2 italic">Confirmar Recebimento</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm sm:text-2xl font-bold mt-4 sm:mt-6 leading-relaxed text-muted-foreground text-left px-2">
+              Em qual data você recebeu o pagamento de <strong className="text-foreground border-b-2 sm:border-b-4 border-primary">{orderToPay?.clientName}</strong>?
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="py-6 px-2">
+          <div className="py-4 sm:py-6 px-2">
             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2 block">Data do Recebimento</Label>
             <Input 
               type="date" 
               value={paymentDate} 
               onChange={(e) => setPaymentDate(e.target.value)} 
-              className="h-16 text-2xl font-black rounded-2xl border-4 border-muted focus:border-primary"
+              className="h-14 sm:h-16 text-lg sm:text-2xl font-black rounded-2xl border-4 border-muted focus:border-primary"
             />
           </div>
-          <AlertDialogFooter className="gap-4 mt-12 flex-col sm:flex-row">
-            <AlertDialogCancel className="h-16 sm:h-24 px-10 text-xl font-black rounded-2xl sm:rounded-3xl border-4 border-muted hover:bg-muted/50">Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmPayment} className="h-16 sm:h-24 px-10 text-xl font-black bg-green-600 text-white hover:bg-green-700 rounded-2xl sm:rounded-3xl shadow-xl active:scale-95 transition-all">
+          <AlertDialogFooter className="gap-3 sm:gap-4 mt-8 sm:mt-12 flex-col sm:flex-row">
+            <AlertDialogCancel className="h-12 sm:h-24 px-4 sm:px-10 text-xs sm:text-xl font-black rounded-2xl sm:rounded-3xl border-4 border-muted hover:bg-muted/50">Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmPayment} className="h-12 sm:h-24 px-4 sm:px-10 text-xs sm:text-xl font-black bg-green-600 text-white hover:bg-green-700 rounded-2xl sm:rounded-3xl shadow-xl active:scale-95 transition-all">
               SIM, CONFIRMAR PAGAMENTO
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Diálogo de Remoção */}
       <AlertDialog open={!!orderToDelete} onOpenChange={(open) => !open && setOrderToDelete(null)}>
-        <AlertDialogContent className="rounded-[2.5rem] p-8 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto">
+        <AlertDialogContent className="rounded-[2.5rem] p-6 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto w-[95vw] sm:w-full">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-3xl sm:text-5xl font-black tracking-tighter text-primary uppercase leading-none text-left px-2">Remover Pedido?</AlertDialogTitle>
-            <AlertDialogDescription className="text-xl sm:text-2xl font-bold mt-6 leading-relaxed text-muted-foreground text-left">
-              O pedido de <strong className="text-foreground border-b-4 border-primary px-1">{orderToDelete?.clientName}</strong> sairá do gerenciamento ativo, mas <span className="text-primary font-black">permanecerá no histórico permanente</span> do cliente.
+            <AlertDialogTitle className="text-xl sm:text-5xl font-black tracking-tighter text-primary uppercase leading-tight text-left px-2">Remover Pedido?</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm sm:text-2xl font-bold mt-4 sm:mt-6 leading-relaxed text-muted-foreground text-left px-2">
+              O pedido de <strong className="text-foreground border-b-2 sm:border-b-4 border-primary">{orderToDelete?.clientName}</strong> sairá do gerenciamento ativo, mas <span className="text-primary font-black">permanecerá no histórico permanente</span> do cliente.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="gap-4 mt-12 flex-col sm:flex-row">
-            <AlertDialogCancel className="h-16 sm:h-24 px-10 text-xl font-black rounded-2xl sm:rounded-3xl border-4 border-muted hover:bg-muted/50">Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm} className="h-16 sm:h-24 px-10 text-xl font-black bg-destructive text-white hover:bg-destructive/90 rounded-2xl sm:rounded-3xl shadow-xl active:scale-95 transition-all">
+          <AlertDialogFooter className="gap-3 sm:gap-4 mt-8 sm:mt-12 flex-col sm:flex-row">
+            <AlertDialogCancel className="h-12 sm:h-24 px-4 sm:px-10 text-xs sm:text-xl font-black rounded-2xl sm:rounded-3xl border-4 border-muted hover:bg-muted/50">Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="h-12 sm:h-24 px-4 sm:px-10 text-xs sm:text-xl font-black bg-destructive text-white hover:bg-destructive/90 rounded-2xl sm:rounded-3xl shadow-xl active:scale-95 transition-all">
               SIM, REMOVER
             </AlertDialogAction>
           </AlertDialogFooter>
