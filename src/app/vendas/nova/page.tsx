@@ -7,7 +7,6 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import {
   ShoppingBag,
   User,
@@ -38,6 +38,7 @@ import {
   Search,
   UserCheck,
   RefreshCw,
+  AlertTriangle,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc, setDocumentNonBlocking } from "@/firebase";
@@ -340,14 +341,14 @@ export default function NovaVendaPage() {
               </div>
             )}
             <div className="grid sm:grid-cols-2">
-              <Input placeholder="Nome Completo" className={cn("h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary px-4", selectedClient && "bg-muted/30 opacity-80")} value={clientData.fullName} onChange={(e) => !selectedClient && setClientData(p => ({ ...p, fullName: e.target.value }))} readOnly={!!selectedClient} required />
-              <Input placeholder="WhatsApp" className={cn("h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary px-4", selectedClient && "bg-muted/30 opacity-80")} value={clientData.phone} onChange={(e) => !selectedClient && setClientData(p => ({ ...p, phone: formatPhone(e.target.value) }))} readOnly={!!selectedClient} required />
+              <Input placeholder="Nome Completo" className={cn("h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary px-4 placeholder:text-muted-foreground/30", selectedClient && "bg-muted/30 opacity-80")} value={clientData.fullName} onChange={(e) => !selectedClient && setClientData(p => ({ ...p, fullName: e.target.value }))} readOnly={!!selectedClient} required />
+              <Input placeholder="WhatsApp" className={cn("h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary px-4 placeholder:text-muted-foreground/30", selectedClient && "bg-muted/30 opacity-80")} value={clientData.phone} onChange={(e) => !selectedClient && setClientData(p => ({ ...p, phone: formatPhone(e.target.value) }))} readOnly={!!selectedClient} required />
             </div>
             <div className="grid sm:grid-cols-2">
-              <Input placeholder="Cidade" className={cn("h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary px-4", selectedClient && "bg-muted/30 opacity-80")} value={clientData.city} onChange={(e) => !selectedClient && setClientData(p => ({ ...p, city: e.target.value }))} readOnly={!!selectedClient} />
-              <Input placeholder="Bairro" className={cn("h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary px-4", selectedClient && "bg-muted/30 opacity-80")} value={clientData.neighborhood} onChange={(e) => !selectedClient && setClientData(p => ({ ...p, neighborhood: e.target.value }))} readOnly={!!selectedClient} />
+              <Input placeholder="Cidade" className={cn("h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary px-4 placeholder:text-muted-foreground/30", selectedClient && "bg-muted/30 opacity-80")} value={clientData.city} onChange={(e) => !selectedClient && setClientData(p => ({ ...p, city: e.target.value }))} readOnly={!!selectedClient} />
+              <Input placeholder="Bairro" className={cn("h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary px-4 placeholder:text-muted-foreground/30", selectedClient && "bg-muted/30 opacity-80")} value={clientData.neighborhood} onChange={(e) => !selectedClient && setClientData(p => ({ ...p, neighborhood: e.target.value }))} readOnly={!!selectedClient} />
             </div>
-            <Input placeholder="Endereço / Referência" className={cn("h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary px-4", selectedClient && "bg-muted/30 opacity-80")} value={clientData.address} onChange={(e) => !selectedClient && setClientData(p => ({ ...p, address: e.target.value }))} readOnly={!!selectedClient} />
+            <Input placeholder="Endereço / Referência" className={cn("h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary px-4 bg-background placeholder:text-muted-foreground/30", selectedClient && "bg-muted/30 opacity-80")} value={clientData.address} onChange={(e) => !selectedClient && setClientData(p => ({ ...p, address: e.target.value }))} readOnly={!!selectedClient} />
             <Textarea placeholder="Notas do Perfil (Preferências, horários...)" className={cn("min-h-[120px] text-lg sm:text-xl font-bold rounded-none border-none focus:border-primary px-4 bg-background py-4 placeholder:text-muted-foreground/30", selectedClient && "bg-muted/30 opacity-80")} value={clientData.notes} onChange={(e) => !selectedClient && setClientData(p => ({ ...p, notes: e.target.value }))} readOnly={!!selectedClient} />
           </CardContent>
         </Card>
