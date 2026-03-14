@@ -397,7 +397,7 @@ export default function DashboardPage() {
                     <Button variant="outline" className="w-full h-14 sm:h-16 text-sm sm:text-xl font-black rounded-2xl border-4 border-muted justify-between px-4">
                       <div className="flex items-center gap-2 overflow-hidden">
                         <CalendarIcon className="size-4 text-primary shrink-0" />
-                        <span className="truncate">
+                        <span className="truncate text-sm sm:text-xl">
                           {cycleDate?.from && cycleDate?.to ? (
                             `${format(cycleDate.from, "dd/MM/yyyy")} - ${format(cycleDate.to, "dd/MM/yyyy")}`
                           ) : "Selecionar Datas"}
@@ -456,7 +456,7 @@ export default function DashboardPage() {
             <Button 
               variant="ghost" 
               onClick={() => setShowResetConfirm(true)}
-              className="w-full h-auto min-h-14 py-4 text-xs sm:text-xl text-destructive font-black uppercase tracking-widest gap-3 hover:bg-destructive/5 rounded-2xl border-4 border-destructive/10 transition-all active:scale-95 px-6"
+              className="w-full h-auto min-h-14 py-4 text-sm sm:text-xl text-destructive font-black uppercase tracking-tight sm:tracking-widest gap-3 hover:bg-destructive/5 rounded-2xl border-4 border-destructive/10 transition-all active:scale-95 px-6"
             >
               <Trash2 className="size-5 sm:size-6 shrink-0" /> 
               <span className="flex-1 text-center">ENCERRAR CICLO ATUAL</span>
@@ -503,7 +503,7 @@ export default function DashboardPage() {
                 <healthStatus.icon className="size-8" />
               </div>
               <div>
-                <CardTitle className={cn("text-2xl font-black uppercase tracking-tighter italic", healthStatus.iconColor)}>
+                <CardTitle className={cn("text-lg sm:text-2xl font-black uppercase tracking-tighter italic whitespace-nowrap", healthStatus.iconColor)}>
                   {healthStatus.title}
                 </CardTitle>
                 <CardDescription className="font-bold opacity-70">Monitoramento automático de cobranças</CardDescription>
