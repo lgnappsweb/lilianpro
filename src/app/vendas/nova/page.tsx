@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
@@ -450,7 +449,7 @@ export default function NovaVendaPage() {
             />
 
             <Textarea
-              placeholder="Notas Importantes da Cliente (igual no cadastro)"
+              placeholder="Notas Fixas da Cliente (Ex: Alérgica a tal componente, prefere fragrâncias florais, melhor horário de entrega...)"
               className={cn(
                 "min-h-[120px] text-lg sm:text-xl font-bold rounded-none border-none focus:border-primary w-full px-4 bg-background py-4",
                 selectedClient && "bg-muted/30 opacity-80"
@@ -638,7 +637,7 @@ export default function NovaVendaPage() {
               <div className="p-2 sm:p-4 space-y-1">
                 <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block px-2 italic">Notas da Venda</Label>
                 <Input
-                  placeholder="Ex: Entrega na recepção"
+                  placeholder="Observações desta Venda (Ex: Embrulhar para presente, levar troco para R$ 100...)"
                   className="h-12 text-xl sm:text-2xl font-black border-none w-full px-2 bg-transparent"
                   value={saleNotes}
                   onChange={(e) => setSaleNotes(e.target.value)}
