@@ -644,37 +644,72 @@ export default function NovaVendaPage() {
               4. Check-in Elite
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-4 sm:p-8 space-y-6">
-            <div className="flex items-center gap-4">
-              <div className={cn("size-10 rounded-xl border-4 flex items-center justify-center shrink-0 shadow-lg", clientData.fullName ? "bg-[#39FF14]/20 border-[#39FF14]" : "border-white/10")}>
-                {clientData.fullName ? <CheckCircle2 className="size-5 text-[#39FF14]" /> : <Circle className="size-5 text-white/10" />}
+          <CardContent className="p-4 sm:p-8 space-y-8">
+            {/* Cliente */}
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-4">
+                <div className={cn("size-10 rounded-xl border-4 flex items-center justify-center shrink-0 shadow-lg", clientData.fullName ? "bg-[#39FF14]/20 border-[#39FF14]" : "border-white/10")}>
+                  {clientData.fullName ? <CheckCircle2 className="size-5 text-[#39FF14]" /> : <Circle className="size-5 text-white/10" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-[#39FF14] mb-0.5">Cliente VIP</p>
+                  <p className="text-xl sm:text-3xl font-black italic truncate tracking-tighter">{clientData.fullName || "AGUARDANDO NOME..."}</p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-[#39FF14] mb-0.5">Cliente VIP</p>
-                <p className="text-xl sm:text-3xl font-black italic truncate tracking-tighter">{clientData.fullName || "AGUARDANDO NOME..."}</p>
-              </div>
+              {clientData.phone && (
+                <p className="ml-14 text-xs sm:text-base font-bold opacity-40 uppercase tracking-widest">{clientData.phone}</p>
+              )}
             </div>
 
-            <div className="flex items-center gap-4">
-              <div className={cn("size-10 rounded-xl border-4 flex items-center justify-center shrink-0 shadow-lg", saleItems.length > 0 ? "bg-[#39FF14]/20 border-[#39FF14]" : "border-white/10")}>
-                {saleItems.length > 0 ? <CheckCircle2 className="size-5 text-[#39FF14]" /> : <Circle className="size-5 text-white/10" />}
+            {/* Carrinho */}
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-4">
+                <div className={cn("size-10 rounded-xl border-4 flex items-center justify-center shrink-0 shadow-lg", saleItems.length > 0 ? "bg-[#39FF14]/20 border-[#39FF14]" : "border-white/10")}>
+                  {saleItems.length > 0 ? <CheckCircle2 className="size-5 text-[#39FF14]" /> : <Circle className="size-5 text-white/10" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-[#39FF14] mb-0.5">Carrinho de Itens</p>
+                  <p className="text-xl sm:text-3xl font-black italic truncate tracking-tighter">
+                    {saleItems.length > 0 ? `${saleItems.length} PRODUTO(S) LISTADO(S)` : "SEM ITENS..."}
+                  </p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-[#39FF14] mb-0.5">Carrinho de Itens</p>
-                <p className="text-xl sm:text-3xl font-black italic truncate tracking-tighter">
-                  {saleItems.length > 0 ? `${saleItems.length} PRODUTO(S) LISTADO(S)` : "SEM ITENS..."}
+              
+              {saleItems.length > 0 && (
+                <div className="ml-14 space-y-3 border-l-2 border-white/10 pl-6 py-2">
+                  {saleItems.map((item, idx) => (
+                    <div key={item.tempId} className="flex justify-between items-center group/checkitem">
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-xs sm:text-lg font-black uppercase italic tracking-tighter truncate text-white/80">
+                          {idx + 1}. {item.name || "Produto sem nome"}
+                        </span>
+                        <span className="text-[8px] sm:text-[10px] font-bold opacity-40 uppercase tracking-widest">
+                          {item.brand || "Marca"} | {item.category || "Categoria"}
+                        </span>
+                      </div>
+                      <span className="text-sm sm:text-2xl font-black text-[#39FF14] italic ml-4">R$ {item.salePrice || "0,00"}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Pagamento */}
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-4">
+                <div className={cn("size-10 rounded-xl border-4 flex items-center justify-center shrink-0 shadow-lg", paymentMethod ? "bg-[#39FF14]/20 border-[#39FF14]" : "border-white/10")}>
+                  {paymentMethod ? <CheckCircle2 className="size-5 text-[#39FF14]" /> : <Circle className="size-5 text-white/10" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-[#39FF14] mb-0.5">Pagamento</p>
+                  <p className="text-xl sm:text-3xl font-black italic truncate capitalize tracking-tighter">{paymentMethod || "AGUARDANDO MÉTODO..."}</p>
+                </div>
+              </div>
+              {dueDate && (
+                <p className="ml-14 text-xs sm:text-base font-bold opacity-40 uppercase tracking-widest flex items-center gap-2">
+                  Vencimento: {dueDate.split('-').reverse().join('/')}
                 </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <div className={cn("size-10 rounded-xl border-4 flex items-center justify-center shrink-0 shadow-lg", paymentMethod ? "bg-[#39FF14]/20 border-[#39FF14]" : "border-white/10")}>
-                {paymentMethod ? <CheckCircle2 className="size-5 text-[#39FF14]" /> : <Circle className="size-5 text-white/10" />}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.3em] text-[#39FF14] mb-0.5">Pagamento</p>
-                <p className="text-xl sm:text-3xl font-black italic truncate capitalize tracking-tighter">{paymentMethod || "AGUARDANDO MÉTODO..."}</p>
-              </div>
+              )}
             </div>
           </CardContent>
         </Card>
