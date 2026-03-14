@@ -364,7 +364,7 @@ export default function NovaVendaPage() {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-6 text-primary group-focus-within:scale-110 transition-transform" />
                 <Input
                   placeholder="Buscar cliente existente..."
-                  className="h-20 sm:h-24 pl-12 pr-4 text-xl sm:text-2xl font-black rounded-none border-none focus:ring-0 w-full bg-primary/5 italic placeholder:text-primary/20"
+                  className="h-20 sm:h-24 pl-12 pr-4 text-xl sm:text-2xl font-black rounded-none border-none focus:ring-0 w-full bg-primary/5 italic placeholder:text-primary/10"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -393,7 +393,7 @@ export default function NovaVendaPage() {
               <Input
                 placeholder="Nome Completo"
                 className={cn(
-                  "h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-4 bg-background",
+                  "h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-4 bg-background placeholder:text-muted-foreground/30",
                   selectedClient && "bg-muted/30 opacity-80"
                 )}
                 value={clientData.fullName}
@@ -404,7 +404,7 @@ export default function NovaVendaPage() {
               <Input
                 placeholder="WhatsApp"
                 className={cn(
-                  "h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-4 bg-background",
+                  "h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-4 bg-background placeholder:text-muted-foreground/30",
                   selectedClient && "bg-muted/30 opacity-80"
                 )}
                 value={clientData.phone}
@@ -418,7 +418,7 @@ export default function NovaVendaPage() {
               <Input
                 placeholder="Cidade"
                 className={cn(
-                  "h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-4 bg-background",
+                  "h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-4 bg-background placeholder:text-muted-foreground/30",
                   selectedClient && "bg-muted/30 opacity-80"
                 )}
                 value={clientData.city}
@@ -428,7 +428,7 @@ export default function NovaVendaPage() {
               <Input
                 placeholder="Bairro"
                 className={cn(
-                  "h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-4 bg-background",
+                  "h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-4 bg-background placeholder:text-muted-foreground/30",
                   selectedClient && "bg-muted/30 opacity-80"
                 )}
                 value={clientData.neighborhood}
@@ -440,7 +440,7 @@ export default function NovaVendaPage() {
             <Input
               placeholder="Endereço / Referência"
               className={cn(
-                "h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-4 bg-background",
+                "h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-4 bg-background placeholder:text-muted-foreground/30",
                 selectedClient && "bg-muted/30 opacity-80"
               )}
               value={clientData.address}
@@ -449,9 +449,9 @@ export default function NovaVendaPage() {
             />
 
             <Textarea
-              placeholder="Notas Fixas da Cliente (Ex: Alérgica a tal componente, prefere fragrâncias florais, melhor horário de entrega...)"
+              placeholder="Notas Fixas do Perfil (Preferências permanentes, alergias, horários de entrega...)"
               className={cn(
-                "min-h-[120px] text-lg sm:text-xl font-bold rounded-none border-none focus:border-primary w-full px-4 bg-background py-4",
+                "min-h-[120px] text-lg sm:text-xl font-bold rounded-none border-none focus:border-primary w-full px-4 bg-background py-4 placeholder:text-muted-foreground/30",
                 selectedClient && "bg-muted/30 opacity-80"
               )}
               value={clientData.notes}
@@ -502,7 +502,7 @@ export default function NovaVendaPage() {
 
                     <Input
                       placeholder="Nome do Produto"
-                      className="h-16 sm:h-20 text-xl sm:text-3xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-4 bg-background"
+                      className="h-16 sm:h-20 text-xl sm:text-3xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-4 bg-background placeholder:text-muted-foreground/30"
                       value={item.name}
                       onChange={(e) => handleItemChange(item.tempId, "name", e.target.value)}
                       required
@@ -524,7 +524,7 @@ export default function NovaVendaPage() {
                       </Select>
                       <Input
                         placeholder="Categoria"
-                        className="h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-4 bg-background"
+                        className="h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-4 bg-background placeholder:text-muted-foreground/30"
                         value={item.category}
                         onChange={(e) => handleItemChange(item.tempId, "category", e.target.value)}
                       />
@@ -533,13 +533,13 @@ export default function NovaVendaPage() {
                     <div className="grid sm:grid-cols-2">
                       <Input
                         placeholder="Código/SKU"
-                        className="h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-4 bg-background"
+                        className="h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-4 bg-background placeholder:text-muted-foreground/30"
                         value={item.productCode}
                         onChange={(e) => handleItemChange(item.tempId, "productCode", e.target.value)}
                       />
                       <Input
                         placeholder="Descrição Breve"
-                        className="h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-4 bg-background"
+                        className="h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-4 bg-background placeholder:text-muted-foreground/30"
                         value={item.description}
                         onChange={(e) => handleItemChange(item.tempId, "description", e.target.value)}
                       />
@@ -637,8 +637,8 @@ export default function NovaVendaPage() {
               <div className="p-2 sm:p-4 space-y-1">
                 <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block px-2 italic">Notas da Venda</Label>
                 <Input
-                  placeholder="Observações desta Venda (Ex: Embrulhar para presente, levar troco para R$ 100...)"
-                  className="h-12 text-xl sm:text-2xl font-black border-none w-full px-2 bg-transparent"
+                  placeholder="Observações desta Venda (Ex: Embrulho presente, levar troco para R$ 100...)"
+                  className="h-12 text-xl sm:text-2xl font-black border-none w-full px-2 bg-transparent placeholder:text-muted-foreground/30"
                   value={saleNotes}
                   onChange={(e) => setSaleNotes(e.target.value)}
                 />
@@ -792,7 +792,7 @@ export default function NovaVendaPage() {
             </Button>
           </CardFooter>
         </Card>
-      </form>
+      </Button>
     </div>
   );
 }
