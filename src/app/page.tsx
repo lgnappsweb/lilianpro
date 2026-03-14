@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
@@ -116,6 +115,7 @@ export default function DashboardPage() {
   });
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   // Busca configurações do ciclo
   const cycleRef = useMemoFirebase(() => {
@@ -391,7 +391,7 @@ export default function DashboardPage() {
               
               <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-2">Período do Ciclo</Label>
-                <Popover>
+                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="w-full h-14 sm:h-16 text-sm font-black rounded-2xl border-4 border-muted justify-between px-4">
                       <div className="flex items-center gap-2">
@@ -439,7 +439,12 @@ export default function DashboardPage() {
                         </div>
                       </div>
                     </div>
-                    <Button className="w-full h-14 rounded-2xl font-black uppercase tracking-widest bg-primary shadow-xl">Confirmar Datas</Button>
+                    <Button 
+                      onClick={() => setIsCalendarOpen(false)}
+                      className="w-full h-14 rounded-2xl font-black uppercase tracking-widest bg-primary shadow-xl"
+                    >
+                      Confirmar Datas
+                    </Button>
                   </PopoverContent>
                 </Popover>
               </div>
