@@ -5,6 +5,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -335,7 +336,6 @@ export default function DashboardPage() {
     switch (method?.toLowerCase()) {
       case "pix": return <Smartphone className="size-4" />;
       case "dinheiro": return <Banknote className="size-4" />;
-      case "cartao": return <CreditCard className="size-4" />;
       case "a prazo": return <HandCoins className="size-4" />;
       default: return <CreditCard className="size-4" />;
     }
@@ -370,7 +370,7 @@ export default function DashboardPage() {
               </CardTitle>
               <Popover open={isNewCyclePopoverOpen} onOpenChange={setIsNewCyclePopoverOpen}>
                 <PopoverTrigger asChild>
-                  <Button size="sm" className="w-full sm:w-auto h-12 sm:h-10 rounded-full bg-primary font-black uppercase text-xs sm:text-[10px] tracking-widest gap-2 shadow-lg">
+                  <Button size="sm" className="w-full sm:w-auto h-12 sm:h-14 rounded-full bg-primary font-black uppercase text-xs sm:text-lg tracking-widest gap-2 shadow-lg">
                     <Plus className="size-3" /> NOVO CICLO
                   </Button>
                 </PopoverTrigger>
