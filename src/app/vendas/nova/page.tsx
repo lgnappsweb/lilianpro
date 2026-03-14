@@ -421,20 +421,20 @@ export default function NovaVendaPage() {
 
                     <div className="grid grid-cols-3">
                       <Input
-                        placeholder="Preço Revista"
-                        className="h-14 text-base font-black rounded-none border-x-0 border-t-0 border-b-2 border-sky-200 focus:border-sky-500 w-full px-4 bg-sky-50 text-sky-900"
+                        placeholder="00,00"
+                        className="h-14 text-base font-black rounded-none border-x-0 border-t-0 border-b-2 border-sky-300 focus:border-sky-500 w-full px-4 bg-sky-100 text-sky-900 placeholder:text-sky-900/30"
                         value={item.catalogPrice}
                         onChange={(e) => handleItemChange(item.tempId, "catalogPrice", maskCurrency(e.target.value))}
                       />
                       <Input
-                        placeholder="Preço Custo"
-                        className="h-14 text-base font-black rounded-none border-x-0 border-t-0 border-b-2 border-orange-200 focus:border-orange-500 w-full px-4 bg-orange-50 text-orange-900"
+                        placeholder="00,00"
+                        className="h-14 text-base font-black rounded-none border-x-0 border-t-0 border-b-2 border-orange-300 focus:border-orange-500 w-full px-4 bg-orange-100 text-orange-900 placeholder:text-orange-900/30"
                         value={item.costPrice}
                         onChange={(e) => handleItemChange(item.tempId, "costPrice", maskCurrency(e.target.value))}
                       />
                       <Input
-                        placeholder="Preço Venda"
-                        className="h-14 text-base font-black rounded-none border-none focus:border-green-500 w-full px-4 bg-green-50 text-green-900"
+                        placeholder="00,00"
+                        className="h-14 text-base font-black rounded-none border-none focus:border-green-500 w-full px-4 bg-green-100 text-green-900 placeholder:text-green-900/30"
                         value={item.salePrice}
                         onChange={(e) => handleItemChange(item.tempId, "salePrice", maskCurrency(e.target.value))}
                         required
@@ -547,7 +547,9 @@ export default function NovaVendaPage() {
         <Card className="border-none shadow-2xl rounded-[1rem] sm:rounded-[2rem] overflow-hidden bg-primary text-primary-foreground">
           <CardHeader className="p-3 bg-white/10">
              <CardTitle className="flex flex-row items-center gap-2 text-xl sm:text-2xl font-black uppercase italic">
-              <DollarSign className="size-5 sm:size-6" />
+              <div className="bg-white/20 p-1.5 rounded-lg mr-1">
+                <DollarSign className="size-5 sm:size-6" />
+              </div>
               5. Finalização
             </CardTitle>
           </CardHeader>
