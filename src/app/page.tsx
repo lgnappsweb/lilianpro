@@ -370,7 +370,7 @@ export default function DashboardPage() {
               </CardTitle>
               <Popover open={isNewCyclePopoverOpen} onOpenChange={setIsNewCyclePopoverOpen}>
                 <PopoverTrigger asChild>
-                  <Button size="sm" className="w-full sm:w-auto h-12 sm:h-10 rounded-full bg-primary font-black uppercase text-[10px] tracking-widest gap-2 shadow-lg">
+                  <Button size="sm" className="w-full sm:w-auto h-12 sm:h-10 rounded-full bg-primary font-black uppercase text-xs sm:text-[10px] tracking-widest gap-2 shadow-lg">
                     <Plus className="size-3" /> NOVO CICLO
                   </Button>
                 </PopoverTrigger>
@@ -432,8 +432,8 @@ export default function DashboardPage() {
                       {activeCycleId === cycle.id ? <Check className="size-6" /> : <CalendarIcon className="size-5" />}
                     </div>
                     <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
-                      <p className={cn("font-black text-base sm:text-lg uppercase italic leading-none whitespace-nowrap truncate", activeCycleId === cycle.id ? "text-primary" : "text-foreground")}>{cycle.name}</p>
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest whitespace-nowrap truncate mt-1">
+                      <p className={cn("font-black text-xs sm:text-lg uppercase italic leading-none whitespace-nowrap truncate", activeCycleId === cycle.id ? "text-primary" : "text-foreground")}>{cycle.name}</p>
+                      <p className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-widest whitespace-nowrap truncate mt-1">
                         {cycle.from ? `${format(new Date(cycle.from), "dd/MM/yy")} - ${format(new Date(cycle.to), "dd/MM/yy")}` : "Sem data definida"}
                       </p>
                     </div>
