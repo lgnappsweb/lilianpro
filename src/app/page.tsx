@@ -53,7 +53,7 @@ import {
   startOfMonth, 
   endOfMonth, 
   isWithinInterval, 
-  setDay, 
+  setDate, 
   setMonth, 
   setYear, 
   getDate, 
@@ -265,7 +265,7 @@ export default function DashboardPage() {
     const current = cycleDate[type] || new Date();
     let newDate = new Date(current);
 
-    if (part === 'day') newDate = setDay(newDate, parseInt(value));
+    if (part === 'day') newDate = setDate(newDate, parseInt(value));
     if (part === 'month') newDate = setMonth(newDate, parseInt(value));
     if (part === 'year') newDate = setYear(newDate, parseInt(value));
 

@@ -29,7 +29,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useUser, useFirestore, useCollection, useMemoFirebase, useDoc } from "@/firebase";
 import { collection, doc, getDocs } from "firebase/firestore";
-import { format, startOfMonth, endOfMonth, isWithinInterval, setDay, setMonth, setYear, getDate, getMonth, getYear } from "date-fns";
+import { format, startOfMonth, endOfMonth, isWithinInterval, setDate, setMonth, setYear, getDate, getMonth, getYear } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
   Popover,
@@ -75,7 +75,7 @@ export default function FinanceiroPage() {
   const { user } = useUser();
   const db = useFirestore();
 
-  const [date, setDate] = useState<DateRange | undefined>({
+  const [date, setDateRange] = useState<DateRange | undefined>({
     from: startOfMonth(new Date()),
     to: endOfMonth(new Date()),
   });
@@ -221,11 +221,11 @@ export default function FinanceiroPage() {
     const current = date[type] || new Date();
     let newDate = new Date(current);
 
-    if (part === 'day') newDate = setDay(newDate, parseInt(value));
+    if (part === 'day') newDate = setDate(newDate, parseInt(value));
     if (part === 'month') newDate = setMonth(newDate, parseInt(value));
     if (part === 'year') newDate = setYear(newDate, parseInt(value));
 
-    setDate({ ...date, [type]: newDate });
+    setDateRange({ ...date, [type]: newDate });
   };
 
   const formatDateBR = (isoString: string) => {
@@ -536,9 +536,9 @@ export default function FinanceiroPage() {
           <CardContent className="space-y-4 p-4 sm:p-8">
             {topClients.length > 0 ? (
               topClients.map((c, i) => (
-                <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-6 rounded-[1.5rem] border-4 border-muted bg-background hover:border-accent/20 transition-all group gap-4">
-                  <div className="flex items-center gap-4 flex-1 min-w-0">
-                    <div className="size-8 sm:size-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent font-black text-lg shadow-inner shrink-0 group-hover:scale-110 transition-transform">
+                <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-6 rounded-[2rem] border-4 border-muted bg-background hover:border-accent/20 transition-all group gap-4">
+                  <div className="flex items-center gap-5 w-full sm:w-auto">
+                    <div className="size-8 sm:size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-black text-lg shadow-inner shrink-0 group-hover:scale-110 transition-transform">
                       {i + 1}º
                     </div>
                     <div className="min-w-0 flex-1">
