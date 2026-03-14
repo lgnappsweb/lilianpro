@@ -33,6 +33,8 @@ import {
   ReceiptText,
   Trash2,
   Plus,
+  Loader2,
+  Info,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore, setDocumentNonBlocking } from "@/firebase";
@@ -288,24 +290,24 @@ export default function NovaVendaPage() {
   };
 
   return (
-    <div className="space-y-4 w-full animate-in fade-in duration-500 pb-32 max-w-full">
-      <div className="flex flex-col items-center text-center gap-2 px-2 mb-4">
+    <div className="space-y-12 w-full animate-in fade-in duration-500 pb-32">
+      <div className="flex flex-col items-center text-center gap-6 px-2 mb-10">
         <div className="w-full">
-          <div className="flex flex-col items-center justify-center gap-2">
-            <ShoppingBag className="size-10 sm:size-16 text-primary" />
-            <h1 className="text-3xl sm:text-6xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm whitespace-nowrap px-2">NOVA VENDA</h1>
+          <div className="flex flex-col items-center justify-center gap-6">
+            <ShoppingBag className="size-16 sm:size-24 text-primary" />
+            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap px-2">NOVA VENDA</h1>
           </div>
-          <p className="text-[10px] sm:text-sm text-muted-foreground mt-1 font-bold opacity-60 uppercase tracking-widest text-center">Cadastre cliente, produto e venda de uma só vez.</p>
+          <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">CADASTRE CLIENTE, PRODUTO E VENDA DE UMA SÓ VEZ</p>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-10">
         
         {/* 1. CADASTRO RÁPIDO DE CLIENTE */}
-        <Card className="border-none shadow-2xl rounded-[1rem] sm:rounded-[2rem] overflow-hidden">
-          <CardHeader className="bg-muted/80 p-3 sm:p-4 border-b-2">
-            <CardTitle className="flex flex-row items-center gap-2 text-lg sm:text-2xl font-black text-left uppercase px-1">
-              <User className="size-5 sm:size-6 text-primary" />
+        <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
+          <CardHeader className="bg-muted/80 p-6 sm:p-8 border-b-2">
+            <CardTitle className="flex flex-row items-center gap-3 text-xl sm:text-3xl font-black text-left uppercase px-2">
+              <User className="size-6 sm:size-8 text-primary" />
               1. Identificação da Cliente
             </CardTitle>
           </CardHeader>
@@ -313,14 +315,14 @@ export default function NovaVendaPage() {
             <div className="grid sm:grid-cols-2">
               <Input
                 placeholder="Nome Completo"
-                className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-none border-x-0 border-t-0 border-b-2 border-muted focus:border-primary w-full px-4"
+                className="h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-8 bg-background"
                 value={clientData.fullName}
                 onChange={(e) => setClientData(prev => ({ ...prev, fullName: e.target.value }))}
                 required
               />
               <Input
                 placeholder="WhatsApp"
-                className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-none border-x-0 border-t-0 border-b-2 border-muted focus:border-primary w-full px-4"
+                className="h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-8 bg-background"
                 value={clientData.phone}
                 onChange={(e) => setClientData(prev => ({ ...prev, phone: formatPhone(e.target.value) }))}
                 required
@@ -330,13 +332,13 @@ export default function NovaVendaPage() {
             <div className="grid sm:grid-cols-2">
               <Input
                 placeholder="Cidade"
-                className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-none border-x-0 border-t-0 border-b-2 border-muted focus:border-primary w-full px-4"
+                className="h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-8 bg-background"
                 value={clientData.city}
                 onChange={(e) => setClientData(prev => ({ ...prev, city: e.target.value }))}
               />
               <Input
                 placeholder="Bairro"
-                className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-none border-x-0 border-t-0 border-b-2 border-muted focus:border-primary w-full px-4"
+                className="h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-8 bg-background"
                 value={clientData.neighborhood}
                 onChange={(e) => setClientData(prev => ({ ...prev, neighborhood: e.target.value }))}
               />
@@ -344,7 +346,7 @@ export default function NovaVendaPage() {
 
             <Input
               placeholder="Endereço / Referência"
-              className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-none border-none focus:border-primary w-full px-4"
+              className="h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-none focus:border-primary w-full px-8 bg-background"
               value={clientData.address}
               onChange={(e) => setClientData(prev => ({ ...prev, address: e.target.value }))}
             />
@@ -352,39 +354,41 @@ export default function NovaVendaPage() {
         </Card>
 
         {/* 2. PRODUTOS VENDIDOS (LISTA DINÂMICA) */}
-        <Card className="border-none shadow-2xl rounded-[1rem] sm:rounded-[2rem] overflow-hidden">
-          <CardHeader className="bg-muted/80 p-3 sm:p-4 border-b-2">
-            <CardTitle className="flex flex-row items-center gap-2 text-lg sm:text-2xl font-black text-left uppercase px-1">
-              <Package className="size-5 sm:size-6 text-primary" />
+        <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
+          <CardHeader className="bg-muted/80 p-6 sm:p-8 border-b-2">
+            <CardTitle className="flex flex-row items-center gap-3 text-xl sm:text-3xl font-black text-left uppercase px-2">
+              <Package className="size-6 sm:size-8 text-primary" />
               2. Detalhes do Produto Vendido
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0 space-y-0">
             {saleItems.length === 0 ? (
-              <div className="p-10 text-center text-muted-foreground italic font-bold">
-                Nenhum produto adicionado. Clique em "ADICIONAR ITEM" abaixo.
+              <div className="p-20 text-center text-muted-foreground italic font-black text-2xl uppercase opacity-20">
+                Nenhum produto adicionado
               </div>
             ) : (
-              <div className="divide-y-4 divide-primary/10">
+              <div className="divide-y-8 divide-muted/30">
                 {saleItems.map((item, index) => (
                   <div key={item.tempId} className="p-0 space-y-0 relative group">
                     
-                    <div className="bg-primary/5 px-4 h-12 flex items-center justify-between text-[10px] font-black text-primary uppercase tracking-widest border-b border-primary/10">
-                      <span>Item #{index + 1}</span>
+                    <div className="bg-primary/5 px-8 h-16 flex items-center justify-between text-xs sm:text-lg font-black text-primary uppercase tracking-widest border-b-4 border-primary/10">
+                      <span className="italic">Item #{(index + 1).toString().padStart(2, '0')}</span>
                       {saleItems.length > 1 && (
-                        <button
+                        <Button
                           type="button"
+                          variant="destructive"
+                          size="sm"
                           onClick={() => removeItem(item.tempId)}
-                          className="size-8 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive hover:text-white flex items-center justify-center transition-all"
+                          className="h-10 px-4 rounded-xl font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all"
                         >
-                          <Trash2 className="size-4" />
-                        </button>
+                          <Trash2 className="size-4 mr-2" /> APAGAR
+                        </Button>
                       )}
                     </div>
 
                     <Input
                       placeholder="Nome do Produto"
-                      className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-none border-x-0 border-t-0 border-b-2 border-muted focus:border-primary w-full px-4"
+                      className="h-16 sm:h-20 text-xl sm:text-3xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-8 bg-background"
                       value={item.name}
                       onChange={(e) => handleItemChange(item.tempId, "name", e.target.value)}
                       required
@@ -395,18 +399,18 @@ export default function NovaVendaPage() {
                         onValueChange={(val) => handleItemChange(item.tempId, "brand", val)} 
                         value={item.brand}
                       >
-                        <SelectTrigger className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-none border-x-0 border-t-0 border-b-2 border-muted w-full px-4">
+                        <SelectTrigger className="h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted w-full px-8 bg-background">
                           <SelectValue placeholder="Marca..." />
                         </SelectTrigger>
-                        <SelectContent className="font-bold">
-                          <SelectItem value="VERDE (N)">VERDE (N)</SelectItem>
-                          <SelectItem value="ROSA (A)">ROSA (A)</SelectItem>
-                          <SelectItem value="MARROM (C&E)">MARROM (C&E)</SelectItem>
+                        <SelectContent className="font-black text-lg">
+                          <SelectItem value="VERDE (N)" className="font-black">VERDE (N)</SelectItem>
+                          <SelectItem value="ROSA (A)" className="font-black">ROSA (A)</SelectItem>
+                          <SelectItem value="MARROM (C&E)" className="font-black">MARROM (C&E)</SelectItem>
                         </SelectContent>
                       </Select>
                       <Input
                         placeholder="Categoria"
-                        className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-none border-x-0 border-t-0 border-b-2 border-muted focus:border-primary w-full px-4"
+                        className="h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-8 bg-background"
                         value={item.category}
                         onChange={(e) => handleItemChange(item.tempId, "category", e.target.value)}
                       />
@@ -415,184 +419,196 @@ export default function NovaVendaPage() {
                     <div className="grid sm:grid-cols-2">
                       <Input
                         placeholder="Código/SKU"
-                        className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-none border-x-0 border-t-0 border-b-2 border-muted focus:border-primary w-full px-4"
+                        className="h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-8 bg-background"
                         value={item.productCode}
                         onChange={(e) => handleItemChange(item.tempId, "productCode", e.target.value)}
                       />
                       <Input
-                        placeholder="Descrição do Produto"
-                        className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-none border-x-0 border-t-0 border-b-2 border-muted focus:border-primary w-full px-4"
+                        placeholder="Descrição Breve"
+                        className="h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-8 bg-background"
                         value={item.description}
                         onChange={(e) => handleItemChange(item.tempId, "description", e.target.value)}
                       />
                     </div>
 
                     <div className="grid grid-cols-3">
-                      <Input
-                        placeholder="00,00"
-                        className="h-14 text-base font-black rounded-none border-x-0 border-t-0 border-b-2 border-sky-300 focus:border-sky-500 w-full px-4 bg-sky-100 text-sky-900 placeholder:text-sky-900/30"
-                        value={item.catalogPrice}
-                        onChange={(e) => handleItemChange(item.tempId, "catalogPrice", maskCurrency(e.target.value))}
-                      />
-                      <Input
-                        placeholder="00,00"
-                        className="h-14 text-base font-black rounded-none border-x-0 border-t-0 border-b-2 border-orange-300 focus:border-orange-500 w-full px-4 bg-orange-100 text-orange-900 placeholder:text-orange-900/30"
-                        value={item.costPrice}
-                        onChange={(e) => handleItemChange(item.tempId, "costPrice", maskCurrency(e.target.value))}
-                      />
-                      <Input
-                        placeholder="00,00"
-                        className="h-14 text-base font-black rounded-none border-none focus:border-green-500 w-full px-4 bg-green-100 text-green-900 placeholder:text-green-900/30"
-                        value={item.salePrice}
-                        onChange={(e) => handleItemChange(item.tempId, "salePrice", maskCurrency(e.target.value))}
-                        required
-                      />
+                      <div className="relative">
+                        <Input
+                          placeholder="00,00"
+                          className="h-16 sm:h-20 text-xl sm:text-3xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-sky-400 focus:border-sky-600 w-full px-8 bg-sky-100 text-sky-900 placeholder:text-sky-900/30"
+                          value={item.catalogPrice}
+                          onChange={(e) => handleItemChange(item.tempId, "catalogPrice", maskCurrency(e.target.value))}
+                        />
+                        <span className="absolute top-2 left-8 text-[8px] font-black uppercase text-sky-600/60">Revista</span>
+                      </div>
+                      <div className="relative">
+                        <Input
+                          placeholder="00,00"
+                          className="h-16 sm:h-20 text-xl sm:text-3xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-orange-400 focus:border-orange-600 w-full px-8 bg-orange-100 text-orange-900 placeholder:text-orange-900/30"
+                          value={item.costPrice}
+                          onChange={(e) => handleItemChange(item.tempId, "costPrice", maskCurrency(e.target.value))}
+                        />
+                        <span className="absolute top-2 left-8 text-[8px] font-black uppercase text-orange-600/60">Custo</span>
+                      </div>
+                      <div className="relative">
+                        <Input
+                          placeholder="00,00"
+                          className="h-16 sm:h-20 text-xl sm:text-3xl font-black rounded-none border-none focus:border-green-600 w-full px-8 bg-green-100 text-green-900 placeholder:text-green-900/30"
+                          value={item.salePrice}
+                          onChange={(e) => handleItemChange(item.tempId, "salePrice", maskCurrency(e.target.value))}
+                          required
+                        />
+                        <span className="absolute top-2 left-8 text-[8px] font-black uppercase text-green-600/60">Venda</span>
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
             )}
-            <div className="p-2 border-t-2 border-muted">
+            <div className="p-4 bg-muted/20">
               <Button 
                 type="button" 
                 onClick={addItem}
-                className="w-full h-14 sm:h-16 bg-primary/10 hover:bg-primary/20 text-primary font-black rounded-xl gap-3 text-lg uppercase tracking-widest transition-all"
+                className="w-full h-20 sm:h-24 bg-primary text-white hover:bg-primary/90 font-black rounded-2xl sm:rounded-[2rem] gap-4 text-xl sm:text-2xl uppercase tracking-widest shadow-2xl transition-all active:scale-95"
               >
-                <Plus className="size-6" /> ADICIONAR NOVO PRODUTO
+                <Plus className="size-8" /> ADICIONAR NOVO PRODUTO
               </Button>
             </div>
           </CardContent>
         </Card>
 
         {/* 3. PAGAMENTO */}
-        <Card className="border-none shadow-xl rounded-[1rem] sm:rounded-[2rem] overflow-hidden">
-          <CardHeader className="bg-muted/80 p-3 sm:p-4 border-b-2">
-            <CardTitle className="flex flex-row items-center gap-2 text-lg sm:text-2xl font-black text-left uppercase px-1">
-              <CreditCard className="size-5 sm:size-6 text-primary" />
+        <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
+          <CardHeader className="bg-muted/80 p-6 sm:p-8 border-b-2">
+            <CardTitle className="flex flex-row items-center gap-3 text-xl sm:text-3xl font-black text-left uppercase px-2">
+              <CreditCard className="size-6 sm:size-8 text-primary" />
               3. Forma de Pagamento
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0 space-y-0">
-            <div className="grid grid-cols-4 border-b-2 border-muted">
+            <div className="grid grid-cols-4 border-b-4 border-muted">
               {[
                 { id: 'pix', label: 'Pix', icon: Smartphone, color: "bg-sky-500", iconColor: "text-sky-500" },
-                { id: 'dinheiro', label: 'Din.', icon: Banknote, color: "bg-emerald-500", iconColor: "text-emerald-500" },
-                { id: 'cartao', label: 'Card', icon: CreditCard, color: "bg-violet-500", iconColor: "text-violet-500" },
-                { id: 'a prazo', label: 'Prazo', icon: HandCoins, color: "bg-amber-500", iconColor: "text-amber-500" },
+                { id: 'dinheiro', label: 'Dinheiro', icon: Banknote, color: "bg-emerald-500", iconColor: "text-emerald-500" },
+                { id: 'cartao', label: 'Cartão', icon: CreditCard, color: "bg-violet-500", iconColor: "text-violet-500" },
+                { id: 'a prazo', label: 'A Prazo', icon: HandCoins, color: "bg-amber-500", iconColor: "text-amber-500" },
               ].map((option) => (
                 <button
                   key={option.id}
                   type="button"
                   onClick={() => setPaymentMethod(option.id)}
                   className={cn(
-                    "flex flex-col items-center justify-center p-2 transition-all gap-1 h-16 sm:h-20 border-r last:border-r-0",
+                    "flex flex-col items-center justify-center p-4 transition-all gap-2 h-20 sm:h-32 border-r-4 border-muted last:border-r-0",
                     paymentMethod === option.id
-                      ? `${option.color} text-white shadow-inner`
+                      ? `${option.color} text-white shadow-inner scale-100`
                       : "bg-background text-muted-foreground hover:bg-muted/20"
                   )}
                 >
-                  <option.icon className={cn("size-5 sm:size-6", paymentMethod === option.id ? "text-white" : option.iconColor)} />
-                  <span className={cn("text-[8px] sm:text-[10px] font-black uppercase", paymentMethod === option.id ? "text-white" : "text-muted-foreground")}>{option.label}</span>
+                  <option.icon className={cn("size-8 sm:size-12", paymentMethod === option.id ? "text-white" : option.iconColor)} />
+                  <span className={cn("text-[10px] sm:text-xs font-black uppercase tracking-tighter", paymentMethod === option.id ? "text-white" : "text-muted-foreground")}>{option.label}</span>
                 </button>
               ))}
             </div>
 
             <div className="grid sm:grid-cols-2">
-              <div className="border-b-2 sm:border-b-0 sm:border-r-2 border-muted">
-                <Label className="text-[8px] font-black uppercase tracking-widest text-muted-foreground px-4 pt-2 block">Data de Vencimento</Label>
+              <div className="border-b-4 sm:border-b-0 sm:border-r-4 border-muted p-4 sm:p-6 space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block px-2 italic">Data de Vencimento</Label>
                 <Input 
                   type="date" 
-                  className="h-12 text-lg font-black border-none bg-transparent w-full px-4" 
+                  className="h-16 text-xl sm:text-3xl font-black border-none bg-transparent w-full px-2" 
                   value={dueDate} 
                   onChange={(e) => setDueDate(e.target.value)} 
                 />
               </div>
-              <Input
-                placeholder="Notas da Venda"
-                className="h-16 text-lg font-bold border-none w-full px-4"
-                value={saleNotes}
-                onChange={(e) => setSaleNotes(e.target.value)}
-              />
+              <div className="p-4 sm:p-6 space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block px-2 italic">Notas da Venda</Label>
+                <Input
+                  placeholder="Ex: Entrega na recepção"
+                  className="h-16 text-xl sm:text-2xl font-black border-none w-full px-2 bg-transparent"
+                  value={saleNotes}
+                  onChange={(e) => setSaleNotes(e.target.value)}
+                />
+              </div>
             </div>
           </CardContent>
         </Card>
 
         {/* 4. CHECK-IN DA VENDA */}
-        <Card className="border-none shadow-xl rounded-[1rem] sm:rounded-[2rem] overflow-hidden bg-slate-900 text-white">
-          <CardHeader className="p-3 border-b border-white/10 bg-white/5">
-            <CardTitle className="flex flex-row items-center gap-2 text-lg font-black text-left uppercase">
-              <CheckCircle2 className="size-5 text-[#39FF14]" />
-              4. Check-in da Venda
+        <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden bg-slate-900 text-white border-4 border-primary/20">
+          <CardHeader className="p-6 sm:p-8 border-b border-white/10 bg-white/5">
+            <CardTitle className="flex flex-row items-center gap-3 text-xl sm:text-3xl font-black text-left uppercase italic">
+              <CheckCircle2 className="size-6 sm:size-8 text-[#39FF14]" />
+              4. Check-in Elite
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-4 space-y-3">
-            <div className="flex items-center gap-3">
-              <div className={cn("size-7 rounded-full border-2 flex items-center justify-center shrink-0", clientData.fullName ? "bg-[#39FF14]/20 border-[#39FF14]" : "border-white/20")}>
-                {clientData.fullName ? <CheckCircle2 className="size-4 text-[#39FF14]" /> : <Circle className="size-4 text-white/20" />}
+          <CardContent className="p-8 sm:p-12 space-y-8">
+            <div className="flex items-center gap-6">
+              <div className={cn("size-12 rounded-2xl border-4 flex items-center justify-center shrink-0 shadow-lg", clientData.fullName ? "bg-[#39FF14]/20 border-[#39FF14]" : "border-white/10")}>
+                {clientData.fullName ? <CheckCircle2 className="size-6 text-[#39FF14]" /> : <Circle className="size-6 text-white/10" />}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[8px] font-black uppercase tracking-widest text-[#39FF14]">Cliente Selecionada</p>
-                <p className="text-base sm:text-xl font-black italic truncate">{clientData.fullName || "Aguardando preenchimento..."}</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#39FF14] mb-1">Cliente VIP</p>
+                <p className="text-2xl sm:text-4xl font-black italic truncate tracking-tighter">{clientData.fullName || "AGUARDANDO NOME..."}</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className={cn("size-7 rounded-full border-2 flex items-center justify-center shrink-0", saleItems.length > 0 ? "bg-[#39FF14]/20 border-[#39FF14]" : "border-white/20")}>
-                {saleItems.length > 0 ? <CheckCircle2 className="size-4 text-[#39FF14]" /> : <Circle className="size-4 text-white/20" />}
+            <div className="flex items-center gap-6">
+              <div className={cn("size-12 rounded-2xl border-4 flex items-center justify-center shrink-0 shadow-lg", saleItems.length > 0 ? "bg-[#39FF14]/20 border-[#39FF14]" : "border-white/10")}>
+                {saleItems.length > 0 ? <CheckCircle2 className="size-6 text-[#39FF14]" /> : <Circle className="size-6 text-white/10" />}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[8px] font-black uppercase tracking-widest text-[#39FF14]">Item no Pedido</p>
-                <p className="text-base sm:text-xl font-black italic truncate">
-                  {saleItems.length > 0 ? `${saleItems.length} item(s) no carrinho` : "Aguardando preenchimento..."}
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#39FF14] mb-1">Carrinho de Itens</p>
+                <p className="text-2xl sm:text-4xl font-black italic truncate tracking-tighter">
+                  {saleItems.length > 0 ? `${saleItems.length} PRODUTO(S) LISTADO(S)` : "SEM ITENS..."}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className={cn("size-7 rounded-full border-2 flex items-center justify-center shrink-0", paymentMethod ? "bg-[#39FF14]/20 border-[#39FF14]" : "border-white/20")}>
-                {paymentMethod ? <CheckCircle2 className="size-4 text-[#39FF14]" /> : <Circle className="size-4 text-white/20" />}
+            <div className="flex items-center gap-6">
+              <div className={cn("size-12 rounded-2xl border-4 flex items-center justify-center shrink-0 shadow-lg", paymentMethod ? "bg-[#39FF14]/20 border-[#39FF14]" : "border-white/10")}>
+                {paymentMethod ? <CheckCircle2 className="size-6 text-[#39FF14]" /> : <Circle className="size-6 text-white/10" />}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[8px] font-black uppercase tracking-widest text-[#39FF14]">Forma de Pagamento</p>
-                <p className="text-base sm:text-xl font-black italic truncate capitalize">{paymentMethod || "Aguardando..."}</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#39FF14] mb-1">Pagamento</p>
+                <p className="text-2xl sm:text-4xl font-black italic truncate capitalize tracking-tighter">{paymentMethod || "AGUARDANDO MÉTODO..."}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* 5. FINALIZAÇÃO */}
-        <Card className="border-none shadow-2xl rounded-[1rem] sm:rounded-[2rem] overflow-hidden bg-primary text-primary-foreground">
-          <CardHeader className="p-3 bg-white/10">
-             <CardTitle className="flex flex-row items-center gap-2 text-xl sm:text-2xl font-black uppercase italic">
-              <div className="bg-white/20 p-1.5 rounded-lg mr-1">
-                <DollarSign className="size-5 sm:size-6" />
+        <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden bg-primary text-primary-foreground">
+          <CardHeader className="p-6 sm:p-8 bg-white/10">
+             <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-4xl font-black uppercase italic">
+              <div className="bg-white/20 p-2 rounded-2xl mr-2 shadow-inner">
+                <DollarSign className="size-6 sm:size-10" />
               </div>
-              5. Finalização
+              5. Consolidado
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-4 space-y-4">
-            <div className="grid lg:grid-cols-2 gap-6 items-center">
-               <div className="space-y-3">
-                  <div className="flex justify-between items-center border-b border-white/10 pb-1">
-                    <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Subtotal</span>
-                    <span className="text-xl font-black">R$ {subtotal.toFixed(2)}</span>
+          <CardContent className="p-8 sm:p-12 space-y-10">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+               <div className="space-y-6">
+                  <div className="flex justify-between items-center border-b-2 border-white/10 pb-2">
+                    <span className="text-xs font-black uppercase tracking-widest opacity-60">Subtotal de Itens</span>
+                    <span className="text-3xl font-black italic">R$ {subtotal.toFixed(2)}</span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <Label className="text-[8px] font-black uppercase tracking-widest opacity-60 px-1">Desconto (R$)</Label>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 px-2 block italic">Desconto (R$)</Label>
                       <Input
                         type="number"
-                        className="h-12 text-center text-lg font-black rounded-lg border-2 bg-white/10 border-white/20 text-white w-full"
+                        className="h-16 text-center text-2xl font-black rounded-2xl border-4 bg-white/10 border-white/20 text-white w-full focus:border-white transition-all"
                         value={discount}
                         onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
                       />
                     </div>
-                    <div className="space-y-1">
-                      <Label className="text-[8px] font-black uppercase tracking-widest opacity-60 px-1">Taxas (R$)</Label>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 px-2 block italic">Taxas (R$)</Label>
                       <Input
                         type="number"
-                        className="h-12 text-center text-lg font-black rounded-lg border-2 bg-white/10 border-white/20 text-white w-full"
+                        className="h-16 text-center text-2xl font-black rounded-2xl border-4 bg-white/10 border-white/20 text-white w-full focus:border-white transition-all"
                         value={additionalFee}
                         onChange={(e) => setAdditionalFee(parseFloat(e.target.value) || 0)}
                       />
@@ -600,28 +616,28 @@ export default function NovaVendaPage() {
                   </div>
                </div>
 
-               <div className="p-6 rounded-[1.5rem] shadow-xl text-center bg-white text-primary border-4 border-white">
-                  <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-1 opacity-60">Total Final Recebido</p>
-                  <p className="text-4xl sm:text-6xl font-black tracking-tighter leading-none italic">R$ {finalTotal.toFixed(2)}</p>
+               <div className="p-10 rounded-[2.5rem] shadow-2xl text-center bg-white text-primary border-8 border-white animate-in zoom-in duration-500">
+                  <p className="text-[10px] font-black uppercase tracking-[0.4em] mb-2 opacity-60 text-primary">VALOR FINAL DA VENDA</p>
+                  <p className="text-6xl sm:text-8xl font-black tracking-tighter leading-none italic px-4">R$ {finalTotal.toFixed(2)}</p>
                 </div>
             </div>
           </CardContent>
-          <CardFooter className="p-4 pt-0">
+          <CardFooter className="p-8 pt-0">
              <Button 
               type="submit" 
               size="lg"
               className={cn(
-                "w-full h-20 sm:h-24 text-xl sm:text-3xl font-black rounded-xl sm:rounded-2xl shadow-2xl transition-all active:scale-95 uppercase tracking-widest bg-white text-primary hover:bg-white/90",
+                "w-full h-24 sm:h-32 text-2xl sm:text-5xl font-black rounded-2xl sm:rounded-[3rem] shadow-2xl transition-all active:scale-95 uppercase tracking-widest bg-white text-primary hover:bg-white/90 border-8 border-white",
                 (!isReady || isLoading) && "opacity-50 cursor-not-allowed"
               )}
               disabled={!isReady || isLoading}
             >
               {isLoading ? (
-                <ReceiptText className="animate-spin size-8 sm:size-10" />
+                <Loader2 className="animate-spin size-12 sm:size-20" />
               ) : (
                 <>
-                  <CheckCircle2 className="mr-2 size-6 sm:size-8" />
-                  CONCLUIR VENDA
+                  <CheckCircle2 className="mr-4 size-8 sm:size-16" />
+                  FECHAR VENDA
                 </>
               )}
             </Button>
