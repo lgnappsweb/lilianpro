@@ -393,7 +393,7 @@ export default function DashboardPage() {
                 <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-2">Período do Ciclo</Label>
                 <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full h-14 sm:h-16 text-[10px] sm:text-sm font-black rounded-2xl border-4 border-muted justify-between px-4">
+                    <Button variant="outline" className="w-full h-14 sm:h-16 text-sm sm:text-xl font-black rounded-2xl border-4 border-muted justify-between px-4">
                       <div className="flex items-center gap-2 overflow-hidden">
                         <CalendarIcon className="size-4 text-primary shrink-0" />
                         <span className="truncate">
