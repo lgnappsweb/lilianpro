@@ -283,7 +283,7 @@ export default function NovaVendaPage() {
             <ShoppingBag className="size-10 sm:size-16 text-primary" />
             <h1 className="text-3xl sm:text-6xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm whitespace-nowrap px-2">NOVA VENDA</h1>
           </div>
-          <p className="text-[10px] sm:text-sm text-muted-foreground mt-1 font-bold opacity-60 uppercase tracking-widest text-center">Fluxo simplificado para múltiplos produtos.</p>
+          <p className="text-[10px] sm:text-sm text-muted-foreground mt-1 font-bold opacity-60 uppercase tracking-widest text-center">Cadastre cliente, produto e venda de uma só vez.</p>
         </div>
       </div>
 
@@ -292,7 +292,7 @@ export default function NovaVendaPage() {
         {/* 1. CADASTRO RÁPIDO DE CLIENTE */}
         <Card className="border-none shadow-2xl rounded-[1rem] sm:rounded-[2rem] overflow-hidden">
           <CardHeader className="bg-muted/80 p-3 sm:p-4 border-b-2">
-            <CardTitle className="flex flex-row items-center gap-2 text-lg sm:text-2xl font-black text-left uppercase">
+            <CardTitle className="flex flex-row items-center gap-2 text-lg sm:text-2xl font-black text-left uppercase px-1">
               <User className="size-5 sm:size-6 text-primary" />
               1. Identificação da Cliente
             </CardTitle>
@@ -342,23 +342,23 @@ export default function NovaVendaPage() {
         {/* 2. PRODUTOS VENDIDOS (LISTA DINÂMICA) */}
         <Card className="border-none shadow-2xl rounded-[1rem] sm:rounded-[2rem] overflow-hidden">
           <CardHeader className="bg-muted/80 p-3 sm:p-4 border-b-2 flex flex-row items-center justify-between">
-            <CardTitle className="flex flex-row items-center gap-2 text-lg sm:text-2xl font-black text-left uppercase">
+            <CardTitle className="flex flex-row items-center gap-2 text-lg sm:text-2xl font-black text-left uppercase px-1">
               <Package className="size-5 sm:size-6 text-primary" />
-              2. Produtos Vendidos
+              2. Detalhes do Produto Vendido
             </CardTitle>
             <Button 
               type="button" 
               onClick={addItem}
               size="sm"
-              className="bg-primary hover:bg-primary/90 text-white font-black rounded-full px-4 gap-2"
+              className="bg-primary hover:bg-primary/90 text-white font-black rounded-full px-4 gap-2 h-10 sm:h-12"
             >
               <Plus className="size-4" /> ADICIONAR ITEM
             </Button>
           </CardHeader>
-          <CardContent className="p-0 space-y-4">
+          <CardContent className="p-0 space-y-0">
             {saleItems.length === 0 ? (
               <div className="p-10 text-center text-muted-foreground italic font-bold">
-                Nenhum produto adicionado. Clique em "Adicionar Item" acima.
+                Nenhum produto adicionado. Clique em "ADICIONAR ITEM" acima.
               </div>
             ) : (
               <div className="divide-y-4 divide-primary/10">
@@ -374,7 +374,7 @@ export default function NovaVendaPage() {
                     </button>
 
                     <div className="bg-primary/5 px-4 py-1 text-[10px] font-black text-primary uppercase tracking-widest border-b border-primary/10">
-                      Produto #{index + 1}
+                      Item #{index + 1}
                     </div>
 
                     <Input
@@ -438,7 +438,7 @@ export default function NovaVendaPage() {
         {/* 3. PAGAMENTO */}
         <Card className="border-none shadow-xl rounded-[1rem] sm:rounded-[2rem] overflow-hidden">
           <CardHeader className="bg-muted/80 p-3 sm:p-4 border-b-2">
-            <CardTitle className="flex flex-row items-center gap-2 text-lg sm:text-2xl font-black text-left uppercase">
+            <CardTitle className="flex flex-row items-center gap-2 text-lg sm:text-2xl font-black text-left uppercase px-1">
               <CreditCard className="size-5 sm:size-6 text-primary" />
               3. Forma de Pagamento
             </CardTitle>
@@ -446,10 +446,10 @@ export default function NovaVendaPage() {
           <CardContent className="p-0 space-y-0">
             <div className="grid grid-cols-4 border-b-2 border-muted">
               {[
-                { id: 'pix', label: 'Pix', icon: Smartphone },
-                { id: 'dinheiro', label: 'Din.', icon: Banknote },
-                { id: 'cartao', label: 'Card', icon: CreditCard },
-                { id: 'a prazo', label: 'Prazo', icon: HandCoins },
+                { id: 'pix', label: 'Pix', icon: Smartphone, color: "bg-sky-500" },
+                { id: 'dinheiro', label: 'Din.', icon: Banknote, color: "bg-emerald-500" },
+                { id: 'cartao', label: 'Card', icon: CreditCard, color: "bg-violet-500" },
+                { id: 'a prazo', label: 'Prazo', icon: HandCoins, color: "bg-amber-500" },
               ].map((option) => (
                 <button
                   key={option.id}
@@ -458,7 +458,7 @@ export default function NovaVendaPage() {
                   className={cn(
                     "flex flex-col items-center justify-center p-2 transition-all gap-1 h-16 sm:h-20 border-r last:border-r-0",
                     paymentMethod === option.id
-                      ? "bg-primary text-white"
+                      ? `${option.color} text-white`
                       : "bg-background text-muted-foreground hover:bg-muted/20"
                   )}
                 >
@@ -479,7 +479,7 @@ export default function NovaVendaPage() {
                 />
               </div>
               <Input
-                placeholder="Notas da Venda (Opcional)"
+                placeholder="Notas da Venda"
                 className="h-16 text-lg font-bold border-none w-full px-4"
                 value={saleNotes}
                 onChange={(e) => setSaleNotes(e.target.value)}
@@ -493,7 +493,7 @@ export default function NovaVendaPage() {
           <CardHeader className="p-3 border-b border-white/10 bg-white/5">
             <CardTitle className="flex flex-row items-center gap-2 text-lg font-black text-left uppercase">
               <CheckCircle2 className="size-5 text-[#39FF14]" />
-              4. Resumo da Venda
+              4. Check-in da Venda
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 space-y-3">
@@ -502,8 +502,8 @@ export default function NovaVendaPage() {
                 {clientData.fullName ? <CheckCircle2 className="size-4 text-[#39FF14]" /> : <Circle className="size-4 text-white/20" />}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[8px] font-black uppercase tracking-widest text-[#39FF14]">Cliente</p>
-                <p className="text-base sm:text-xl font-black italic truncate">{clientData.fullName || "Aguardando..."}</p>
+                <p className="text-[8px] font-black uppercase tracking-widest text-[#39FF14]">Cliente Selecionada</p>
+                <p className="text-base sm:text-xl font-black italic truncate">{clientData.fullName || "Aguardando preenchimento..."}</p>
               </div>
             </div>
 
@@ -512,9 +512,9 @@ export default function NovaVendaPage() {
                 {saleItems.length > 0 ? <CheckCircle2 className="size-4 text-[#39FF14]" /> : <Circle className="size-4 text-white/20" />}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[8px] font-black uppercase tracking-widest text-[#39FF14]">Itens Adicionados</p>
+                <p className="text-[8px] font-black uppercase tracking-widest text-[#39FF14]">Item no Pedido</p>
                 <p className="text-base sm:text-xl font-black italic truncate">
-                  {saleItems.length > 0 ? `${saleItems.length} produto(s) no carrinho` : "Nenhum item..."}
+                  {saleItems.length > 0 ? `${saleItems.length} item(s) no carrinho` : "Aguardando preenchimento..."}
                 </p>
               </div>
             </div>
@@ -524,7 +524,7 @@ export default function NovaVendaPage() {
                 {paymentMethod ? <CheckCircle2 className="size-4 text-[#39FF14]" /> : <Circle className="size-4 text-white/20" />}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[8px] font-black uppercase tracking-widest text-[#39FF14]">Pagamento</p>
+                <p className="text-[8px] font-black uppercase tracking-widest text-[#39FF14]">Forma de Pagamento</p>
                 <p className="text-base sm:text-xl font-black italic truncate capitalize">{paymentMethod || "Aguardando..."}</p>
               </div>
             </div>
@@ -543,7 +543,7 @@ export default function NovaVendaPage() {
             <div className="grid lg:grid-cols-2 gap-6 items-center">
                <div className="space-y-3">
                   <div className="flex justify-between items-center border-b border-white/10 pb-1">
-                    <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Subtotal (Itens)</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Subtotal</span>
                     <span className="text-xl font-black">R$ {subtotal.toFixed(2)}</span>
                   </div>
 
@@ -570,7 +570,7 @@ export default function NovaVendaPage() {
                </div>
 
                <div className="p-6 rounded-[1.5rem] shadow-xl text-center bg-white text-primary border-4 border-white">
-                  <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-1 opacity-60">Total Final a Receber</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-1 opacity-60">Total Final Recebido</p>
                   <p className="text-4xl sm:text-6xl font-black tracking-tighter leading-none italic">R$ {finalTotal.toFixed(2)}</p>
                 </div>
             </div>
