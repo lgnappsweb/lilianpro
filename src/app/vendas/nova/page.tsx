@@ -30,13 +30,11 @@ import {
   CheckCircle2,
   Circle,
   DollarSign,
-  MapPin,
-  Map,
   ReceiptText,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from "@/firebase";
-import { collection, doc } from "firebase/firestore";
+import { useUser, useFirestore, useMemoFirebase, setDocumentNonBlocking } from "@/firebase";
+import { doc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
@@ -76,13 +74,6 @@ export default function NovaVendaPage() {
   const [saleNotes, setSaleNotes] = useState("");
   const [discount, setDiscount] = useState(0);
   const [additionalFee, setAdditionalFee] = useState(0);
-
-  // Busca categorias para o formulário de produto
-  const categoriesQuery = useMemoFirebase(() => {
-    if (!db || !user) return null;
-    return collection(db, "users", user.uid, "categories");
-  }, [db, user]);
-  const { data: categories } = useCollection(categoriesQuery);
 
   // Define data atual no fuso horário do Brasil
   useEffect(() => {
@@ -247,42 +238,42 @@ export default function NovaVendaPage() {
   };
 
   return (
-    <div className="space-y-6 w-full animate-in fade-in duration-500 pb-32 max-w-full">
-      <div className="flex flex-col items-center text-center gap-4 px-2 mb-6">
+    <div className="space-y-4 w-full animate-in fade-in duration-500 pb-32 max-w-full">
+      <div className="flex flex-col items-center text-center gap-2 px-2 mb-4">
         <div className="w-full">
-          <div className="flex flex-col items-center justify-center gap-4">
-            <ShoppingBag className="size-12 sm:size-20 text-primary" />
-            <h1 className="text-4xl sm:text-7xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm whitespace-nowrap px-2">NOVA VENDA</h1>
+          <div className="flex flex-col items-center justify-center gap-2">
+            <ShoppingBag className="size-10 sm:size-16 text-primary" />
+            <h1 className="text-3xl sm:text-6xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm whitespace-nowrap px-2">NOVA VENDA</h1>
           </div>
-          <p className="text-xs sm:text-base text-muted-foreground mt-2 font-bold opacity-60 uppercase tracking-widest text-center">Cadastro Integrado Elite</p>
+          <p className="text-[10px] sm:text-sm text-muted-foreground mt-1 font-bold opacity-60 uppercase tracking-widest text-center">Cadastre cliente, produto e venda de uma só vez.</p>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         
         {/* 1. CADASTRO RÁPIDO DE CLIENTE */}
         <Card className="border-none shadow-2xl rounded-[1rem] sm:rounded-[2rem] overflow-hidden">
-          <CardHeader className="bg-muted/80 p-4 border-b-2">
-            <CardTitle className="flex flex-row items-center gap-2 text-xl sm:text-2xl font-black text-left">
-              <User className="size-6 text-primary" />
-              1. Cliente
+          <CardHeader className="bg-muted/80 p-3 sm:p-4 border-b-2">
+            <CardTitle className="flex flex-row items-center gap-2 text-lg sm:text-2xl font-black text-left uppercase">
+              <User className="size-5 sm:size-6 text-primary" />
+              1. Identificação da Cliente
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-2 sm:p-4 space-y-4">
-            <div className="grid sm:grid-cols-2 gap-2">
-              <div className="space-y-1 text-left">
-                <Label htmlFor="fullName" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Nome Completo</Label>
+          <CardContent className="p-1 sm:p-2 space-y-2">
+            <div className="grid sm:grid-cols-2 gap-1.5">
+              <div className="space-y-0.5 text-left">
+                <Label htmlFor="fullName" className="text-[9px] font-black uppercase tracking-widest text-muted-foreground px-1">Nome Completo</Label>
                 <Input
                   id="fullName"
-                  placeholder="Nome do cliente..."
+                  placeholder="Nome da cliente..."
                   className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-lg border-2 border-muted focus:border-primary w-full"
                   value={clientData.fullName}
                   onChange={(e) => setClientData(prev => ({ ...prev, fullName: e.target.value }))}
                   required
                 />
               </div>
-              <div className="space-y-1 text-left">
-                <Label htmlFor="phone" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">WhatsApp</Label>
+              <div className="space-y-0.5 text-left">
+                <Label htmlFor="phone" className="text-[9px] font-black uppercase tracking-widest text-muted-foreground px-1">WhatsApp</Label>
                 <Input
                   id="phone"
                   placeholder="(00) 00000-0000"
@@ -294,9 +285,9 @@ export default function NovaVendaPage() {
               </div>
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-2">
-              <div className="space-y-1 text-left">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Cidade</Label>
+            <div className="grid sm:grid-cols-2 gap-1.5">
+              <div className="space-y-0.5 text-left">
+                <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground px-1">Cidade</Label>
                 <Input
                   placeholder="Cidade..."
                   className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-lg border-2 border-muted w-full"
@@ -304,8 +295,8 @@ export default function NovaVendaPage() {
                   onChange={(e) => setClientData(prev => ({ ...prev, city: e.target.value }))}
                 />
               </div>
-              <div className="space-y-1 text-left">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Bairro</Label>
+              <div className="space-y-0.5 text-left">
+                <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground px-1">Bairro</Label>
                 <Input
                   placeholder="Bairro..."
                   className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-lg border-2 border-muted w-full"
@@ -315,8 +306,8 @@ export default function NovaVendaPage() {
               </div>
             </div>
 
-            <div className="space-y-1 text-left">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Endereço / Referência</Label>
+            <div className="space-y-0.5 text-left">
+              <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground px-1">Endereço / Referência</Label>
               <Input
                 placeholder="Endereço completo..."
                 className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-lg border-2 border-muted w-full"
@@ -329,15 +320,15 @@ export default function NovaVendaPage() {
 
         {/* 2. CADASTRO RÁPIDO DE PRODUTO */}
         <Card className="border-none shadow-2xl rounded-[1rem] sm:rounded-[2rem] overflow-hidden">
-          <CardHeader className="bg-muted/80 p-4 border-b-2">
-            <CardTitle className="flex flex-row items-center gap-2 text-xl sm:text-2xl font-black text-left">
-              <Package className="size-6 text-primary" />
-              2. Produto
+          <CardHeader className="bg-muted/80 p-3 sm:p-4 border-b-2">
+            <CardTitle className="flex flex-row items-center gap-2 text-lg sm:text-2xl font-black text-left uppercase">
+              <Package className="size-5 sm:size-6 text-primary" />
+              2. Detalhes do Produto Vendido
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-2 sm:p-4 space-y-4">
-            <div className="space-y-1 text-left">
-              <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Nome do Produto</Label>
+          <CardContent className="p-1 sm:p-2 space-y-2">
+            <div className="space-y-0.5 text-left">
+              <Label htmlFor="name" className="text-[9px] font-black uppercase tracking-widest text-muted-foreground px-1">Nome do Produto</Label>
               <Input
                 placeholder="Nome do item..."
                 className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-lg border-2 border-muted w-full"
@@ -347,12 +338,12 @@ export default function NovaVendaPage() {
               />
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-2">
-              <div className="space-y-1 text-left">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Marca</Label>
+            <div className="grid sm:grid-cols-2 gap-1.5">
+              <div className="space-y-0.5 text-left">
+                <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground px-1">Marca</Label>
                 <Select onValueChange={(val) => setProductData(prev => ({ ...prev, brand: val }))} value={productData.brand}>
                   <SelectTrigger className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-lg border-2 border-muted w-full">
-                    <SelectValue placeholder="Marca..." />
+                    <SelectValue placeholder="Selecione a marca..." />
                   </SelectTrigger>
                   <SelectContent className="font-bold">
                     <SelectItem value="VERDE (N)">VERDE (N)</SelectItem>
@@ -361,24 +352,20 @@ export default function NovaVendaPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1 text-left">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Categoria</Label>
-                <Select onValueChange={(val) => setProductData(prev => ({ ...prev, category: val }))} value={productData.category}>
-                  <SelectTrigger className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-lg border-2 border-muted w-full">
-                    <SelectValue placeholder="Categoria..." />
-                  </SelectTrigger>
-                  <SelectContent className="font-bold">
-                    {categories?.map(cat => (
-                      <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="space-y-0.5 text-left">
+                <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground px-1">Categoria</Label>
+                <Input
+                  placeholder="Categoria..."
+                  className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-lg border-2 border-muted w-full"
+                  value={productData.category}
+                  onChange={(e) => setProductData(prev => ({ ...prev, category: e.target.value }))}
+                />
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-2">
-              <div className="space-y-1 text-left">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Revista</Label>
+            <div className="grid grid-cols-3 gap-1.5">
+              <div className="space-y-0.5 text-left">
+                <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground px-1">Preço Revista (R$)</Label>
                 <Input
                   placeholder="0,00"
                   className="h-14 sm:h-16 text-lg font-black rounded-lg border-2 border-muted w-full"
@@ -386,8 +373,8 @@ export default function NovaVendaPage() {
                   onChange={(e) => setProductData(prev => ({ ...prev, catalogPrice: maskCurrency(e.target.value) }))}
                 />
               </div>
-              <div className="space-y-1 text-left">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Custo</Label>
+              <div className="space-y-0.5 text-left">
+                <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground px-1">Preço Custo (R$)</Label>
                 <Input
                   placeholder="0,00"
                   className="h-14 sm:h-16 text-lg font-black rounded-lg border-2 border-muted w-full"
@@ -395,8 +382,8 @@ export default function NovaVendaPage() {
                   onChange={(e) => setProductData(prev => ({ ...prev, costPrice: maskCurrency(e.target.value) }))}
                 />
               </div>
-              <div className="space-y-1 text-left">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-primary px-1">Venda</Label>
+              <div className="space-y-0.5 text-left">
+                <Label className="text-[9px] font-black uppercase tracking-widest text-primary px-1">Preço Venda (R$)</Label>
                 <Input
                   placeholder="0,00"
                   className="h-14 sm:h-16 text-lg font-black rounded-lg border-2 border-primary/30 bg-primary/5 w-full"
@@ -411,14 +398,14 @@ export default function NovaVendaPage() {
 
         {/* 3. PAGAMENTO */}
         <Card className="border-none shadow-xl rounded-[1rem] sm:rounded-[2rem] overflow-hidden">
-          <CardHeader className="bg-muted/90 p-4 border-b-2">
-            <CardTitle className="flex flex-row items-center gap-2 text-xl sm:text-2xl font-black text-left">
-              <CreditCard className="size-6 text-primary" />
-              3. Pagamento
+          <CardHeader className="bg-muted/90 p-3 sm:p-4 border-b-2">
+            <CardTitle className="flex flex-row items-center gap-2 text-lg sm:text-2xl font-black text-left uppercase">
+              <CreditCard className="size-5 sm:size-6 text-primary" />
+              3. Forma de Pagamento
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-2 sm:p-4">
-            <div className="grid grid-cols-4 gap-2 mb-4">
+          <CardContent className="p-1 sm:p-2 space-y-2">
+            <div className="grid grid-cols-4 gap-1.5 mb-2">
               {[
                 { id: 'pix', label: 'Pix', icon: Smartphone },
                 { id: 'dinheiro', label: 'Din.', icon: Banknote },
@@ -430,21 +417,21 @@ export default function NovaVendaPage() {
                   type="button"
                   onClick={() => setPaymentMethod(option.id)}
                   className={cn(
-                    "flex flex-col items-center justify-center p-2 sm:p-4 rounded-xl border-2 transition-all gap-1",
+                    "flex flex-col items-center justify-center p-2 rounded-xl border-2 transition-all gap-1 h-16 sm:h-20",
                     paymentMethod === option.id
                       ? "bg-primary text-white border-primary shadow-md scale-105"
                       : "bg-background border-muted text-muted-foreground"
                   )}
                 >
                   <option.icon className="size-5 sm:size-6" />
-                  <span className="text-[10px] sm:text-xs font-black uppercase">{option.label}</span>
+                  <span className="text-[8px] sm:text-[10px] font-black uppercase">{option.label}</span>
                 </button>
               ))}
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-2">
-              <div className="space-y-1 text-left">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Vencimento</Label>
+            <div className="grid sm:grid-cols-2 gap-1.5">
+              <div className="space-y-0.5 text-left">
+                <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground px-1">Data de Vencimento</Label>
                 <Input 
                   type="date" 
                   className="h-14 sm:h-16 text-lg font-black rounded-lg border-2 border-muted bg-background w-full" 
@@ -452,10 +439,10 @@ export default function NovaVendaPage() {
                   onChange={(e) => setDueDate(e.target.value)} 
                 />
               </div>
-              <div className="space-y-1 text-left">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Notas</Label>
+              <div className="space-y-0.5 text-left">
+                <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground px-1">Notas da Venda</Label>
                 <Input
-                  placeholder="Obs. venda..."
+                  placeholder="Observações da venda..."
                   className="h-14 sm:h-16 text-lg font-bold rounded-lg border-2 border-muted w-full"
                   value={saleNotes}
                   onChange={(e) => setSaleNotes(e.target.value)}
@@ -467,30 +454,40 @@ export default function NovaVendaPage() {
 
         {/* 4. CHECK-IN DA VENDA */}
         <Card className="border-none shadow-xl rounded-[1rem] sm:rounded-[2rem] overflow-hidden bg-slate-900 text-white">
-          <CardHeader className="p-4 border-b border-white/10 bg-white/5">
-            <CardTitle className="flex flex-row items-center gap-2 text-xl font-black text-left">
-              <CheckCircle2 className="size-6 text-[#39FF14]" />
-              4. Check-in
+          <CardHeader className="p-3 border-b border-white/10 bg-white/5">
+            <CardTitle className="flex flex-row items-center gap-2 text-lg font-black text-left uppercase">
+              <CheckCircle2 className="size-5 text-[#39FF14]" />
+              4. Check-in da Venda
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-4 space-y-4">
-            <div className="flex items-center gap-4">
-              <div className={cn("size-8 rounded-full border-2 flex items-center justify-center shrink-0", clientData.fullName ? "bg-[#39FF14]/20 border-[#39FF14]" : "border-white/20")}>
+          <CardContent className="p-3 space-y-3">
+            <div className="flex items-center gap-3">
+              <div className={cn("size-7 rounded-full border-2 flex items-center justify-center shrink-0", clientData.fullName ? "bg-[#39FF14]/20 border-[#39FF14]" : "border-white/20")}>
                 {clientData.fullName ? <CheckCircle2 className="size-4 text-[#39FF14]" /> : <Circle className="size-4 text-white/20" />}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[8px] font-black uppercase tracking-widest text-[#39FF14]">Cliente</p>
-                <p className="text-lg font-black italic truncate">{clientData.fullName || "Aguardando..."}</p>
+                <p className="text-[8px] font-black uppercase tracking-widest text-[#39FF14]">Cliente Selecionada</p>
+                <p className="text-base sm:text-xl font-black italic truncate">{clientData.fullName || "Aguardando preenchimento..."}</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
-              <div className={cn("size-8 rounded-full border-2 flex items-center justify-center shrink-0", productData.name ? "bg-[#39FF14]/20 border-[#39FF14]" : "border-white/20")}>
+            <div className="flex items-center gap-3">
+              <div className={cn("size-7 rounded-full border-2 flex items-center justify-center shrink-0", productData.name ? "bg-[#39FF14]/20 border-[#39FF14]" : "border-white/20")}>
                 {productData.name ? <CheckCircle2 className="size-4 text-[#39FF14]" /> : <Circle className="size-4 text-white/20" />}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[8px] font-black uppercase tracking-widest text-[#39FF14]">Produto</p>
-                <p className="text-lg font-black italic truncate">{productData.name || "Aguardando..."}</p>
+                <p className="text-[8px] font-black uppercase tracking-widest text-[#39FF14]">Item no Pedido</p>
+                <p className="text-base sm:text-xl font-black italic truncate">{productData.name || "Aguardando preenchimento..."}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className={cn("size-7 rounded-full border-2 flex items-center justify-center shrink-0", paymentMethod ? "bg-[#39FF14]/20 border-[#39FF14]" : "border-white/20")}>
+                {paymentMethod ? <CheckCircle2 className="size-4 text-[#39FF14]" /> : <Circle className="size-4 text-white/20" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[8px] font-black uppercase tracking-widest text-[#39FF14]">Forma de Pagamento</p>
+                <p className="text-base sm:text-xl font-black italic truncate capitalize">{paymentMethod || "Aguardando..."}</p>
               </div>
             </div>
           </CardContent>
@@ -498,23 +495,23 @@ export default function NovaVendaPage() {
 
         {/* 5. FINALIZAÇÃO */}
         <Card className="border-none shadow-2xl rounded-[1rem] sm:rounded-[2rem] overflow-hidden bg-primary text-primary-foreground">
-          <CardHeader className="p-4 bg-white/10">
-             <CardTitle className="flex flex-row items-center gap-2 text-2xl font-black uppercase italic">
-              <DollarSign className="size-6" />
+          <CardHeader className="p-3 bg-white/10">
+             <CardTitle className="flex flex-row items-center gap-2 text-xl sm:text-2xl font-black uppercase italic">
+              <DollarSign className="size-5 sm:size-6" />
               5. Finalização
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-4 space-y-6">
-            <div className="grid lg:grid-cols-2 gap-6 items-center">
-               <div className="space-y-4">
+          <CardContent className="p-3 space-y-4">
+            <div className="grid lg:grid-cols-2 gap-4 items-center">
+               <div className="space-y-3">
                   <div className="flex justify-between items-center border-b border-white/10 pb-1">
                     <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Subtotal</span>
                     <span className="text-lg font-black">R$ {subtotal.toFixed(2)}</span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="space-y-1">
-                      <Label className="text-[8px] font-black uppercase tracking-widest opacity-60 px-1">Desc. (R$)</Label>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <div className="space-y-0.5">
+                      <Label className="text-[8px] font-black uppercase tracking-widest opacity-60 px-1">Desconto (R$)</Label>
                       <Input
                         type="number"
                         className="h-12 text-center text-lg font-black rounded-lg border-2 bg-white/10 border-white/20 text-white w-full"
@@ -522,7 +519,7 @@ export default function NovaVendaPage() {
                         onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
                       />
                     </div>
-                    <div className="space-y-1">
+                    <div className="space-y-0.5">
                       <Label className="text-[8px] font-black uppercase tracking-widest opacity-60 px-1">Taxas (R$)</Label>
                       <Input
                         type="number"
@@ -534,13 +531,13 @@ export default function NovaVendaPage() {
                   </div>
                </div>
 
-               <div className="p-6 rounded-2xl shadow-xl text-center bg-white text-primary border-4 border-white">
-                  <p className="text-[8px] font-black uppercase tracking-[0.3em] mb-1 opacity-60">Total Final</p>
+               <div className="p-4 sm:p-6 rounded-2xl shadow-xl text-center bg-white text-primary border-4 border-white">
+                  <p className="text-[8px] font-black uppercase tracking-[0.3em] mb-1 opacity-60">Total Final Recebido</p>
                   <p className="text-4xl sm:text-6xl font-black tracking-tighter leading-none italic">R$ {finalTotal.toFixed(2)}</p>
                 </div>
             </div>
           </CardContent>
-          <CardFooter className="p-4 pt-0">
+          <CardFooter className="p-3 pt-0">
              <Button 
               type="submit" 
               size="lg"
@@ -551,10 +548,10 @@ export default function NovaVendaPage() {
               disabled={!isReady || isLoading}
             >
               {isLoading ? (
-                <ReceiptText className="animate-spin size-10" />
+                <ReceiptText className="animate-spin size-8 sm:size-10" />
               ) : (
                 <>
-                  <CheckCircle2 className="mr-2 size-8" />
+                  <CheckCircle2 className="mr-2 size-6 sm:size-8" />
                   CONCLUIR VENDA
                 </>
               )}
