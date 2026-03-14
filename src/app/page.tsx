@@ -361,7 +361,7 @@ export default function DashboardPage() {
           <p className="text-base sm:text-xl text-muted-foreground mt-4 font-bold opacity-80 uppercase tracking-widest">Veja como está o seu negócio hoje.</p>
         </div>
 
-        {/* NOVA GESTÃO DE CICLOS (MULTI-CICLOS) */}
+        {/* GESTÃO DE CICLOS (MULTI-CICLOS) */}
         <Card className="w-full border-4 border-primary/20 shadow-xl rounded-[2.5rem] overflow-hidden bg-background mb-4">
           <CardHeader className="bg-primary/5 p-4 sm:p-6 border-b-2 border-primary/10">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -431,9 +431,9 @@ export default function DashboardPage() {
                     <div className={cn("size-10 rounded-xl flex items-center justify-center shrink-0", activeCycleId === cycle.id ? "bg-primary text-white" : "bg-muted text-muted-foreground")}>
                       {activeCycleId === cycle.id ? <Check className="size-6" /> : <CalendarIcon className="size-5" />}
                     </div>
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <p className={cn("font-black text-lg uppercase italic leading-tight break-words", activeCycleId === cycle.id ? "text-primary" : "text-foreground")}>{cycle.name}</p>
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest break-words">
+                    <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
+                      <p className={cn("font-black text-base sm:text-lg uppercase italic leading-none whitespace-nowrap truncate", activeCycleId === cycle.id ? "text-primary" : "text-foreground")}>{cycle.name}</p>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest whitespace-nowrap truncate mt-1">
                         {cycle.from ? `${format(new Date(cycle.from), "dd/MM/yy")} - ${format(new Date(cycle.to), "dd/MM/yy")}` : "Sem data definida"}
                       </p>
                     </div>
