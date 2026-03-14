@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
@@ -11,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -20,23 +21,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
   ReceiptText,
   User,
   Package,
   CreditCard,
   Calendar as CalendarIcon,
   Plus,
-  Minus,
   Trash2,
   Smartphone,
   Banknote,
@@ -44,27 +34,19 @@ import {
   CheckCircle2,
   Circle,
   ShoppingBag,
-  BookOpen,
   DollarSign,
   Tag,
+  MapPin,
+  Map,
+  Info,
+  Hash,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from "@/firebase";
 import { collection, doc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-
-interface SaleItem {
-  id: string;
-  productId: string;
-  quantity: number;
-  price: number;
-  costPrice: number;
-  catalogPrice: number;
-  salePrice: number;
-  name: string;
-  priceStrategy: 'sale' | 'catalog' | 'cost';
-}
+import Link from "next/link";
 
 export default function NovaVendaPage() {
   const { user } = useUser();
@@ -72,17 +54,45 @@ export default function NovaVendaPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const [selectedClientId, setSelectedClientId] = useState("");
-  // Começa com a lista de itens vazia conforme solicitado
-  const [selectedItems, setSelectedItems] = useState<SaleItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // --- ESTADO DO CLIENTE ---
+  const [clientData, setClientData] = useState({
+    fullName: "",
+    phone: "",
+    city: "",
+    neighborhood: "",
+    address: "",
+    notes: "",
+  });
+
+  // --- ESTADO DO PRODUTO ---
+  const [productData, setProductData] = useState({
+    name: "",
+    brand: "",
+    category: "",
+    catalogPrice: "",
+    costPrice: "",
+    salePrice: "",
+    productCode: "",
+    description: "",
+  });
+
+  // --- ESTADO DO PAGAMENTO E TOTAIS ---
   const [paymentMethod, setPaymentMethod] = useState("");
   const [dueDate, setDueDate] = useState("");
-  const [notes, setNotes] = useState("");
+  const [saleNotes, setSaleNotes] = useState("");
   const [discount, setDiscount] = useState(0);
   const [additionalFee, setAdditionalFee] = useState(0);
-  const [itemToDeleteId, setItemToDeleteId] = useState<string | null>(null);
 
-  // Define data atual no fuso horário do Brasil (America/Sao_Paulo)
+  // Busca categorias para o formulário de produto
+  const categoriesQuery = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return collection(db, "users", user.uid, "categories");
+  }, [db, user]);
+  const { data: categories, isLoading: categoriesLoading } = useCollection(categoriesQuery);
+
+  // Define data atual no fuso horário do Brasil
   useEffect(() => {
     const now = new Date();
     const formatter = new Intl.DateTimeFormat('en-CA', {
@@ -94,502 +104,465 @@ export default function NovaVendaPage() {
     setDueDate(formatter.format(now));
   }, []);
 
-  const clientsQuery = useMemoFirebase(() => {
-    if (!db || !user) return null;
-    return collection(db, "users", user.uid, "clients");
-  }, [db, user]);
-
-  const productsQuery = useMemoFirebase(() => {
-    if (!db || !user) return null;
-    return collection(db, "users", user.uid, "products");
-  }, [db, user]);
-
-  const { data: clients } = useCollection(clientsQuery);
-  const { data: products } = useCollection(productsQuery);
-
-  const selectedClient = useMemo(() => {
-    return clients?.find(c => c.id === selectedClientId);
-  }, [clients, selectedClientId]);
-
-  const addItem = () => {
-    setSelectedItems([{ 
-      id: `temp-${Date.now()}-${Math.random()}`, 
-      productId: "", 
-      quantity: 1, 
-      price: 0, 
-      costPrice: 0, 
-      catalogPrice: 0,
-      salePrice: 0,
-      name: "", 
-      priceStrategy: 'sale'
-    }, ...selectedItems]);
+  // --- MÁSCARAS E UTILITÁRIOS ---
+  const formatPhone = (value: string) => {
+    if (!value) return "";
+    const cleaned = value.replace(/\D/g, "");
+    if (cleaned.length <= 2) return `(${cleaned}`;
+    if (cleaned.length <= 7) return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2)}`;
+    return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 7)}-${cleaned.slice(7, 11)}`;
   };
 
-  const removeItem = () => {
-    if (itemToDeleteId) {
-      setSelectedItems(selectedItems.filter(item => item.id !== itemToDeleteId));
-      setItemToDeleteId(null);
+  const maskCurrency = (value: string) => {
+    const digits = value.replace(/\D/g, "");
+    if (!digits) return "";
+    const number = parseFloat(digits) / 100;
+    return number.toLocaleString("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
+
+  const unmaskCurrency = (value: string) => {
+    if (!value) return 0;
+    return parseFloat(value.replace(/\./g, "").replace(",", ".")) || 0;
+  };
+
+  // Cálculo automático de custo do produto
+  useEffect(() => {
+    const catalog = unmaskCurrency(productData.catalogPrice);
+    if (catalog === 0 || !productData.brand) return;
+
+    let discountPct = 0;
+    if (productData.brand === "VERDE (N)") discountPct = 0.30;
+    else if (productData.brand === "ROSA (A)") discountPct = 0.35;
+    else if (productData.brand === "MARROM (C&E)") discountPct = 0.15;
+
+    if (discountPct > 0) {
+      const calculatedCost = catalog * (1 - discountPct);
+      setProductData(prev => ({
+        ...prev,
+        costPrice: maskCurrency((calculatedCost * 100).toFixed(0)),
+      }));
     }
-  };
+  }, [productData.brand, productData.catalogPrice]);
 
-  const calculateEffectivePrice = (item: SaleItem) => {
-    switch (item.priceStrategy) {
-      case 'cost': return item.costPrice;
-      case 'catalog': return item.catalogPrice;
-      default: return item.salePrice;
-    }
-  };
-
-  const updateItemStrategy = (index: number, strategy: 'sale' | 'catalog' | 'cost') => {
-    const newItems = [...selectedItems];
-    newItems[index].priceStrategy = strategy;
-    newItems[index].price = calculateEffectivePrice(newItems[index]);
-    setSelectedItems(newItems);
-  };
-
+  // --- LOGICA DE TOTAIS ---
   const subtotal = useMemo(() => {
-    return selectedItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-  }, [selectedItems]);
+    return unmaskCurrency(productData.salePrice);
+  }, [productData.salePrice]);
 
   const finalTotal = Math.max(0, subtotal - discount + additionalFee);
 
   const isReady = useMemo(() => {
-    return !!selectedClientId && selectedItems.length > 0 && selectedItems.some(item => !!item.productId) && !!paymentMethod;
-  }, [selectedClientId, selectedItems, paymentMethod]);
+    return (
+      clientData.fullName &&
+      clientData.phone &&
+      productData.name &&
+      productData.brand &&
+      productData.salePrice &&
+      paymentMethod
+    );
+  }, [clientData, productData, paymentMethod]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !db || !isReady) {
       toast({
         variant: "destructive",
         title: "Dados incompletos",
-        description: "Por favor, selecione a cliente, produtos e forma de pagamento.",
+        description: "Preencha os campos obrigatórios do cliente, produto e pagamento.",
       });
       return;
     }
 
-    const orderId = `ord-${Date.now()}`;
-    
-    const orderData = {
-      id: orderId,
-      adminId: user.uid,
-      clientId: selectedClientId,
-      clientName: selectedClient?.fullName || "Cliente",
-      orderDate: new Date().toISOString(),
-      totalAmount: subtotal,
-      discountAmount: discount,
-      additionalFeeAmount: additionalFee,
-      finalAmount: finalTotal,
-      paymentMethod,
-      paymentStatus: paymentMethod === "a prazo" ? "Pendente" : "Pago",
-      dueDate: dueDate || null,
-      notes,
-      isDeleted: false,
-    };
+    setIsLoading(true);
 
-    setDocumentNonBlocking(doc(db, "users", user.uid, "orders", orderId), orderData, { merge: true });
+    try {
+      const clientId = `cli-${Date.now()}`;
+      const productId = `prod-${Date.now()}`;
+      const orderId = `ord-${Date.now()}`;
 
-    selectedItems.forEach((item) => {
-      if (!item.productId) return;
-      const itemId = `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      // 1. Salvar Novo Cliente
+      const finalClientData = {
+        ...clientData,
+        id: clientId,
+        adminId: user.uid,
+        registrationDate: new Date().toISOString(),
+      };
+      setDocumentNonBlocking(doc(db, "users", user.uid, "clients", clientId), finalClientData, { merge: true });
+
+      // 2. Salvar Novo Produto
+      const finalProductData = {
+        ...productData,
+        id: productId,
+        adminId: user.uid,
+        catalogPrice: unmaskCurrency(productData.catalogPrice),
+        costPrice: unmaskCurrency(productData.costPrice),
+        salePrice: unmaskCurrency(productData.salePrice),
+      };
+      setDocumentNonBlocking(doc(db, "users", user.uid, "products", productId), finalProductData, { merge: true });
+
+      // 3. Salvar Pedido
+      const orderData = {
+        id: orderId,
+        adminId: user.uid,
+        clientId: clientId,
+        clientName: clientData.fullName,
+        orderDate: new Date().toISOString(),
+        totalAmount: subtotal,
+        discountAmount: discount,
+        additionalFeeAmount: additionalFee,
+        finalAmount: finalTotal,
+        paymentMethod,
+        paymentStatus: paymentMethod === "a prazo" ? "Pendente" : "Pago",
+        dueDate: dueDate || null,
+        notes: saleNotes,
+        isDeleted: false,
+      };
+      setDocumentNonBlocking(doc(db, "users", user.uid, "orders", orderId), orderData, { merge: true });
+
+      // 4. Salvar Item do Pedido
+      const itemId = `item-${Date.now()}`;
       const itemData = {
         id: itemId,
         adminId: user.uid,
         orderId: orderId,
-        productId: item.productId,
-        productName: item.name,
-        quantity: item.quantity,
-        unitPrice: item.price,
-        subtotal: item.price * item.quantity,
+        productId: productId,
+        productName: productData.name,
+        quantity: 1,
+        unitPrice: unmaskCurrency(productData.salePrice),
+        subtotal: unmaskCurrency(productData.salePrice),
       };
       setDocumentNonBlocking(doc(db, "users", user.uid, "orders", orderId, "orderItems", itemId), itemData, { merge: true });
-    });
 
-    toast({
-      title: "Venda registrada!",
-      description: `Venda de R$ ${finalTotal.toFixed(2)} salva com sucesso no histórico.`,
-    });
-    
-    router.push("/pedidos");
-  };
-
-  const hasItems = selectedItems.some(item => !!item.productId);
-
-  const incrementQuantity = (index: number) => {
-    const newItems = [...selectedItems];
-    newItems[index].quantity = (newItems[index].quantity || 0) + 1;
-    setSelectedItems(newItems);
-  };
-
-  const decrementQuantity = (index: number) => {
-    const newItems = [...selectedItems];
-    newItems[index].quantity = Math.max(1, (newItems[index].quantity || 1) - 1);
-    setSelectedItems(newItems);
+      toast({
+        title: "Venda e Cadastros Concluídos!",
+        description: `Cliente, Produto e Venda de R$ ${finalTotal.toFixed(2)} foram salvos.`,
+      });
+      
+      router.push("/pedidos");
+    } catch (error) {
+      console.error("Erro na venda rápida:", error);
+      toast({
+        variant: "destructive",
+        title: "Erro ao processar",
+        description: "Ocorreu um problema ao salvar os dados da venda rápida.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="space-y-6 sm:space-y-10 w-full animate-in fade-in duration-500 pb-32">
+    <div className="space-y-10 w-full animate-in fade-in duration-500 pb-32">
       <div className="flex flex-col items-center text-center gap-6 px-2 mb-10">
         <div className="w-full">
           <div className="flex flex-col items-center justify-center gap-6">
             <ShoppingBag className="size-16 sm:size-24 text-primary" />
             <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-sm whitespace-nowrap px-2">NOVA VENDA</h1>
           </div>
-          <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Cadastre uma venda rapidamente no seu sistema.</p>
+          <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Cadastre cliente, produto e venda de uma só vez.</p>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6 sm:gap-10">
-        {/* 1. Cliente */}
-        <Card className="border-none shadow-xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="bg-muted/90 p-6 sm:p-8 border-b-2">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-10">
+        
+        {/* 1. CADASTRO RÁPIDO DE CLIENTE */}
+        <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
+          <CardHeader className="bg-muted/80 p-8 border-b-2">
             <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left px-2">
-              <User className="size-8 sm:size-10 text-primary" />
-              1. Selecionar Cliente
+              <User className="size-8 text-primary" />
+              1. Identificação da Cliente
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-6 sm:p-10">
+          <CardContent className="p-8 sm:p-12 space-y-8">
+            <div className="grid sm:grid-cols-2 gap-8">
+              <div className="space-y-4 text-left">
+                <Label htmlFor="fullName" className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Nome Completo</Label>
+                <div className="relative">
+                  <User className="absolute left-5 top-1/2 -translate-y-1/2 size-6 text-muted-foreground/30 hidden sm:block" />
+                  <Input
+                    id="fullName"
+                    placeholder="Ex: Maria Oliveira"
+                    className="h-16 text-xl font-black rounded-xl border-4 border-muted focus:border-primary sm:pl-16"
+                    value={clientData.fullName}
+                    onChange={(e) => setClientData(prev => ({ ...prev, fullName: e.target.value }))}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="space-y-4 text-left">
+                <Label htmlFor="phone" className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">WhatsApp</Label>
+                <div className="relative">
+                  <Smartphone className="absolute left-5 top-1/2 -translate-y-1/2 size-6 text-muted-foreground/30 hidden sm:block" />
+                  <Input
+                    id="phone"
+                    placeholder="(00) 00000-0000"
+                    className="h-16 text-xl font-black rounded-xl border-4 border-muted focus:border-primary sm:pl-16"
+                    value={clientData.phone}
+                    onChange={(e) => setClientData(prev => ({ ...prev, phone: formatPhone(e.target.value) }))}
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-8">
+              <div className="space-y-4 text-left">
+                <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Cidade</Label>
+                <div className="relative">
+                  <Map className="absolute left-5 top-1/2 -translate-y-1/2 size-6 text-muted-foreground/30 hidden sm:block" />
+                  <Input
+                    placeholder="Ex: São Paulo"
+                    className="h-16 text-xl font-black rounded-xl border-4 border-muted sm:pl-16"
+                    value={clientData.city}
+                    onChange={(e) => setClientData(prev => ({ ...prev, city: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <div className="space-y-4 text-left">
+                <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Bairro</Label>
+                <div className="relative">
+                  <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 size-6 text-muted-foreground/30 hidden sm:block" />
+                  <Input
+                    placeholder="Ex: Centro"
+                    className="h-16 text-xl font-black rounded-xl border-4 border-muted sm:pl-16"
+                    value={clientData.neighborhood}
+                    onChange={(e) => setClientData(prev => ({ ...prev, neighborhood: e.target.value }))}
+                  />
+                </div>
+              </div>
+            </div>
+
             <div className="space-y-4 text-left">
-              <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Quem está comprando?</Label>
-              <Select onValueChange={setSelectedClientId} value={selectedClientId}>
-                <SelectTrigger className="h-14 sm:h-20 text-lg sm:text-2xl font-black rounded-xl sm:rounded-3xl border-4 border-muted bg-background text-primary">
-                  <SelectValue placeholder="Busque pelo nome..." />
-                </SelectTrigger>
-                <SelectContent className="rounded-2xl shadow-2xl border-4 border-primary bg-slate-950 text-white min-w-[300px]">
-                  {clients?.map(c => (
-                    <SelectItem key={c.id} value={c.id} className="text-base sm:text-xl font-black p-3 sm:p-4 focus:bg-primary focus:text-white text-white cursor-pointer transition-colors border-b border-white/5 last:border-0">
-                      {c.fullName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Endereço / Referência</Label>
+              <Input
+                placeholder="Ex: Rua das Flores, 123 - Próximo ao mercado"
+                className="h-16 text-xl font-black rounded-xl border-4 border-muted"
+                value={clientData.address}
+                onChange={(e) => setClientData(prev => ({ ...prev, address: e.target.value }))}
+              />
             </div>
           </CardContent>
         </Card>
 
-        {/* 2. Produtos */}
-        <Card className="border-none shadow-xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="bg-muted/90 p-6 sm:p-8 border-b-2">
+        {/* 2. CADASTRO RÁPIDO DE PRODUTO */}
+        <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
+          <CardHeader className="bg-muted/80 p-8 border-b-2">
             <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left px-2">
-              <Package className="size-8 sm:size-10 text-primary" />
-              2. Produtos
+              <Package className="size-8 text-primary" />
+              2. Detalhes do Produto Vendido
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-4 sm:p-10 space-y-6 sm:space-y-10">
-            <Button type="button" variant="outline" size="lg" className="w-full h-14 sm:h-20 text-base sm:text-2xl font-black border-4 border-primary/20 text-primary rounded-xl sm:rounded-3xl hover:bg-primary/5 transition-all shadow-lg active:scale-95" onClick={addItem}>
-              <Plus className="size-6 sm:size-8 mr-2" />
-              Adicionar Item
-            </Button>
+          <CardContent className="p-8 sm:p-12 space-y-10">
+            <div className="space-y-4 text-left">
+              <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Nome do Produto</Label>
+              <Input
+                placeholder="Ex: Perfume Kaiak 100ml"
+                className="h-16 text-xl font-black rounded-xl border-4 border-muted"
+                value={productData.name}
+                onChange={(e) => setProductData(prev => ({ ...prev, name: e.target.value }))}
+                required
+              />
+            </div>
 
-            {selectedItems.map((item, index) => (
-              <div key={item.id} className="flex flex-col gap-6 animate-in slide-in-from-left-4 duration-500 bg-muted/10 p-5 sm:p-10 rounded-[1.5rem] sm:rounded-[3rem] border-4 border-border/30 relative group">
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  size="icon" 
-                  className="absolute top-4 right-4 size-10 sm:size-14 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-2xl transition-all"
-                  onClick={() => setItemToDeleteId(item.id)}
-                >
-                  <Trash2 className="size-6 sm:size-8" />
-                </Button>
-
-                <div className="space-y-2 pr-12 text-left">
-                  <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Escolha o Produto</Label>
-                  <Select onValueChange={(val) => {
-                    const product = products?.find(p => p.id === val);
-                    if (product) {
-                      const newItems = [...selectedItems];
-                      newItems[index].productId = val;
-                      newItems[index].costPrice = Number(product.costPrice) || 0;
-                      newItems[index].catalogPrice = Number(product.catalogPrice) || 0;
-                      newItems[index].salePrice = Number(product.salePrice) || 0;
-                      newItems[index].name = product.name;
-                      newItems[index].price = calculateEffectivePrice(newItems[index]);
-                      setSelectedItems(newItems);
-                    }
-                  }} value={item.productId}>
-                    <SelectTrigger className="h-14 sm:h-16 text-sm sm:text-xl font-black rounded-xl sm:rounded-2xl bg-background border-2 border-border shadow-sm group-hover:border-primary/20 transition-all text-primary">
-                      <SelectValue placeholder="Selecione o item..." />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl shadow-xl bg-slate-950 text-white border-2 border-primary min-w-[250px]">
-                      {products?.map(p => (
-                        <SelectItem key={p.id} value={p.id} className="text-sm sm:text-lg font-black p-3 text-white cursor-pointer focus:bg-primary focus:text-white transition-colors border-b border-white/5 last:border-0">
-                          {p.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                {item.productId && (
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
-                      <div className="space-y-2 text-left">
-                        <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Quantidade</Label>
-                        <div className="flex items-center gap-3">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            className="h-14 sm:h-16 w-14 sm:w-16 rounded-xl sm:rounded-2xl border-2 border-border bg-background hover:bg-primary/5 text-primary shadow-sm"
-                            onClick={() => decrementQuantity(index)}
-                          >
-                            <Minus className="size-6 sm:size-8" />
-                          </Button>
-                          <div className="flex-1 h-14 sm:h-16 flex items-center justify-center text-xl sm:text-2xl font-black rounded-xl sm:rounded-2xl border-2 border-border bg-background shadow-inner min-w-[60px]">
-                            {item.quantity}
-                          </div>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            className="h-14 sm:h-16 w-14 sm:w-16 rounded-xl sm:rounded-2xl border-2 border-border bg-background hover:bg-primary/5 text-primary shadow-sm"
-                            onClick={() => incrementQuantity(index)}
-                          >
-                            <Plus className="size-6 sm:size-8" />
-                          </Button>
-                        </div>
-                      </div>
-                      <div className="space-y-2 text-left">
-                        <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Subtotal</Label>
-                        <div className="h-14 sm:h-16 flex items-center justify-center bg-primary/10 rounded-xl sm:rounded-2xl text-xl sm:text-2xl font-black text-primary border-2 border-primary/20 shadow-inner px-2">
-                          R$ {(item.price * item.quantity).toFixed(2)}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Controles Individuais de Preço - Tríade Elite */}
-                    <div className="space-y-3 border-t-2 border-border/20 pt-4">
-                      <Label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-2 block">Estratégia de Preço para este Item</Label>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        {/* Opção Revendedora */}
-                        <button
-                          type="button"
-                          onClick={() => updateItemStrategy(index, 'sale')}
-                          className={cn(
-                            "flex items-center justify-between p-4 rounded-2xl border-2 transition-all group/btn",
-                            item.priceStrategy === 'sale' 
-                              ? "bg-primary text-white border-primary shadow-lg scale-[1.02]" 
-                              : "bg-background border-muted/30 text-muted-foreground hover:border-primary/40"
-                          )}
-                        >
-                          <div className="flex flex-col items-start text-left">
-                            <span className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                              <ShoppingBag className="size-3" /> Revendedora
-                            </span>
-                            <span className="text-[8px] font-bold opacity-60 uppercase tracking-tighter">Preço Promocional</span>
-                          </div>
-                          {item.priceStrategy === 'sale' && <CheckCircle2 className="size-4 animate-in zoom-in" />}
-                        </button>
-
-                        {/* Opção Revista */}
-                        <button
-                          type="button"
-                          onClick={() => updateItemStrategy(index, 'catalog')}
-                          className={cn(
-                            "flex items-center justify-between p-4 rounded-2xl border-2 transition-all group/btn",
-                            item.priceStrategy === 'catalog' 
-                              ? "bg-amber-500 text-white border-amber-500 shadow-lg scale-[1.02]" 
-                              : "bg-background border-muted/30 text-muted-foreground hover:border-amber-500/40"
-                          )}
-                        >
-                          <div className="flex flex-col items-start text-left">
-                            <span className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                              <BookOpen className="size-3" /> Revista
-                            </span>
-                            <span className="text-[8px] font-bold opacity-60 uppercase tracking-tighter">Valor de Catálogo</span>
-                          </div>
-                          {item.priceStrategy === 'catalog' && <CheckCircle2 className="size-4 animate-in zoom-in" />}
-                        </button>
-
-                        {/* Opção Custo */}
-                        <button
-                          type="button"
-                          onClick={() => updateItemStrategy(index, 'cost')}
-                          className={cn(
-                            "flex items-center justify-between p-4 rounded-2xl border-2 transition-all group/btn",
-                            item.priceStrategy === 'cost' 
-                              ? "bg-green-600 text-white border-green-600 shadow-lg scale-[1.02]" 
-                              : "bg-background border-muted/30 text-muted-foreground hover:border-green-600/40"
-                          )}
-                        >
-                          <div className="flex flex-col items-start text-left">
-                            <span className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                              <DollarSign className="size-3" /> Custo
-                            </span>
-                            <span className="text-[8px] font-bold opacity-60 uppercase tracking-tighter">Sem Lucro (Repasse)</span>
-                          </div>
-                          {item.priceStrategy === 'cost' && <CheckCircle2 className="size-4 animate-in zoom-in" />}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-
-            {selectedItems.length === 0 && (
-              <div className="text-center py-10 opacity-40 border-4 border-dashed border-muted rounded-[2rem]">
-                <Package className="size-12 mx-auto mb-4" />
-                <p className="font-black uppercase tracking-widest text-sm">Nenhum produto adicionado</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* 3. Pagamento */}
-        <Card className="border-none shadow-xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="bg-muted/90 p-6 sm:p-8 border-b-2">
-            <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left px-2">
-              <CreditCard className="size-8 sm:size-10 text-primary" />
-              3. Pagamento
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6 sm:p-10">
-            <div className="grid gap-6 sm:gap-10 sm:grid-cols-2">
-              <div className="space-y-4 sm:col-span-2 text-left">
-                <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Forma de Pagamento</Label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  {[
-                    { id: 'pix', label: 'Pix', icon: Smartphone },
-                    { id: 'dinheiro', label: 'Dinheiro', icon: Banknote },
-                    { id: 'cartao', label: 'Cartão', icon: CreditCard },
-                    { id: 'a prazo', label: 'A Prazo', icon: HandCoins },
-                  ].map((option) => (
-                    <button
-                      key={option.id}
-                      type="button"
-                      onClick={() => setPaymentMethod(option.id)}
-                      className={cn(
-                        "flex flex-col items-center justify-center p-4 sm:p-8 rounded-[1.5rem] sm:rounded-[2.5rem] border-4 transition-all gap-4",
-                        paymentMethod === option.id
-                          ? "bg-primary text-primary-foreground border-primary shadow-xl scale-105"
-                          : "bg-background text-muted-foreground border-muted hover:border-primary/20"
-                      )}
-                    >
-                      <option.icon className={cn("size-8 sm:size-12", paymentMethod === option.id ? "text-white" : "text-primary")} />
-                      <span className="text-xs sm:text-2xl font-black uppercase tracking-tight px-2">{option.label}</span>
-                    </button>
-                  ))}
-                </div>
+            <div className="grid sm:grid-cols-2 gap-8">
+              <div className="space-y-4 text-left">
+                <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Marca</Label>
+                <Select onValueChange={(val) => setProductData(prev => ({ ...prev, brand: val }))} value={productData.brand}>
+                  <SelectTrigger className="h-16 text-xl font-black rounded-xl border-4 border-muted">
+                    <SelectValue placeholder="Selecione a marca..." />
+                  </SelectTrigger>
+                  <SelectContent className="font-bold">
+                    <SelectItem value="VERDE (N)">VERDE (N)</SelectItem>
+                    <SelectItem value="ROSA (A)">ROSA (A)</SelectItem>
+                    <SelectItem value="MARROM (C&E)">MARROM (C&E)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-4 text-left">
-                <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Vencimento (A Prazo)</Label>
-                <div className="relative">
-                  <CalendarIcon className="absolute left-5 top-1/2 -translate-y-1/2 size-6 text-muted-foreground hidden sm:block" />
-                  <Input 
-                    type="date" 
-                    className="h-14 sm:h-20 sm:pl-16 text-base sm:text-2xl font-black rounded-xl sm:rounded-3xl border-4 border-muted bg-background dark:bg-slate-100 dark:text-slate-900 dark:border-white/40 focus:border-primary transition-all shadow-lg" 
-                    value={dueDate} 
-                    onChange={(e) => setDueDate(e.target.value)} 
-                  />
-                </div>
+                <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Categoria</Label>
+                <Select onValueChange={(val) => setProductData(prev => ({ ...prev, category: val }))} value={productData.category}>
+                  <SelectTrigger className="h-16 text-xl font-black rounded-xl border-4 border-muted">
+                    <SelectValue placeholder="Selecione a categoria..." />
+                  </SelectTrigger>
+                  <SelectContent className="font-bold">
+                    {categories?.map(cat => (
+                      <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <div className="sm:col-span-2 space-y-4 text-left">
-                <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Notas Adicionais</Label>
-                <textarea 
-                  className="w-full min-h-[120px] sm:min-h-[150px] rounded-[1.5rem] sm:rounded-[2.5rem] border-4 border-muted bg-background px-6 sm:px-8 py-6 sm:py-8 text-base sm:text-2xl font-bold focus-visible:outline-none focus-visible:ring-8 focus-visible:ring-primary/10 transition-all shadow-inner" 
-                  placeholder="Ex: Entrega agendada..."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
+            </div>
+
+            <div className="grid sm:grid-cols-3 gap-8">
+              <div className="space-y-4 text-left">
+                <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Preço Revista (R$)</Label>
+                <Input
+                  placeholder="0,00"
+                  className="h-16 text-xl font-black rounded-xl border-4 border-muted"
+                  value={productData.catalogPrice}
+                  onChange={(e) => setProductData(prev => ({ ...prev, catalogPrice: maskCurrency(e.target.value) }))}
+                />
+              </div>
+              <div className="space-y-4 text-left">
+                <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Preço Custo (R$)</Label>
+                <Input
+                  placeholder="0,00"
+                  className="h-16 text-xl font-black rounded-xl border-4 border-muted"
+                  value={productData.costPrice}
+                  onChange={(e) => setProductData(prev => ({ ...prev, costPrice: maskCurrency(e.target.value) }))}
+                />
+              </div>
+              <div className="space-y-4 text-left">
+                <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-primary block">Preço Venda (R$)</Label>
+                <Input
+                  placeholder="0,00"
+                  className="h-16 text-xl font-black rounded-xl border-4 border-primary/30 bg-primary/5"
+                  value={productData.salePrice}
+                  onChange={(e) => setProductData(prev => ({ ...prev, salePrice: maskCurrency(e.target.value) }))}
+                  required
                 />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* 4. Checklist do Pedido (Resumo) */}
-        <Card className="border-none shadow-xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden bg-slate-900 text-white">
-          <CardHeader className="p-8 sm:p-10 border-b border-white/10 bg-white/5">
+        {/* 3. PAGAMENTO */}
+        <Card className="border-none shadow-xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden">
+          <CardHeader className="bg-muted/90 p-8 border-b-2">
             <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left px-2">
-              <ShoppingBag className="size-8 sm:size-10 text-[#39FF14]" />
-              4. Check-in da Venda
+              <CreditCard className="size-8 sm:size-10 text-primary" />
+              3. Forma de Pagamento
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-8 sm:p-12 space-y-10">
-            <div className="space-y-8">
-              {/* Etapa 1: Cliente */}
-              <div className="flex items-start gap-6 group">
-                <div className={cn("size-10 sm:size-14 rounded-full border-4 flex items-center justify-center transition-all duration-500 shrink-0 shadow-lg", selectedClientId ? "bg-[#39FF14]/20 border-[#39FF14]" : "border-white/20 bg-white/5")}>
-                  {selectedClientId ? <CheckCircle2 className="size-6 sm:size-10 text-[#39FF14] animate-in zoom-in duration-300" /> : <Circle className="size-6 sm:size-10 text-white/20" />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className={cn("text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] mb-1 transition-colors", selectedClientId ? "text-[#39FF14]" : "text-white/40")}>Cliente Selecionada</p>
-                  <p className={cn("text-xl sm:text-3xl font-black truncate transition-colors px-2", selectedClientId ? "text-white" : "text-white/20")}>
-                    {selectedClient?.fullName || "Aguardando seleção..."}
-                  </p>
+          <CardContent className="p-8 sm:p-12">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+              {[
+                { id: 'pix', label: 'Pix', icon: Smartphone },
+                { id: 'dinheiro', label: 'Dinheiro', icon: Banknote },
+                { id: 'cartao', label: 'Cartão', icon: CreditCard },
+                { id: 'a prazo', label: 'A Prazo', icon: HandCoins },
+              ].map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => setPaymentMethod(option.id)}
+                  className={cn(
+                    "flex flex-col items-center justify-center p-6 rounded-2xl border-4 transition-all gap-3",
+                    paymentMethod === option.id
+                      ? "bg-primary text-white border-primary shadow-lg scale-105"
+                      : "bg-background border-muted hover:border-primary/20 text-muted-foreground"
+                  )}
+                >
+                  <option.icon className="size-8" />
+                  <span className="text-xs sm:text-lg font-black uppercase">{option.label}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-8">
+              <div className="space-y-4 text-left">
+                <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Data de Vencimento</Label>
+                <div className="relative">
+                  <CalendarIcon className="absolute left-5 top-1/2 -translate-y-1/2 size-6 text-muted-foreground hidden sm:block" />
+                  <Input 
+                    type="date" 
+                    className="h-16 text-xl font-black rounded-xl border-4 border-muted sm:pl-16 bg-background" 
+                    value={dueDate} 
+                    onChange={(e) => setDueDate(e.target.value)} 
+                  />
                 </div>
               </div>
-
-              {/* Etapa 2: Produtos */}
-              <div className="flex items-start gap-6 group">
-                <div className={cn("size-10 sm:size-14 rounded-full border-4 flex items-center justify-center transition-all duration-500 shrink-0 shadow-lg", hasItems ? "bg-[#39FF14]/20 border-[#39FF14]" : "border-white/20 bg-white/5")}>
-                  {hasItems ? <CheckCircle2 className="size-6 sm:size-10 text-[#39FF14] animate-in zoom-in duration-300" /> : <Circle className="size-6 sm:size-10 text-white/20" />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className={cn("text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] mb-3 transition-colors", hasItems ? "text-[#39FF14]" : "text-white/40")}>Itens no Pedido</p>
-                  <div className="space-y-3 max-h-60 overflow-y-auto scrollbar-hide pr-4">
-                    {selectedItems.filter(i => i.productId).map((item, idx) => (
-                      <div key={idx} className="flex justify-between items-center text-base sm:text-xl font-bold border-b border-white/10 pb-2 last:border-0 last:pb-0 animate-in slide-in-from-left-2">
-                        <span className="text-white/80 px-2">{item.quantity}x {item.name}</span>
-                        <span className="font-black text-[#39FF14] px-2">R$ {(item.price * item.quantity).toFixed(2)}</span>
-                      </div>
-                    ))}
-                    {!hasItems && <p className="text-lg italic text-white/20">Nenhum item adicionado ainda...</p>}
-                  </div>
-                </div>
-              </div>
-
-              {/* Etapa 3: Pagamento */}
-              <div className="flex items-start gap-6 group">
-                <div className={cn("size-10 sm:size-14 rounded-full border-4 flex items-center justify-center transition-all duration-500 shrink-0 shadow-lg", paymentMethod ? "bg-[#39FF14]/20 border-[#39FF14]" : "border-white/20 bg-white/5")}>
-                  {paymentMethod ? <CheckCircle2 className="size-6 sm:size-10 text-[#39FF14] animate-in zoom-in duration-300" /> : <Circle className="size-6 sm:size-10 text-white/20" />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className={cn("text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] mb-1 transition-colors", paymentMethod ? "text-[#39FF14]" : "text-white/40")}>Forma de Pagamento</p>
-                  <p className={cn("text-xl sm:text-3xl font-black uppercase transition-colors px-2", paymentMethod ? "text-white" : "text-white/20")}>
-                    {paymentMethod?.toUpperCase() || "Aguardando..."}
-                  </p>
-                </div>
+              <div className="space-y-4 text-left">
+                <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-muted-foreground block">Notas da Venda</Label>
+                <Input
+                  placeholder="Observações internas..."
+                  className="h-16 text-xl font-bold rounded-xl border-4 border-muted"
+                  value={saleNotes}
+                  onChange={(e) => setSaleNotes(e.target.value)}
+                />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* 5. Finalização Financeira */}
+        {/* 4. CHECK-IN DA VENDA */}
+        <Card className="border-none shadow-xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden bg-slate-900 text-white">
+          <CardHeader className="p-8 border-b border-white/10 bg-white/5">
+            <CardTitle className="flex flex-row items-center gap-3 text-2xl sm:text-3xl font-black text-left px-2">
+              <ShoppingBag className="size-8 text-[#39FF14]" />
+              4. Check-in da Venda
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-8 sm:p-12 space-y-8">
+            <div className="flex items-start gap-6">
+              <div className={cn("size-10 rounded-full border-4 flex items-center justify-center shrink-0", clientData.fullName ? "bg-[#39FF14]/20 border-[#39FF14]" : "border-white/20")}>
+                {clientData.fullName ? <CheckCircle2 className="size-6 text-[#39FF14]" /> : <Circle className="size-6 text-white/20" />}
+              </div>
+              <div className="flex-1">
+                <p className="text-[10px] font-black uppercase tracking-widest text-[#39FF14]">Cliente Selecionada</p>
+                <p className="text-xl sm:text-3xl font-black italic">{clientData.fullName || "Aguardando preenchimento..."}</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-6">
+              <div className={cn("size-10 rounded-full border-4 flex items-center justify-center shrink-0", productData.name ? "bg-[#39FF14]/20 border-[#39FF14]" : "border-white/20")}>
+                {productData.name ? <CheckCircle2 className="size-6 text-[#39FF14]" /> : <Circle className="size-6 text-white/20" />}
+              </div>
+              <div className="flex-1">
+                <p className="text-[10px] font-black uppercase tracking-widest text-[#39FF14]">Item no Pedido</p>
+                <p className="text-xl sm:text-3xl font-black italic">{productData.name || "Aguardando preenchimento..."}</p>
+                {productData.salePrice && (
+                  <p className="text-lg font-bold text-white/60">Valor: R$ {productData.salePrice}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-start gap-6">
+              <div className={cn("size-10 rounded-full border-4 flex items-center justify-center shrink-0", paymentMethod ? "bg-[#39FF14]/20 border-[#39FF14]" : "border-white/20")}>
+                {paymentMethod ? <CheckCircle2 className="size-6 text-[#39FF14]" /> : <Circle className="size-6 text-white/20" />}
+              </div>
+              <div className="flex-1">
+                <p className="text-[10px] font-black uppercase tracking-widest text-[#39FF14]">Forma de Pagamento</p>
+                <p className="text-xl sm:text-3xl font-black italic uppercase">{paymentMethod || "Aguardando..."}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 5. FINALIZAÇÃO */}
         <Card className="border-none shadow-2xl rounded-[1.5rem] sm:rounded-[2.5rem] overflow-hidden bg-primary text-primary-foreground">
           <CardHeader className="p-8 sm:p-12 pb-4 bg-white/10">
-             <CardTitle className="flex flex-row items-center gap-4 text-3xl sm:text-5xl font-black tracking-tighter uppercase text-left px-2">
-              <ReceiptText className="size-10 sm:size-14" />
+             <CardTitle className="flex flex-row items-center gap-4 text-3xl sm:text-5xl font-black tracking-tighter uppercase text-left px-2 italic">
+              <DollarSign className="size-10" />
               5. Finalização
             </CardTitle>
           </CardHeader>
           <CardContent className="p-8 sm:p-12 pt-4 space-y-10">
-            <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 items-center">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
                <div className="space-y-8">
-                  {/* Resumo de Valores Elite */}
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center border-b border-white/10 pb-2">
-                      <span className="text-xs sm:text-sm font-black uppercase tracking-widest opacity-60">Subtotal (Itens)</span>
-                      <span className="text-xl sm:text-2xl font-black">R$ {subtotal.toFixed(2)}</span>
-                    </div>
+                  <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                    <span className="text-xs font-black uppercase tracking-widest opacity-60">Subtotal</span>
+                    <span className="text-xl sm:text-2xl font-black">R$ {subtotal.toFixed(2)}</span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-3 text-left">
-                      <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] opacity-60 block">Descontos Extras (R$)</Label>
+                      <Label className="text-[10px] font-black uppercase tracking-widest opacity-60 block">Desconto (R$)</Label>
                       <Input
                         type="number"
-                        className="h-14 sm:h-16 text-center text-lg sm:text-2xl font-black rounded-xl border-4 bg-white/10 border-white/20 text-white shadow-lg"
+                        className="h-14 text-center text-xl font-black rounded-xl border-4 bg-white/10 border-white/20 text-white"
                         value={discount}
                         onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
                       />
                     </div>
                     <div className="space-y-3 text-left">
-                      <Label className="text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] opacity-60 block">Taxas (R$)</Label>
+                      <Label className="text-[10px] font-black uppercase tracking-widest opacity-60 block">Taxas (R$)</Label>
                       <Input
                         type="number"
-                        className="h-14 sm:h-16 text-center text-lg sm:text-2xl font-black rounded-xl border-4 bg-white/10 border-white/20 text-white shadow-lg"
+                        className="h-14 text-center text-xl font-black rounded-xl border-4 bg-white/10 border-white/20 text-white"
                         value={additionalFee}
                         onChange={(e) => setAdditionalFee(parseFloat(e.target.value) || 0)}
                       />
@@ -597,9 +570,9 @@ export default function NovaVendaPage() {
                   </div>
                </div>
 
-               <div className="p-8 sm:p-12 rounded-[2rem] sm:rounded-[3rem] shadow-2xl text-center border-8 bg-white text-primary border-white animate-in zoom-in-95 duration-500">
-                  <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.4em] mb-4 opacity-60">Total Final</p>
-                  <p className="text-4xl sm:text-8xl font-black tracking-tighter leading-none px-2">R$ {finalTotal.toFixed(2)}</p>
+               <div className="p-10 rounded-[2rem] shadow-2xl text-center border-8 bg-white text-primary border-white animate-in zoom-in-95 duration-500">
+                  <p className="text-[10px] font-black uppercase tracking-[0.4em] mb-4 opacity-60">Total Final Recebido</p>
+                  <p className="text-5xl sm:text-8xl font-black tracking-tighter leading-none px-2 italic">R$ {finalTotal.toFixed(2)}</p>
                 </div>
             </div>
           </CardContent>
@@ -608,35 +581,23 @@ export default function NovaVendaPage() {
               type="submit" 
               size="lg"
               className={cn(
-                "w-full h-20 sm:h-28 text-xl sm:text-3xl font-black rounded-2xl sm:rounded-[2.5rem] shadow-2xl transition-all active:scale-95 uppercase tracking-widest bg-white text-primary hover:bg-white/90 shadow-white/20",
-                !isReady && "opacity-50 cursor-not-allowed"
+                "w-full h-24 sm:h-32 text-xl sm:text-4xl font-black rounded-2xl sm:rounded-[3rem] shadow-2xl transition-all active:scale-95 uppercase tracking-widest bg-white text-primary hover:bg-white/90",
+                (!isReady || isLoading) && "opacity-50 cursor-not-allowed"
               )}
-              disabled={!isReady}
+              disabled={!isReady || isLoading}
             >
-              <Plus className="mr-3 sm:mr-6 size-8 sm:size-12" />
-              CONCLUIR VENDA
+              {isLoading ? (
+                <ReceiptText className="animate-spin size-12" />
+              ) : (
+                <>
+                  <CheckCircle2 className="mr-4 size-10" />
+                  CONCLUIR VENDA
+                </>
+              )}
             </Button>
           </CardFooter>
         </Card>
       </form>
-
-      {/* Alerta de Confirmação para Remover Item */}
-      <AlertDialog open={!!itemToDeleteId} onOpenChange={(open) => !open && setItemToDeleteId(null)}>
-        <AlertDialogContent className="rounded-[2rem] sm:rounded-[3rem] p-8 sm:p-12 border-4 shadow-2xl max-w-xl mx-auto">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-2xl sm:text-4xl font-black tracking-tight text-primary text-left px-2">Remover este item?</AlertDialogTitle>
-            <AlertDialogDescription className="text-lg sm:text-2xl font-bold mt-4 text-muted-foreground text-left">
-              Você tem certeza que deseja retirar este produto da venda atual?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex flex-col sm:flex-row gap-4 mt-8 sm:mt-12">
-            <AlertDialogCancel className="h-14 sm:h-20 px-8 text-lg sm:text-2xl font-black rounded-xl sm:rounded-2xl border-4">Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={removeItem} className="h-14 sm:h-20 px-8 text-lg sm:text-2xl font-black bg-destructive text-white hover:bg-destructive/90 rounded-xl sm:rounded-2xl shadow-xl">
-              Sim, Remover
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
