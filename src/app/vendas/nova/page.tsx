@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -440,11 +441,22 @@ export default function NovaVendaPage() {
             <Input
               placeholder="Endereço / Referência"
               className={cn(
-                "h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-none focus:border-primary w-full px-4 bg-background",
+                "h-16 sm:h-20 text-xl sm:text-2xl font-black rounded-none border-x-0 border-t-0 border-b-4 border-muted focus:border-primary w-full px-4 bg-background",
                 selectedClient && "bg-muted/30 opacity-80"
               )}
               value={clientData.address}
               onChange={(e) => !selectedClient && setClientData(prev => ({ ...prev, address: e.target.value }))}
+              readOnly={!!selectedClient}
+            />
+
+            <Textarea
+              placeholder="Notas Importantes da Cliente (igual no cadastro)"
+              className={cn(
+                "min-h-[120px] text-lg sm:text-xl font-bold rounded-none border-none focus:border-primary w-full px-4 bg-background py-4",
+                selectedClient && "bg-muted/30 opacity-80"
+              )}
+              value={clientData.notes}
+              onChange={(e) => !selectedClient && setClientData(prev => ({ ...prev, notes: e.target.value }))}
               readOnly={!!selectedClient}
             />
           </CardContent>
