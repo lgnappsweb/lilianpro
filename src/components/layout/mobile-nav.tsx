@@ -1,15 +1,13 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
+import Link from "next/navigation";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
   PlusCircle,
   Plus,
-  Tag,
-  Package,
   ClipboardList,
   Wallet,
   BarChart3,
@@ -34,8 +32,6 @@ const primaryItems = [
 ];
 
 const moreItems = [
-  { name: "Categorias", icon: Tag, href: "/categorias", color: "text-orange-500" },
-  { name: "Produtos", icon: Package, href: "/produtos", color: "text-primary" },
   { name: "Pedidos", icon: ClipboardList, href: "/pedidos", color: "text-purple-500" },
   { name: "Histórico", icon: History, href: "/historico", color: "text-pink-600" },
   { name: "Financeiro", icon: Wallet, href: "/financeiro", color: "text-green-600" },

@@ -6,14 +6,12 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
-  Package,
   PlusCircle,
   ClipboardList,
   Wallet,
   BarChart3,
   Settings,
   Sparkles,
-  Tag,
   LogOut,
   History,
 } from "lucide-react";
@@ -38,8 +36,6 @@ import { Button } from "@/components/ui/button";
 const navItems = [
   { name: "Painel", icon: LayoutDashboard, href: "/", color: "text-blue-500" },
   { name: "Clientes", icon: Users, href: "/clientes", color: "text-accent" },
-  { name: "Categorias", icon: Tag, href: "/categorias", color: "text-orange-500" },
-  { name: "Produtos", icon: Package, href: "/produtos", color: "text-primary" },
   { name: "Pedidos", icon: ClipboardList, href: "/pedidos", color: "text-purple-500" },
   { name: "Histórico", icon: History, href: "/historico", color: "text-pink-600" },
   { name: "Financeiro", icon: Wallet, href: "/financeiro", color: "text-green-600" },

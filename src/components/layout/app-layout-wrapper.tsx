@@ -124,15 +124,9 @@ export function AppLayoutWrapper({ children }: { children: React.ReactNode }) {
   } else if (pathname.includes('/clientes/')) {
     backHref = "/clientes";
     backLabel = "Voltar aos clientes";
-  } else if (pathname.includes('/produtos/')) {
-    backHref = "/produtos";
-    backLabel = "Voltar aos produtos";
   } else if (pathname.includes('/pedidos/') || pathname.includes('/vendas/')) {
     backHref = "/pedidos";
     backLabel = "Voltar aos pedidos";
-  } else if (pathname.includes('/categorias/')) {
-    backHref = "/categorias";
-    backLabel = "Voltar às categorias";
   }
 
   return (

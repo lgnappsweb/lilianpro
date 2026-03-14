@@ -15,8 +15,6 @@ import {
   Wallet,
   Clock,
   ChevronRight,
-  Sparkles,
-  Package,
   PlusCircle,
   Loader2,
   LayoutDashboard,
@@ -60,12 +58,6 @@ export default function DashboardPage() {
     return collection(db, "users", user.uid, "clients");
   }, [db, user]);
   const { data: clients, isLoading: clientsLoading } = useCollection(clientsQuery);
-
-  const productsQuery = useMemoFirebase(() => {
-    if (!db || !user) return null;
-    return collection(db, "users", user.uid, "products");
-  }, [db, user]);
-  const { data: products, isLoading: productsLoading } = useCollection(productsQuery);
 
   const stats = useMemo(() => {
     const totalVendido = orders?.reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0) || 0;
@@ -132,7 +124,7 @@ export default function DashboardPage() {
 
     if (counts.atrasado > 0) {
       theme = {
-        bg: "bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-red-500/30",
+        bg: "bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-green-500/30",
         iconColor: "text-red-600",
         title: "ALERTA DE ATRASOS",
         desc: "Atenção! Existem pagamentos vencidos que precisam de cobrança.",
@@ -140,7 +132,7 @@ export default function DashboardPage() {
       };
     } else if (counts.pendente > 0) {
       theme = {
-        bg: "bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:border-orange-500/30",
+        bg: "bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:border-green-500/30",
         iconColor: "text-orange-600",
         title: "PAGAMENTOS PENDENTES",
         desc: "Você tem valores a receber dentro do prazo.",
@@ -184,7 +176,7 @@ export default function DashboardPage() {
     }
   };
 
-  if (ordersLoading || clientsLoading || productsLoading) {
+  if (ordersLoading || clientsLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[40vh] gap-3">
         <Loader2 className="size-10 animate-spin text-primary" />
@@ -276,23 +268,11 @@ export default function DashboardPage() {
         <Card className="border-4 border-muted shadow-xl rounded-[2.5rem] overflow-hidden">
           <CardHeader className="p-8 pb-4 bg-muted/50">
             <CardTitle className="text-2xl md:text-3xl font-black flex flex-col items-center gap-3 px-2">
-              <ShoppingBag className="size-8 text-primary" />
-              Catálogo
+              <Users className="size-8 text-primary" />
+              Gestão de Contatos
             </CardTitle>
           </CardHeader>
           <CardContent className="p-8 space-y-6">
-            <Link href="/produtos" className="block group/card">
-              <div className="flex items-center gap-5 p-5 rounded-[1.5rem] bg-background border-4 border-muted shadow-sm hover:border-primary/20 transition-all relative overflow-hidden">
-                <div className="size-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
-                  <Package className="size-8" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xl font-black uppercase tracking-tight px-2 whitespace-nowrap">Produtos</p>
-                  <p className="text-sm text-muted-foreground font-bold">{products?.length || 0} itens</p>
-                </div>
-                <Badge variant="secondary" className="absolute bottom-3 right-4 text-[10px] font-black px-3 py-1 bg-primary/5 text-primary border-none shadow-sm group-hover/card:bg-primary group-hover/card:text-white transition-all">Ver</Badge>
-              </div>
-            </Link>
             <Link href="/clientes" className="block group/card">
               <div className="flex items-center gap-5 p-5 rounded-[1.5rem] bg-background border-4 border-muted shadow-sm hover:border-accent/20 transition-all relative overflow-hidden">
                 <div className="size-14 rounded-2xl bg-accent/10 flex items-center justify-center text-accent shadow-inner">
@@ -302,7 +282,7 @@ export default function DashboardPage() {
                   <p className="text-xl font-black uppercase tracking-tight px-2 whitespace-nowrap">Clientes</p>
                   <p className="text-sm text-muted-foreground font-bold">{clients?.length || 0} contatos</p>
                 </div>
-                <Badge variant="secondary" className="absolute bottom-3 right-4 text-[10px] font-black px-3 py-1 bg-accent/5 text-accent border-none shadow-sm group-hover/card:bg-accent group-hover/card:text-white transition-all">Ver</Badge>
+                <Badge variant="secondary" className="absolute bottom-3 right-4 text-[10px] font-black px-3 py-1 bg-accent/5 text-accent border-none shadow-sm group-hover/card:bg-accent group-hover/card:text-white transition-all">Ver Lista</Badge>
               </div>
             </Link>
           </CardContent>
