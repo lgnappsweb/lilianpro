@@ -74,19 +74,8 @@ export default function NovaVendaPage() {
   });
 
   // --- ESTADO DOS PRODUTOS (LISTA) ---
-  const [saleItems, setSaleItems] = useState<SaleItem[]>([
-    {
-      tempId: `item-${Date.now()}`,
-      name: "",
-      brand: "",
-      category: "",
-      catalogPrice: "",
-      costPrice: "",
-      salePrice: "",
-      productCode: "",
-      description: ""
-    }
-  ]);
+  // Começa sem itens conforme solicitado
+  const [saleItems, setSaleItems] = useState<SaleItem[]>([]);
 
   // --- ESTADO DO PAGAMENTO E TOTAIS ---
   const [paymentMethod, setPaymentMethod] = useState("");
@@ -364,8 +353,13 @@ export default function NovaVendaPage() {
           </CardHeader>
           <CardContent className="p-0 space-y-0">
             {saleItems.length === 0 ? (
-              <div className="p-20 text-center text-muted-foreground italic font-black text-2xl uppercase opacity-20">
-                Nenhum produto adicionado
+              <div className="p-16 sm:p-24 text-center space-y-6">
+                <div className="flex justify-center">
+                  <Package className="size-16 sm:size-24 text-muted-foreground opacity-20" />
+                </div>
+                <p className="text-muted-foreground italic font-black text-xl sm:text-2xl uppercase opacity-40 px-4">
+                  Nenhum produto adicionado à venda.
+                </p>
               </div>
             ) : (
               <div className="divide-y-8 divide-muted/30">
@@ -377,17 +371,15 @@ export default function NovaVendaPage() {
                         <Tag className="size-5 hidden sm:block" />
                         Item #{(index + 1).toString().padStart(2, '0')}
                       </span>
-                      {saleItems.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => removeItem(item.tempId)}
-                          className="h-10 sm:h-12 px-4 sm:px-6 rounded-xl font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all text-[10px] sm:text-xs"
-                        >
-                          <Trash2 className="size-4 mr-2" /> APAGAR
-                        </Button>
-                      )}
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => removeItem(item.tempId)}
+                        className="h-10 sm:h-12 px-4 sm:px-6 rounded-xl font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all text-[10px] sm:text-xs"
+                      >
+                        <Trash2 className="size-4 mr-2" /> APAGAR
+                      </Button>
                     </div>
 
                     <Input
@@ -473,7 +465,7 @@ export default function NovaVendaPage() {
               <Button 
                 type="button" 
                 onClick={addItem}
-                className="w-full h-20 sm:h-24 bg-primary text-white hover:bg-primary/90 font-black rounded-2xl sm:rounded-[2rem] gap-2 sm:gap-4 text-sm sm:text-2xl uppercase tracking-wide sm:tracking-widest shadow-2xl transition-all active:scale-95"
+                className="w-full h-20 sm:h-24 bg-primary text-white hover:bg-primary/90 font-black rounded-2xl sm:rounded-[2rem] gap-2 sm:gap-4 text-xs sm:text-2xl uppercase tracking-tighter sm:tracking-widest shadow-2xl transition-all active:scale-95"
               >
                 <Plus className="size-6 sm:size-8" /> ADICIONAR NOVO PRODUTO
               </Button>
