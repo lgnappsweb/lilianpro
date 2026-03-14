@@ -455,10 +455,10 @@ export default function DashboardPage() {
             <Button 
               variant="ghost" 
               onClick={() => setShowResetConfirm(true)}
-              className="w-full h-auto min-h-12 py-3 text-[10px] sm:text-xs text-destructive font-black uppercase tracking-tighter sm:tracking-widest gap-2 hover:bg-destructive/5 rounded-xl border-2 border-destructive/10 transition-all active:scale-95 px-4"
+              className="w-full h-auto min-h-14 py-4 text-xs sm:text-xl text-destructive font-black uppercase tracking-widest gap-3 hover:bg-destructive/5 rounded-2xl border-4 border-destructive/10 transition-all active:scale-95 px-6"
             >
-              <Trash2 className="size-4 shrink-0" /> 
-              <span className="flex-1 text-center">ENCERRAR E APAGAR PEDIDOS DO CICLO</span>
+              <Trash2 className="size-5 sm:size-6 shrink-0" /> 
+              <span className="flex-1 text-center">ENCERRAR CICLO ATUAL</span>
             </Button>
           </CardContent>
         </Card>
