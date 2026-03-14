@@ -412,6 +412,21 @@ export default function NovaVendaPage() {
                       />
                     </div>
 
+                    <div className="grid sm:grid-cols-2">
+                      <Input
+                        placeholder="Código/SKU"
+                        className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-none border-x-0 border-t-0 border-b-2 border-muted focus:border-primary w-full px-4"
+                        value={item.productCode}
+                        onChange={(e) => handleItemChange(item.tempId, "productCode", e.target.value)}
+                      />
+                      <Input
+                        placeholder="Descrição do Produto"
+                        className="h-14 sm:h-16 text-lg sm:text-xl font-black rounded-none border-x-0 border-t-0 border-b-2 border-muted focus:border-primary w-full px-4"
+                        value={item.description}
+                        onChange={(e) => handleItemChange(item.tempId, "description", e.target.value)}
+                      />
+                    </div>
+
                     <div className="grid grid-cols-3">
                       <Input
                         placeholder="00,00"
