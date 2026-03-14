@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
@@ -251,7 +250,10 @@ export default function DashboardPage() {
 
   const recentOrders = useMemo(() => {
     if (!filteredOrders) return [];
-    return [...filteredOrders].sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()).slice(0, 5);
+    // Ordenação alfabética conforme solicitação "sempre ordem alfabética"
+    return [...filteredOrders]
+      .sort((a, b) => (a.clientName || "").localeCompare(b.clientName || ""))
+      .slice(0, 5);
   }, [filteredOrders]);
 
   const handleUpdateCycleName = (name: string) => {
@@ -335,7 +337,7 @@ export default function DashboardPage() {
   const getStatusClass = (status: string) => {
     switch (status) {
       case "Pago": return "bg-green-600 text-white";
-      case "Pendente": return "bg-orange-500 text-white";
+      case "Pendente": return "bg-orange-50 text-orange-600 border-orange-200";
       case "Atrasado": return "bg-red-600 text-white";
       default: return "bg-muted text-muted-foreground";
     }

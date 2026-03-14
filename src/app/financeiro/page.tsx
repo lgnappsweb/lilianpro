@@ -215,12 +215,14 @@ export default function FinanceiroPage() {
     if (!filteredOrders) return [];
     return filteredOrders
       .filter(o => o.paymentStatus === "Pendente" && o.dueDate)
-      .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+      .sort((a, b) => (a.clientName || "").localeCompare(b.clientName || ""));
   }, [filteredOrders]);
 
   const entradasConfirmadas = useMemo(() => {
     if (!filteredOrders) return [];
-    return filteredOrders.filter(o => o.paymentStatus === "Pago").sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
+    return filteredOrders
+      .filter(o => o.paymentStatus === "Pago")
+      .sort((a, b) => (a.clientName || "").localeCompare(b.clientName || ""));
   }, [filteredOrders]);
 
   const updateDatePart = (type: 'from' | 'to', part: 'day' | 'month' | 'year', value: string) => {
@@ -636,7 +638,7 @@ export default function FinanceiroPage() {
                   <div className="size-10 sm:size-16 rounded-[1.2rem] bg-green-100 flex items-center justify-center text-green-700 shadow-inner shrink-0"><ArrowDownCircle className="size-5 sm:size-8" /></div>
                   <div className="min-w-0 flex-1">
                     <p className="font-black text-lg sm:text-xl px-1 uppercase italic text-green-800 truncate">{p.clientName}</p>
-                    <p className="text-[10px] sm:text-xs text-green-600/60 font-black flex items-center gap-2 mt-1 uppercase tracking-widest"><CalendarIcon className="size-3" /> {formatDateBR(order.orderDate)}</p>
+                    <p className="text-[10px] sm:text-xs text-green-600/60 font-black flex items-center gap-2 mt-1 uppercase tracking-widest"><CalendarIcon className="size-3" /> {formatDateBR(p.orderDate)}</p>
                   </div>
                 </div>
                 <div className="sm:text-right text-left shrink-0 border-t sm:border-t-0 pt-2 w-full sm:w-auto">
