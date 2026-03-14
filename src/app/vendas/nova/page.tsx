@@ -71,7 +71,19 @@ export default function NovaVendaPage() {
   });
 
   // --- ESTADO DOS PRODUTOS (LISTA) ---
-  const [saleItems, setSaleItems] = useState<SaleItem[]>([]);
+  const [saleItems, setSaleItems] = useState<SaleItem[]>([
+    {
+      tempId: `item-${Date.now()}`,
+      name: "",
+      brand: "",
+      category: "",
+      catalogPrice: "",
+      costPrice: "",
+      salePrice: "",
+      productCode: "",
+      description: ""
+    }
+  ]);
 
   // --- ESTADO DO PAGAMENTO E TOTAIS ---
   const [paymentMethod, setPaymentMethod] = useState("");
@@ -410,19 +422,19 @@ export default function NovaVendaPage() {
                     <div className="grid grid-cols-3">
                       <Input
                         placeholder="Preço Revista"
-                        className="h-14 text-base font-black rounded-none border-x-0 border-t-0 border-b-2 border-muted focus:border-primary w-full px-4"
+                        className="h-14 text-base font-black rounded-none border-x-0 border-t-0 border-b-2 border-sky-200 focus:border-sky-500 w-full px-4 bg-sky-50 text-sky-900"
                         value={item.catalogPrice}
                         onChange={(e) => handleItemChange(item.tempId, "catalogPrice", maskCurrency(e.target.value))}
                       />
                       <Input
                         placeholder="Preço Custo"
-                        className="h-14 text-base font-black rounded-none border-x-0 border-t-0 border-b-2 border-muted focus:border-primary w-full px-4 bg-muted/5"
+                        className="h-14 text-base font-black rounded-none border-x-0 border-t-0 border-b-2 border-orange-200 focus:border-orange-500 w-full px-4 bg-orange-50 text-orange-900"
                         value={item.costPrice}
                         onChange={(e) => handleItemChange(item.tempId, "costPrice", maskCurrency(e.target.value))}
                       />
                       <Input
                         placeholder="Preço Venda"
-                        className="h-14 text-base font-black rounded-none border-none focus:border-primary w-full px-4 bg-primary/5 text-primary"
+                        className="h-14 text-base font-black rounded-none border-none focus:border-green-500 w-full px-4 bg-green-50 text-green-900"
                         value={item.salePrice}
                         onChange={(e) => handleItemChange(item.tempId, "salePrice", maskCurrency(e.target.value))}
                         required
