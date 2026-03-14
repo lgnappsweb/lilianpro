@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
@@ -372,9 +373,9 @@ export default function DashboardPage() {
 
         {/* GESTÃO DE CICLO */}
         <Card className="w-full border-4 border-primary/20 shadow-xl rounded-[2.5rem] overflow-hidden bg-background mb-4">
-          <CardHeader className="bg-primary/5 p-6 border-b-2 border-primary/10">
-            <CardTitle className="text-xl font-black flex items-center justify-center gap-3 uppercase italic text-primary">
-              <RefreshCw className="size-6" /> GESTÃO DE CICLO ATUAL
+          <CardHeader className="bg-primary/5 p-4 sm:p-6 border-b-2 border-primary/10">
+            <CardTitle className="text-base sm:text-xl font-black flex items-center justify-center gap-2 sm:gap-3 uppercase italic text-primary whitespace-nowrap">
+              <RefreshCw className="size-5 sm:size-6" /> GESTÃO DE CICLO ATUAL
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 space-y-6">
