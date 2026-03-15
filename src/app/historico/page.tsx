@@ -74,7 +74,7 @@ export default function HistoricoGlobalPage() {
   const filteredClients = useMemo(() => {
     if (!clients || !allOrders) return [];
 
-    // Primeiro, filtramos as ordens pelo ciclo selecionado
+    // Filtramos as ordens pelo ciclo selecionado
     const ordersInCycle = selectedCycleId === "all" 
       ? allOrders 
       : allOrders.filter(o => o.cycleId === selectedCycleId);
@@ -114,7 +114,7 @@ export default function HistoricoGlobalPage() {
             <History className="size-16 sm:size-24 text-primary" />
             <h1 className="text-4xl sm:text-7xl font-black tracking-tighter text-primary font-headline uppercase leading-none italic drop-shadow-xl whitespace-nowrap px-2">HISTÓRICO</h1>
           </div>
-          <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Organizado individualmente por ciclo de vendas.</p>
+          <p className="text-xs sm:text-xl text-muted-foreground mt-4 font-bold opacity-60 uppercase tracking-widest text-center">Consulta de clientes por período de venda.</p>
         </div>
       </div>
 
@@ -124,7 +124,7 @@ export default function HistoricoGlobalPage() {
           <CardHeader className="p-6 pb-2">
             <div className="flex items-center gap-3 text-primary">
               <Filter className="size-5" />
-              <span className="font-black uppercase tracking-widest text-xs">Filtrar por Ciclo</span>
+              <span className="font-black uppercase tracking-widest text-xs">Selecione o Ciclo</span>
             </div>
           </CardHeader>
           <div className="p-6 pt-0">
@@ -206,7 +206,7 @@ export default function HistoricoGlobalPage() {
             <RefreshCw className="size-24 text-muted-foreground/20 mx-auto mb-6" />
             <h3 className="font-black text-2xl sm:text-3xl text-muted-foreground uppercase tracking-tighter">Sem registros neste ciclo</h3>
             <p className="text-lg sm:text-xl text-muted-foreground mt-4 font-bold italic opacity-60 px-6">
-              Nenhuma venda foi encontrada para {selectedCycleName}. Troque o ciclo acima ou faça uma nova venda.
+              Nenhuma venda ativa foi encontrada para {selectedCycleName}. Troque o ciclo acima ou faça uma nova venda.
             </p>
           </div>
         )}

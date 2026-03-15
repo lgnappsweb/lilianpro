@@ -46,7 +46,7 @@ import {
   setDocumentNonBlocking, 
   deleteDocumentNonBlocking 
 } from "@/firebase";
-import { collection, doc, query, where } from "firebase/firestore";
+import { collection, doc, query, where, getDocs } from "firebase/firestore";
 import { cn } from "@/lib/utils";
 import { 
   format, 
@@ -297,8 +297,21 @@ export default function DashboardPage() {
     if (!user || !db || !cycleToDelete) return;
     setIsDeleting(true);
     try {
-      // Agora apenas removemos o registro do ciclo. 
-      // Os pedidos vinculados a ele permanecem no banco para histórico global.
+      // 1. Buscar todos os pedidos vinculados a este ciclo
+      const ordersRef = collection(db, "users", user.uid, "orders");
+      const q = query(ordersRef, where("cycleId", "==", cycleToDelete.id));
+      const querySnapshot = await getDocs(q);
+      
+      // 2. Apagar pedidos e seus itens (Cascata)
+      for (const orderDoc of querySnapshot.docs) {
+        const itemsSnapshot = await getDocs(collection(db, "users", user.uid, "orders", orderDoc.id, "orderItems"));
+        itemsSnapshot.forEach(item => {
+          deleteDocumentNonBlocking(doc(db, "users", user.uid, "orders", orderDoc.id, "orderItems", item.id));
+        });
+        deleteDocumentNonBlocking(doc(db, "users", user.uid, "orders", orderDoc.id));
+      }
+
+      // 3. Remover o ciclo
       deleteDocumentNonBlocking(doc(db, "users", user.uid, "cycles", cycleToDelete.id));
 
       // Limpar activeCycleId se for o excluído
@@ -306,11 +319,11 @@ export default function DashboardPage() {
         setDocumentNonBlocking(settingsRef!, { activeCycleId: null }, { merge: true });
       }
 
-      toast({ title: "Ciclo Removido", description: "O registro do período foi excluído. Os pedidos foram preservados no histórico." });
+      toast({ title: "Ciclo e Vendas Removidos", description: "O período e todos os pedidos vinculados foram apagados." });
       setCycleToDelete(null);
     } catch (e) {
       console.error(e);
-      toast({ variant: "destructive", title: "Erro", description: "Falha ao remover ciclo." });
+      toast({ variant: "destructive", title: "Erro", description: "Falha ao remover ciclo e dados." });
     } finally {
       setIsDeleting(false);
     }
@@ -607,10 +620,10 @@ export default function DashboardPage() {
       <AlertDialog open={!!cycleToDelete} onOpenChange={(open) => !open && setCycleToDelete(null)}>
         <AlertDialogContent className="rounded-[2.5rem] p-8 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-3xl sm:text-5xl font-black tracking-tighter text-destructive uppercase leading-none text-left px-2">Remover Registro de Ciclo?</AlertDialogTitle>
+            <AlertDialogTitle className="text-3xl sm:text-5xl font-black tracking-tighter text-destructive uppercase leading-none text-left px-2">Remover Ciclo e Pedidos?</AlertDialogTitle>
             <AlertDialogDescription className="text-xl sm:text-2xl font-bold mt-6 leading-relaxed text-muted-foreground text-left">
-              <span className="text-destructive font-black">IMPORTANTE:</span> Esta ação apagará o ciclo <strong className="text-foreground border-b-4 border-primary px-1">{cycleToDelete?.name}</strong>. <br /><br />
-              <span className="text-primary font-black uppercase">OS PEDIDOS NÃO SERÃO APAGADOS.</span> Eles permanecerão salvos no banco de dados para consulta no histórico geral.
+              <span className="text-destructive font-black uppercase">Ação Irreversível:</span> Esta ação apagará o ciclo <strong className="text-foreground border-b-4 border-primary px-1">{cycleToDelete?.name}</strong> e <span className="text-primary font-black uppercase">TODOS OS PEDIDOS VINCULADOS A ELE</span>. <br /><br />
+              Se deseja manter os pedidos no histórico, exclua-os individualmente na ficha da cliente em vez de apagar o ciclo.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-4 mt-12 flex-col sm:flex-row">
@@ -620,7 +633,7 @@ export default function DashboardPage() {
               disabled={isDeleting}
               className="h-16 sm:h-24 px-10 text-xl font-black bg-destructive text-white hover:bg-destructive/90 rounded-2xl sm:rounded-3xl shadow-xl active:scale-95 transition-all"
             >
-              {isDeleting ? "APAGANDO..." : "SIM, REMOVER REGISTRO"}
+              {isDeleting ? "APAGANDO..." : "SIM, APAGAR TUDO"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
