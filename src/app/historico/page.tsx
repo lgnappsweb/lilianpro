@@ -37,21 +37,6 @@ export default function HistoricoGlobalPage() {
   
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCycleId, setSelectedCycleId] = useState<string>("all");
-  const [hasDefaulted, setHasDefaulted] = useState(false);
-
-  // Busca Configurações para pegar o ciclo ativo inicial
-  const settingsRef = useMemoFirebase(() => {
-    if (!db || !user) return null;
-    return doc(db, "users", user.uid, "config", "settings");
-  }, [db, user]);
-  const { data: settings } = useDoc(settingsRef);
-
-  useEffect(() => {
-    if (settings?.activeCycleId && !hasDefaulted) {
-      setSelectedCycleId(settings.activeCycleId);
-      setHasDefaulted(true);
-    }
-  }, [settings?.activeCycleId, hasDefaulted]);
 
   // Busca todos os ciclos para o seletor
   const cyclesQuery = useMemoFirebase(() => {
@@ -95,7 +80,7 @@ export default function HistoricoGlobalPage() {
   }, [clients, allOrders, selectedCycleId, searchTerm]);
 
   const selectedCycleName = useMemo(() => {
-    if (selectedCycleId === "all") return "Todos os Ciclos";
+    if (selectedCycleId === "all") return "Todos os Ciclos (Geral)";
     return cycles?.find(c => c.id === selectedCycleId)?.name || "Ciclo Selecionado";
   }, [selectedCycleId, cycles]);
 

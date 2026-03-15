@@ -105,7 +105,7 @@ function HistoricoClienteContent() {
   const [selectedCycleId, setSelectedCycleId] = useState<string>("all");
   const [hasDefaulted, setHasDefaulted] = useState(false);
 
-  // Busca as configurações para o nome do app e ciclo ativo inicial
+  // Busca as configurações para o nome do app
   const settingsRef = useMemoFirebase(() => {
     if (!db || !user) return null;
     return doc(db, "users", user.uid, "config", "settings");
@@ -116,14 +116,15 @@ function HistoricoClienteContent() {
   useEffect(() => {
     const urlCycleId = searchParams.get('cycleId');
     
-    if (urlCycleId) {
+    if (urlCycleId && !hasDefaulted) {
       setSelectedCycleId(urlCycleId);
       setHasDefaulted(true);
-    } else if (settings?.activeCycleId && !hasDefaulted) {
-      setSelectedCycleId(settings.activeCycleId);
+    } else if (!hasDefaulted) {
+      // Por padrão, sempre inicia com "Todos os Ciclos" no Histórico
+      setSelectedCycleId("all");
       setHasDefaulted(true);
     }
-  }, [settings?.activeCycleId, searchParams, hasDefaulted]);
+  }, [searchParams, hasDefaulted]);
 
   // Busca todos os ciclos para o seletor
   const cyclesQuery = useMemoFirebase(() => {
@@ -234,7 +235,7 @@ function HistoricoClienteContent() {
   };
 
   const selectedCycleName = useMemo(() => {
-    if (selectedCycleId === "all") return "Todos os Ciclos";
+    if (selectedCycleId === "all") return "Todos os Ciclos (Geral)";
     return cycles?.find(c => c.id === selectedCycleId)?.name || "Ciclo Selecionado";
   }, [selectedCycleId, cycles]);
 
