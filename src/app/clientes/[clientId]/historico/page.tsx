@@ -332,12 +332,12 @@ export default function HistoricoClientePage() {
 
       {/* LISTAGEM DE COMPRAS FILTRADAS */}
       <div className="space-y-6">
-        <div className="flex items-center justify-between px-2 gap-2">
+        <div className="flex flex-col px-2 gap-1">
           <h2 className="text-base sm:text-2xl font-black text-primary uppercase tracking-tighter italic flex items-center gap-2 whitespace-nowrap truncate min-w-0">
             <ShoppingBag className="size-5 sm:size-6 shrink-0" /> 
             <span className="truncate">Jornada: {selectedCycleName}</span>
           </h2>
-          <Badge variant="outline" className="border-2 font-black uppercase text-[10px] tracking-widest opacity-60 shrink-0">Histórico</Badge>
+          <span className="text-[10px] font-black text-muted-foreground uppercase opacity-40 tracking-widest">{filteredOrders.length} compras registradas</span>
         </div>
 
         <div className="grid gap-6">
@@ -407,17 +407,17 @@ export default function HistoricoClientePage() {
         {stats.count > 0 && (
           <Button 
             variant="ghost" 
-            className="w-full h-20 rounded-[2rem] border-4 border-destructive/20 text-destructive font-black text-xl gap-4 shadow-sm hover:bg-destructive/10 transition-all"
+            className="w-full h-16 sm:h-20 rounded-[1.5rem] sm:rounded-[2.5rem] border-4 border-destructive/20 text-destructive font-black text-sm sm:text-xl gap-3 sm:gap-4 shadow-sm hover:bg-destructive/10 transition-all"
             onClick={() => setShowClearAllAlert(true)}
           >
-            <Trash2 className="size-6" />
-            LIMPAR HISTÓRICO DESTE CICLO
+            <Trash2 className="size-5 sm:size-6" />
+            <span className="truncate">LIMPAR HISTÓRICO DESTE CICLO</span>
           </Button>
         )}
 
-        <Button asChild variant="outline" className="w-full h-20 rounded-[2rem] border-4 border-muted font-black text-xl gap-4 shadow-xl hover:bg-muted/50 transition-all">
+        <Button asChild variant="outline" className="w-full h-16 sm:h-20 rounded-[1.5rem] sm:rounded-[2.5rem] border-4 border-muted font-black text-sm sm:text-xl gap-3 sm:gap-4 shadow-xl hover:bg-muted/50 transition-all">
           <Link href={`/clientes/${clientId}`}>
-            <ArrowLeft className="size-6" />
+            <ArrowLeft className="size-5 sm:size-6" />
             VOLTAR AO PERFIL
           </Link>
         </Button>
