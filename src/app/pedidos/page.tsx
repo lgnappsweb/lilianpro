@@ -231,17 +231,17 @@ export default function PedidosPage() {
                 </Badge>
               </div>
 
-              <div className="flex flex-row items-center justify-center gap-2 w-full pt-4 border-t-2 border-muted/30">
-                <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[10px] uppercase tracking-widest rounded-xl border-2 hover:bg-primary/5 px-2 flex-1 shadow-sm transition-all active:scale-95">
+              <div className="grid grid-cols-2 gap-2 w-full pt-4 border-t-2 border-muted/30">
+                <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2 transition-all active:scale-95">
                   <Link href={`/pedidos/${order.id}`}>
-                    <FileText className="mr-1 size-3" />
+                    <FileText className="mr-1 size-3 sm:size-4" />
                     Ficha
                   </Link>
                 </Button>
 
-                <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[10px] uppercase tracking-widest rounded-xl border-2 hover:bg-primary/5 px-2 flex-1 shadow-sm transition-all active:scale-95">
+                <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2 transition-all active:scale-95">
                   <Link href={`/pedidos/${order.id}/editar`}>
-                    <Edit className="mr-1 size-3" />
+                    <Edit className="mr-1 size-3 sm:size-4" />
                     Editar
                   </Link>
                 </Button>
@@ -249,21 +249,21 @@ export default function PedidosPage() {
                 {order.paymentStatus !== "Pago" && (
                   <Button 
                     variant="outline" 
-                    className="h-10 sm:h-12 font-black text-[9px] sm:text-[10px] uppercase tracking-widest rounded-xl border-2 border-green-200 text-green-600 hover:bg-green-50 hover:border-green-400 px-2 flex-1 shadow-sm transition-all active:scale-95"
+                    className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 border-green-200 text-green-600 hover:bg-green-50 hover:border-green-400 px-2 transition-all active:scale-95"
                     onClick={() => setOrderToPay(order)}
                   >
-                    <CheckCircle2 className="mr-1 size-3" />
+                    <CheckCircle2 className="mr-1 size-3 sm:size-4" />
                     Pagar
                   </Button>
                 )}
 
                 <Button 
                   variant="outline" 
-                  className="h-10 sm:h-12 font-black text-[9px] sm:text-[10px] uppercase tracking-widest rounded-xl border-2 text-destructive border-destructive/20 hover:bg-destructive/5 hover:border-destructive px-2 flex-1 shadow-sm transition-all active:scale-95"
+                  className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 text-destructive border-destructive/20 hover:bg-destructive/5 hover:border-destructive px-2 transition-all active:scale-95"
                   onClick={() => setOrderToDelete(order)}
                 >
-                  <Trash2 className="mr-1 size-3" />
-                  EXCLUIR
+                  <Trash2 className="mr-1 size-3 sm:size-4" />
+                  Excluir
                 </Button>
               </div>
             </Card>
@@ -273,25 +273,25 @@ export default function PedidosPage() {
 
       {/* Diálogo de Confirmação de Pagamento com Data Personalizada */}
       <AlertDialog open={!!orderToPay} onOpenChange={(open) => !open && setOrderToPay(null)}>
-        <AlertDialogContent className="rounded-[2.5rem] p-6 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto w-[95vw] sm:w-full">
+        <AlertDialogContent className="rounded-[2.5rem] p-4 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto w-[95vw] sm:w-full">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-xl sm:text-5xl font-black tracking-tighter text-primary uppercase leading-tight text-left px-2 italic">Confirmar Recebimento</AlertDialogTitle>
-            <AlertDialogDescription className="text-sm sm:text-2xl font-bold mt-4 sm:mt-6 leading-relaxed text-muted-foreground text-left px-2">
+            <AlertDialogTitle className="text-lg sm:text-5xl font-black tracking-tighter text-primary uppercase leading-tight text-left px-2 italic">Confirmar Recebimento</AlertDialogTitle>
+            <AlertDialogDescription className="text-xs sm:text-2xl font-bold mt-2 sm:mt-6 leading-relaxed text-muted-foreground text-left px-2">
               Em qual data você recebeu o pagamento de <strong className="text-foreground border-b-2 sm:border-b-4 border-primary">{orderToPay?.clientName}</strong>?
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="py-4 sm:py-6 px-2">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2 block">Data do Recebimento</Label>
+          <div className="py-2 sm:py-6 px-2">
+            <Label className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1 sm:mb-2 block">Data do Recebimento</Label>
             <Input 
               type="date" 
               value={paymentDate} 
               onChange={(e) => setPaymentDate(e.target.value)} 
-              className="h-14 sm:h-16 text-lg sm:text-2xl font-black rounded-2xl border-4 border-muted focus:border-primary"
+              className="h-10 sm:h-16 text-sm sm:text-2xl font-black rounded-xl sm:rounded-2xl border-2 sm:border-4 border-muted focus:border-primary"
             />
           </div>
-          <AlertDialogFooter className="gap-3 sm:gap-4 mt-8 sm:mt-12 flex-col sm:flex-row">
-            <AlertDialogCancel className="h-12 sm:h-24 px-4 sm:px-10 text-xs sm:text-xl font-black rounded-2xl sm:rounded-3xl border-4 border-muted hover:bg-muted/50">Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmPayment} className="h-12 sm:h-24 px-4 sm:px-10 text-xs sm:text-xl font-black bg-green-600 text-white hover:bg-green-700 rounded-2xl sm:rounded-3xl shadow-xl active:scale-95 transition-all">
+          <AlertDialogFooter className="gap-2 sm:gap-4 mt-4 sm:mt-12 flex-col sm:flex-row">
+            <AlertDialogCancel className="h-10 sm:h-24 px-4 sm:px-10 text-[10px] sm:text-xl font-black rounded-xl sm:rounded-3xl border-2 sm:border-4 border-muted hover:bg-muted/50">Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmPayment} className="h-10 sm:h-24 px-4 sm:px-10 text-[10px] sm:text-xl font-black bg-green-600 text-white hover:bg-green-700 rounded-xl sm:rounded-3xl shadow-xl active:scale-95 transition-all">
               SIM, CONFIRMAR PAGAMENTO
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -300,16 +300,16 @@ export default function PedidosPage() {
 
       {/* Diálogo de Remoção */}
       <AlertDialog open={!!orderToDelete} onOpenChange={(open) => !open && setOrderToDelete(null)}>
-        <AlertDialogContent className="rounded-[2.5rem] p-6 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto w-[95vw] sm:w-full">
+        <AlertDialogContent className="rounded-[2.5rem] p-4 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto w-[95vw] sm:w-full">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-xl sm:text-5xl font-black tracking-tighter text-primary uppercase leading-tight text-left px-2">Remover Pedido?</AlertDialogTitle>
-            <AlertDialogDescription className="text-sm sm:text-2xl font-bold mt-4 sm:mt-6 leading-relaxed text-muted-foreground text-left px-2">
+            <AlertDialogTitle className="text-lg sm:text-5xl font-black tracking-tighter text-primary uppercase leading-tight text-left px-2">Remover Pedido?</AlertDialogTitle>
+            <AlertDialogDescription className="text-xs sm:text-2xl font-bold mt-2 sm:mt-6 leading-relaxed text-muted-foreground text-left px-2">
               O pedido de <strong className="text-foreground border-b-2 sm:border-b-4 border-primary">{orderToDelete?.clientName}</strong> sairá do gerenciamento ativo, mas <span className="text-primary font-black">permanecerá no histórico permanente</span> do cliente.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="gap-3 sm:gap-4 mt-8 sm:mt-12 flex-col sm:flex-row">
-            <AlertDialogCancel className="h-12 sm:h-24 px-4 sm:px-10 text-xs sm:text-xl font-black rounded-2xl sm:rounded-3xl border-4 border-muted hover:bg-muted/50">Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm} className="h-12 sm:h-24 px-4 sm:px-10 text-xs sm:text-xl font-black bg-destructive text-white hover:bg-destructive/90 rounded-2xl sm:rounded-3xl shadow-xl active:scale-95 transition-all">
+          <AlertDialogFooter className="gap-2 sm:gap-4 mt-4 sm:mt-12 flex-col sm:flex-row">
+            <AlertDialogCancel className="h-10 sm:h-24 px-4 sm:px-10 text-[10px] sm:text-xl font-black rounded-xl sm:rounded-3xl border-2 sm:border-4 border-muted hover:bg-muted/50">Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="h-10 sm:h-24 px-4 sm:px-10 text-[10px] sm:text-xl font-black bg-destructive text-white hover:bg-destructive/90 rounded-xl sm:rounded-3xl shadow-xl active:scale-95 transition-all">
               SIM, REMOVER
             </AlertDialogAction>
           </AlertDialogFooter>
