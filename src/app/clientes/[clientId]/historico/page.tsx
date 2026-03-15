@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from "@/firebase";
 import { doc, collection, query, where, getDocs } from "firebase/firestore";
@@ -26,9 +26,17 @@ import {
   ChevronRight,
   MessageCircle,
   Trash2,
+  Filter,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -93,14 +101,28 @@ export default function HistoricoClientePage() {
   const [orderToDelete, setOrderToDelete] = useState<any | null>(null);
   const [showClearAllAlert, setShowClearAllAlert] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
+  const [selectedCycleId, setSelectedCycleId] = useState<string>("all");
 
-  // Busca as configurações para o nome do app
+  // Busca as configurações para o nome do app e ciclo ativo inicial
   const settingsRef = useMemoFirebase(() => {
     if (!db || !user) return null;
     return doc(db, "users", user.uid, "config", "settings");
   }, [db, user]);
   const { data: settings } = useDoc(settingsRef);
   const appName = settings?.appName || "LilianPro";
+
+  useEffect(() => {
+    if (settings?.activeCycleId && selectedCycleId === "all") {
+      setSelectedCycleId(settings.activeCycleId);
+    }
+  }, [settings?.activeCycleId]);
+
+  // Busca todos os ciclos para o seletor
+  const cyclesQuery = useMemoFirebase(() => {
+    if (!db || !user) return null;
+    return collection(db, "users", user.uid, "cycles");
+  }, [db, user]);
+  const { data: cycles } = useCollection(cyclesQuery);
 
   // Busca dados da cliente
   const clientRef = useMemoFirebase(() => {
@@ -117,19 +139,23 @@ export default function HistoricoClientePage() {
       where("clientId", "==", clientId)
     );
   }, [db, user, clientId]);
-  const { data: orders, isLoading: ordersLoading } = useCollection(ordersQuery);
+  const { data: allOrders, isLoading: ordersLoading } = useCollection(ordersQuery);
 
-  // Ordenação e Estatísticas em Memória
-  const sortedOrders = useMemo(() => {
-    if (!orders) return [];
-    return [...orders].sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
-  }, [orders]);
+  // Filtragem e Ordenação por Ciclo
+  const filteredOrders = useMemo(() => {
+    if (!allOrders) return [];
+    const filtered = selectedCycleId === "all" 
+      ? allOrders 
+      : allOrders.filter(o => o.cycleId === selectedCycleId);
+    
+    return [...filtered].sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
+  }, [allOrders, selectedCycleId]);
 
   const stats = useMemo(() => {
-    if (!orders) return { total: 0, count: 0 };
-    const total = orders.reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0);
-    return { total, count: orders.length };
-  }, [orders]);
+    if (!filteredOrders) return { total: 0, count: 0 };
+    const total = filteredOrders.reduce((acc, o) => acc + (Number(o.finalAmount) || 0), 0);
+    return { total, count: filteredOrders.length };
+  }, [filteredOrders]);
 
   const handleDeleteConfirm = () => {
     if (orderToDelete && user && db) {
@@ -148,7 +174,13 @@ export default function HistoricoClientePage() {
       setIsClearing(true);
       try {
         const ordersRef = collection(db, "users", user.uid, "orders");
-        const q = query(ordersRef, where("clientId", "==", clientId));
+        let q = query(ordersRef, where("clientId", "==", clientId));
+        
+        // Se houver um ciclo selecionado, limpamos apenas o histórico desse ciclo
+        if (selectedCycleId !== "all") {
+          q = query(ordersRef, where("clientId", "==", clientId), where("cycleId", "==", selectedCycleId));
+        }
+
         const querySnapshot = await getDocs(q);
         
         querySnapshot.forEach((orderDoc) => {
@@ -157,7 +189,7 @@ export default function HistoricoClientePage() {
 
         toast({
           title: "Histórico limpo!",
-          description: `Todas as compras de ${cliente?.fullName} foram removidas.`,
+          description: `As compras de ${cliente?.fullName} no ciclo selecionado foram removidas.`,
         });
         setShowClearAllAlert(false);
       } catch (error) {
@@ -165,7 +197,7 @@ export default function HistoricoClientePage() {
         toast({
           variant: "destructive",
           title: "Erro ao limpar",
-          description: "Não foi possível remover o histórico completo.",
+          description: "Não foi possível remover o histórico.",
         });
       } finally {
         setIsClearing(false);
@@ -189,16 +221,21 @@ export default function HistoricoClientePage() {
     return `${day}/${month}/${year}`;
   };
 
-  const handleShareHistory = () => {
-    if (!cliente || !orders) return;
+  const selectedCycleName = useMemo(() => {
+    if (selectedCycleId === "all") return "Todos os Ciclos";
+    return cycles?.find(c => c.id === selectedCycleId)?.name || "Ciclo Selecionado";
+  }, [selectedCycleId, cycles]);
 
-    let message = `📊 *HISTÓRICO DE COMPRAS - ${appName}*\n\n`;
+  const handleShareHistory = () => {
+    if (!cliente || !filteredOrders) return;
+
+    let message = `📊 *HISTÓRICO (${selectedCycleName}) - ${appName}*\n\n`;
     message += `👤 *Cliente:* ${cliente.fullName}\n`;
     message += `💰 *Total Comprado:* R$ ${stats.total.toFixed(2)}\n`;
     message += `📦 *Qtd. Pedidos:* ${stats.count}\n\n`;
     message += `📅 *RESUMO DA JORNADA:*\n`;
 
-    sortedOrders.forEach((order) => {
+    filteredOrders.forEach((order) => {
       const statusLabel = order.paymentStatus === "Pago" ? "✅ PAGO" : order.paymentStatus === "Atrasado" ? "❌ ATRASADO" : "⏳ PENDENTE";
       message += `--------------------------\n`;
       message += `🛒 Compra em ${formatDateBR(order.orderDate)}\n`;
@@ -208,19 +245,6 @@ export default function HistoricoClientePage() {
 
     message += `\n--------------------------\n`;
     message += `✨ _Obrigada pela preferência!_`;
-
-    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank");
-  };
-
-  const handleShareOrder = (order: any) => {
-    const statusLabel = order.paymentStatus === "Pago" ? "✅ PAGO" : order.paymentStatus === "Atrasado" ? "❌ ATRASADO" : "⏳ PENDENTE";
-    let message = `🛍️ *DETALHE DE COMPRA - ${appName}*\n\n`;
-    message += `👤 *Cliente:* ${cliente?.fullName}\n`;
-    message += `📅 *Data:* ${formatDateBR(order.orderDate)}\n`;
-    message += `💳 *Pagamento:* ${order.paymentMethod?.toUpperCase()}\n`;
-    message += `📊 *Status:* ${statusLabel}\n`;
-    message += `💰 *TOTAL: R$ ${Number(order.finalAmount).toFixed(2)}*\n\n`;
-    message += `✨ _Obrigada pela confiança!_`;
 
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank");
   };
@@ -255,11 +279,34 @@ export default function HistoricoClientePage() {
         </div>
       </div>
 
-      {/* RESUMO RÁPIDO */}
+      {/* SELETOR DE CICLO INTERLIGADO */}
+      <Card className="border-4 border-primary/20 bg-primary/5 rounded-[2rem] overflow-hidden shadow-xl">
+        <CardHeader className="p-6 pb-2">
+          <div className="flex items-center gap-3 text-primary">
+            <Filter className="size-5" />
+            <span className="font-black uppercase tracking-widest text-xs">Histórico Individual por Ciclo</span>
+          </div>
+        </CardHeader>
+        <div className="p-6 pt-0">
+          <Select value={selectedCycleId} onValueChange={setSelectedCycleId}>
+            <SelectTrigger className="h-16 text-xl font-black rounded-2xl border-4 border-muted bg-background">
+              <SelectValue placeholder="Selecione o ciclo..." />
+            </SelectTrigger>
+            <SelectContent className="font-black">
+              <SelectItem value="all">TODOS OS CICLOS (GERAL)</SelectItem>
+              {cycles?.map(c => (
+                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </Card>
+
+      {/* RESUMO RÁPIDO DO CICLO SELECIONADO */}
       <div className="grid grid-cols-2 gap-4">
         <Card className="border-4 border-muted rounded-[2rem] bg-background shadow-lg overflow-hidden">
           <CardContent className="p-6 text-center">
-            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Total Comprado</p>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Total no Ciclo</p>
             <p className="text-2xl sm:text-4xl font-black text-green-600 italic tracking-tighter">R$ {stats.total.toFixed(2)}</p>
           </CardContent>
         </Card>
@@ -278,21 +325,21 @@ export default function HistoricoClientePage() {
           className="w-full h-16 rounded-2xl bg-green-600 hover:bg-green-700 font-black text-lg gap-3 shadow-xl uppercase tracking-widest transition-transform active:scale-95"
         >
           <MessageCircle className="size-6" />
-          COMPARTILHAR HISTÓRICO
+          COMPARTILHAR ESTE CICLO
         </Button>
       )}
 
-      {/* LISTAGEM DE COMPRAS */}
+      {/* LISTAGEM DE COMPRAS FILTRADAS */}
       <div className="space-y-6">
         <div className="flex items-center justify-between px-2">
           <h2 className="text-xl sm:text-2xl font-black text-primary uppercase tracking-tighter italic flex items-center gap-3">
-            <ShoppingBag className="size-6" /> Jornada de Compras
+            <ShoppingBag className="size-6" /> Jornada: {selectedCycleName}
           </h2>
-          <Badge variant="outline" className="border-2 font-black uppercase text-[10px] tracking-widest opacity-60">Cronológico</Badge>
+          <Badge variant="outline" className="border-2 font-black uppercase text-[10px] tracking-widest opacity-60">Histórico</Badge>
         </div>
 
         <div className="grid gap-6">
-          {sortedOrders.map((order) => {
+          {filteredOrders.map((order) => {
             const status = getStatusInfo(order.paymentStatus);
             return (
               <Card key={order.id} className="border-4 border-muted rounded-[2rem] shadow-xl hover:border-primary/20 transition-all overflow-hidden group">
@@ -320,21 +367,13 @@ export default function HistoricoClientePage() {
                     </div>
                   </div>
 
-                  {/* Detalhes dos Produtos dentro do Pedido */}
                   <OrderItemsList orderId={order.id} />
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6">
                     <Button asChild variant="outline" className="h-12 rounded-xl font-black uppercase tracking-widest text-[10px] border-2 hover:bg-primary/5 transition-all">
                       <Link href={`/pedidos/${order.id}`}>
-                        Detalhes <ChevronRight className="ml-1 size-3" />
+                        DETALHES DA VENDA <ChevronRight className="ml-1 size-3" />
                       </Link>
-                    </Button>
-                    <Button 
-                      onClick={() => handleShareOrder(order)}
-                      className="h-12 rounded-xl bg-green-600 hover:bg-green-700 font-black uppercase tracking-widest text-[10px] gap-2 shadow-lg"
-                    >
-                      <MessageCircle className="size-4" />
-                      Compartilhar
                     </Button>
                     <Button 
                       variant="outline"
@@ -342,7 +381,7 @@ export default function HistoricoClientePage() {
                       onClick={() => setOrderToDelete(order)}
                     >
                       <Trash2 className="size-4 mr-1" />
-                      Excluir
+                      REMOVER DO HISTÓRICO
                     </Button>
                   </div>
                 </CardContent>
@@ -350,10 +389,12 @@ export default function HistoricoClientePage() {
             );
           })}
 
-          {sortedOrders.length === 0 && (
+          {filteredOrders.length === 0 && (
             <div className="text-center py-24 bg-muted/10 rounded-[3rem] border-4 border-dashed border-muted">
               <Search className="size-16 text-muted-foreground/20 mx-auto mb-4" />
-              <p className="text-muted-foreground text-xl font-black uppercase tracking-tighter opacity-40 italic">Nenhuma compra registrada para esta cliente.</p>
+              <p className="text-muted-foreground text-xl font-black uppercase tracking-tighter opacity-40 italic px-6">
+                Nenhuma compra registrada para esta cliente em: {selectedCycleName}.
+              </p>
             </div>
           )}
         </div>
@@ -368,7 +409,7 @@ export default function HistoricoClientePage() {
             onClick={() => setShowClearAllAlert(true)}
           >
             <Trash2 className="size-6" />
-            LIMPAR TODO O HISTÓRICO
+            LIMPAR HISTÓRICO DESTE CICLO
           </Button>
         )}
 
@@ -380,13 +421,12 @@ export default function HistoricoClientePage() {
         </Button>
       </div>
 
-      {/* Alerta de Confirmação para Excluir Pedido Individual */}
       <AlertDialog open={!!orderToDelete} onOpenChange={(open) => !open && setOrderToDelete(null)}>
         <AlertDialogContent className="rounded-[2.5rem] p-8 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-3xl sm:text-5xl font-black tracking-tighter text-primary uppercase leading-none text-left px-2">Excluir do Histórico?</AlertDialogTitle>
             <AlertDialogDescription className="text-xl sm:text-2xl font-bold mt-6 leading-relaxed text-muted-foreground text-left">
-              Esta venda será <strong className="text-primary uppercase font-black">apagada permanentemente</strong> da jornada desta cliente. Esta ação não pode ser desfeita.
+              Esta venda será <strong className="text-primary uppercase font-black">apagada permanentemente</strong>. Esta ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-4 mt-12 flex-col sm:flex-row">
@@ -398,14 +438,13 @@ export default function HistoricoClientePage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Alerta de Confirmação para Limpar Histórico Total */}
       <AlertDialog open={showClearAllAlert} onOpenChange={setShowClearAllAlert}>
         <AlertDialogContent className="rounded-[2.5rem] p-8 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-3xl sm:text-5xl font-black tracking-tighter text-primary uppercase leading-none text-left px-2">Limpar Histórico Total?</AlertDialogTitle>
+            <AlertDialogTitle className="text-3xl sm:text-5xl font-black tracking-tighter text-primary uppercase leading-none text-left px-2">Limpar Histórico no Ciclo?</AlertDialogTitle>
             <AlertDialogDescription className="text-xl sm:text-2xl font-bold mt-6 leading-relaxed text-muted-foreground text-left">
-              <span className="text-destructive font-black">ATENÇÃO:</span> Todas as compras de <strong className="text-foreground border-b-4 border-primary px-1">{cliente?.fullName}</strong> serão removidas definitivamente. <br /><br />
-              O cadastro da cliente continuará salvo, mas sua jornada de compras ficará vazia.
+              <span className="text-destructive font-black">ATENÇÃO:</span> Todas as compras de <strong className="text-foreground border-b-4 border-primary px-1">{cliente?.fullName}</strong> no ciclo <strong className="text-primary">{selectedCycleName}</strong> serão removidas. <br /><br />
+              Compras em outros ciclos serão preservadas.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-4 mt-12 flex-col sm:flex-row">
@@ -415,7 +454,7 @@ export default function HistoricoClientePage() {
               disabled={isClearing}
               className="h-16 sm:h-24 px-10 text-xl font-black bg-destructive text-white hover:bg-destructive/90 rounded-2xl sm:rounded-3xl shadow-xl active:scale-95 transition-all"
             >
-              {isClearing ? "LIMPANDO..." : "SIM, LIMPAR TUDO"}
+              {isClearing ? "LIMPANDO..." : "SIM, LIMPAR CICLO"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

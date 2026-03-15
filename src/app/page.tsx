@@ -46,7 +46,7 @@ import {
   setDocumentNonBlocking, 
   deleteDocumentNonBlocking 
 } from "@/firebase";
-import { collection, doc, getDocs, query, where } from "firebase/firestore";
+import { collection, doc, query, where } from "firebase/firestore";
 import { cn } from "@/lib/utils";
 import { 
   format, 
@@ -138,7 +138,7 @@ export default function DashboardPage() {
     if (!db || !user) return null;
     return collection(db, "users", user.uid, "clients");
   }, [db, user]);
-  const { data: clients, isLoading: clientsLoading } = useCollection(clientsQuery);
+  const { data: clients, isLoading: clientsLoadingClients } = useCollection(clientsQuery);
 
   // Busca Pedidos do Ciclo Ativo (em ordem alfabética)
   const ordersQuery = useMemoFirebase(() => {
@@ -256,7 +256,6 @@ export default function DashboardPage() {
 
   const formatDateBR = (isoString: string) => {
     if (!isoString) return "";
-    // Extrai a parte da data YYYY-MM-DD para evitar problemas de fuso horário
     const datePart = isoString.split('T')[0];
     const [year, month, day] = datePart.split('-');
     return `${day}/${month}/${year}`;
@@ -298,29 +297,16 @@ export default function DashboardPage() {
     if (!user || !db || !cycleToDelete) return;
     setIsDeleting(true);
     try {
-      // 1. Apagar Itens dos Pedidos do Ciclo
-      const ordersRef = collection(db, "users", user.uid, "orders");
-      const q = query(ordersRef, where("cycleId", "==", cycleToDelete.id));
-      const snapshot = await getDocs(q);
-      
-      for (const orderDoc of snapshot.docs) {
-        const itemsRef = collection(db, "users", user.uid, "orders", orderDoc.id, "orderItems");
-        const itemsSnap = await getDocs(itemsRef);
-        itemsSnap.forEach(itemDoc => {
-          deleteDocumentNonBlocking(doc(db, "users", user.uid, "orders", orderDoc.id, "orderItems", itemDoc.id));
-        });
-        deleteDocumentNonBlocking(doc(db, "users", user.uid, "orders", orderDoc.id));
-      }
-
-      // 2. Apagar o Ciclo
+      // Agora apenas removemos o registro do ciclo. 
+      // Os pedidos vinculados a ele permanecem no banco para histórico global.
       deleteDocumentNonBlocking(doc(db, "users", user.uid, "cycles", cycleToDelete.id));
 
-      // 3. Limpar activeCycleId se for o excluído
+      // Limpar activeCycleId se for o excluído
       if (activeCycleId === cycleToDelete.id) {
         setDocumentNonBlocking(settingsRef!, { activeCycleId: null }, { merge: true });
       }
 
-      toast({ title: "Ciclo Removido", description: "Todos os pedidos deste ciclo foram apagados." });
+      toast({ title: "Ciclo Removido", description: "O registro do período foi excluído. Os pedidos foram preservados no histórico." });
       setCycleToDelete(null);
     } catch (e) {
       console.error(e);
@@ -349,7 +335,7 @@ export default function DashboardPage() {
     }
   };
 
-  if (cyclesLoading || clientsLoading || ordersLoading) {
+  if (cyclesLoading || clientsLoadingClients || ordersLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[40vh] gap-3">
         <Loader2 className="size-10 animate-spin text-primary" />
@@ -621,10 +607,10 @@ export default function DashboardPage() {
       <AlertDialog open={!!cycleToDelete} onOpenChange={(open) => !open && setCycleToDelete(null)}>
         <AlertDialogContent className="rounded-[2.5rem] p-8 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-3xl sm:text-5xl font-black tracking-tighter text-destructive uppercase leading-none text-left px-2">Remover Ciclo Individual?</AlertDialogTitle>
+            <AlertDialogTitle className="text-3xl sm:text-5xl font-black tracking-tighter text-destructive uppercase leading-none text-left px-2">Remover Registro de Ciclo?</AlertDialogTitle>
             <AlertDialogDescription className="text-xl sm:text-2xl font-bold mt-6 leading-relaxed text-muted-foreground text-left">
-              <span className="text-destructive font-black">ATENÇÃO:</span> Esta ação apagará permanentemente o ciclo <strong className="text-foreground border-b-4 border-primary px-1">{cycleToDelete?.name}</strong> e <span className="text-primary font-black uppercase">TODOS OS PEDIDOS</span> vinculados a ele. <br /><br />
-              Os dados dos outros ciclos e clientes serão preservados. Esta ação não pode ser desfeita.
+              <span className="text-destructive font-black">IMPORTANTE:</span> Esta ação apagará o ciclo <strong className="text-foreground border-b-4 border-primary px-1">{cycleToDelete?.name}</strong>. <br /><br />
+              <span className="text-primary font-black uppercase">OS PEDIDOS NÃO SERÃO APAGADOS.</span> Eles permanecerão salvos no banco de dados para consulta no histórico geral.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-4 mt-12 flex-col sm:flex-row">
@@ -634,7 +620,7 @@ export default function DashboardPage() {
               disabled={isDeleting}
               className="h-16 sm:h-24 px-10 text-xl font-black bg-destructive text-white hover:bg-destructive/90 rounded-2xl sm:rounded-3xl shadow-xl active:scale-95 transition-all"
             >
-              {isDeleting ? "APAGANDO..." : "SIM, REMOVER CICLO"}
+              {isDeleting ? "APAGANDO..." : "SIM, REMOVER REGISTRO"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
