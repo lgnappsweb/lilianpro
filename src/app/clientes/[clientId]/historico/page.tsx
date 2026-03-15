@@ -27,6 +27,7 @@ import {
   MessageCircle,
   Trash2,
   Filter,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -331,11 +332,12 @@ export default function HistoricoClientePage() {
 
       {/* LISTAGEM DE COMPRAS FILTRADAS */}
       <div className="space-y-6">
-        <div className="flex items-center justify-between px-2">
-          <h2 className="text-xl sm:text-2xl font-black text-primary uppercase tracking-tighter italic flex items-center gap-3">
-            <ShoppingBag className="size-6" /> Jornada: {selectedCycleName}
+        <div className="flex items-center justify-between px-2 gap-2">
+          <h2 className="text-base sm:text-2xl font-black text-primary uppercase tracking-tighter italic flex items-center gap-2 whitespace-nowrap truncate min-w-0">
+            <ShoppingBag className="size-5 sm:size-6 shrink-0" /> 
+            <span className="truncate">Jornada: {selectedCycleName}</span>
           </h2>
-          <Badge variant="outline" className="border-2 font-black uppercase text-[10px] tracking-widest opacity-60">Histórico</Badge>
+          <Badge variant="outline" className="border-2 font-black uppercase text-[10px] tracking-widest opacity-60 shrink-0">Histórico</Badge>
         </div>
 
         <div className="grid gap-6">
@@ -391,7 +393,7 @@ export default function HistoricoClientePage() {
 
           {filteredOrders.length === 0 && (
             <div className="text-center py-24 bg-muted/10 rounded-[3rem] border-4 border-dashed border-muted">
-              <Search className="size-16 text-muted-foreground/20 mx-auto mb-4" />
+              <RefreshCw className="size-16 text-muted-foreground/20 mx-auto mb-4" />
               <p className="text-muted-foreground text-xl font-black uppercase tracking-tighter opacity-40 italic px-6">
                 Nenhuma compra registrada para esta cliente em: {selectedCycleName}.
               </p>

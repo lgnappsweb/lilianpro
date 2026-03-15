@@ -155,11 +155,12 @@ export default function HistoricoGlobalPage() {
 
       {/* LISTAGEM DE CLIENTES */}
       <div className="w-full space-y-6">
-        <div className="flex items-center justify-between px-4">
-          <h2 className="text-xl sm:text-2xl font-black text-primary uppercase italic tracking-tight flex items-center gap-3">
-            <User className="size-6" /> Jornada: {selectedCycleName}
+        <div className="flex items-center justify-between px-4 gap-2">
+          <h2 className="text-base sm:text-2xl font-black text-primary uppercase italic tracking-tight flex items-center gap-2 whitespace-nowrap truncate min-w-0">
+            <User className="size-5 sm:size-6 shrink-0" /> 
+            <span className="truncate">Jornada: {selectedCycleName}</span>
           </h2>
-          <span className="text-xs font-black text-muted-foreground uppercase opacity-40">{filteredClients.length} contatos</span>
+          <span className="text-[10px] font-black text-muted-foreground uppercase opacity-40 shrink-0 whitespace-nowrap">{filteredClients.length} contatos</span>
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:gap-6">
