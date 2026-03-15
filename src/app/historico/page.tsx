@@ -37,6 +37,7 @@ export default function HistoricoGlobalPage() {
   
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCycleId, setSelectedCycleId] = useState<string>("all");
+  const [hasDefaulted, setHasDefaulted] = useState(false);
 
   // Busca Configurações para pegar o ciclo ativo inicial
   const settingsRef = useMemoFirebase(() => {
@@ -46,10 +47,11 @@ export default function HistoricoGlobalPage() {
   const { data: settings } = useDoc(settingsRef);
 
   useEffect(() => {
-    if (settings?.activeCycleId && selectedCycleId === "all") {
+    if (settings?.activeCycleId && !hasDefaulted) {
       setSelectedCycleId(settings.activeCycleId);
+      setHasDefaulted(true);
     }
-  }, [settings?.activeCycleId]);
+  }, [settings?.activeCycleId, hasDefaulted]);
 
   // Busca todos os ciclos para o seletor
   const cyclesQuery = useMemoFirebase(() => {
@@ -156,9 +158,9 @@ export default function HistoricoGlobalPage() {
       {/* LISTAGEM DE CLIENTES */}
       <div className="w-full space-y-6">
         <div className="flex flex-col px-4 gap-1">
-          <h2 className="text-base sm:text-2xl font-black text-primary uppercase italic tracking-tight flex items-center gap-2">
+          <h2 className="text-base sm:text-2xl font-black text-primary uppercase italic tracking-tight flex items-center gap-2 whitespace-nowrap overflow-hidden">
             <User className="size-5 sm:size-6 shrink-0" /> 
-            <span>Jornada: {selectedCycleName}</span>
+            <span className="truncate">Jornada: {selectedCycleName}</span>
           </h2>
           <span className="text-[10px] font-black text-muted-foreground uppercase opacity-40 tracking-widest">{filteredClients.length} contatos encontrados</span>
         </div>
@@ -170,7 +172,7 @@ export default function HistoricoGlobalPage() {
 
             return (
               <div key={cliente.id} className="group relative">
-                <Link href={`/clientes/${cliente.id}/historico`}>
+                <Link href={`/clientes/${cliente.id}/historico?cycleId=${selectedCycleId}`}>
                   <Card className="bg-background border-4 border-muted rounded-[1.5rem] sm:rounded-[2rem] p-6 shadow-lg group-hover:border-primary/40 group-hover:shadow-2xl transition-all flex items-center justify-between">
                     <div className="flex items-center gap-6">
                       <div className="size-14 sm:size-20 rounded-full bg-primary/10 flex items-center justify-center text-primary shadow-inner shrink-0 group-hover:scale-110 transition-transform">

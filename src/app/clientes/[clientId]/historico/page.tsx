@@ -1,8 +1,8 @@
 
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import React, { useMemo, useState, useEffect, Suspense } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from "@/firebase";
 import { doc, collection, query, where, getDocs } from "firebase/firestore";
 import {
@@ -92,17 +92,18 @@ function OrderItemsList({ orderId }: { orderId: string }) {
   );
 }
 
-export default function HistoricoClientePage() {
+function HistoricoClienteContent() {
   const { clientId } = useParams();
   const { user } = useUser();
   const db = useFirestore();
   const { toast } = useToast();
-  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [orderToDelete, setOrderToDelete] = useState<any | null>(null);
   const [showClearAllAlert, setShowClearAllAlert] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
   const [selectedCycleId, setSelectedCycleId] = useState<string>("all");
+  const [hasDefaulted, setHasDefaulted] = useState(false);
 
   // Busca as configurações para o nome do app e ciclo ativo inicial
   const settingsRef = useMemoFirebase(() => {
@@ -113,10 +114,16 @@ export default function HistoricoClientePage() {
   const appName = settings?.appName || "LilianPro";
 
   useEffect(() => {
-    if (settings?.activeCycleId && selectedCycleId === "all") {
+    const urlCycleId = searchParams.get('cycleId');
+    
+    if (urlCycleId) {
+      setSelectedCycleId(urlCycleId);
+      setHasDefaulted(true);
+    } else if (settings?.activeCycleId && !hasDefaulted) {
       setSelectedCycleId(settings.activeCycleId);
+      setHasDefaulted(true);
     }
-  }, [settings?.activeCycleId]);
+  }, [settings?.activeCycleId, searchParams, hasDefaulted]);
 
   // Busca todos os ciclos para o seletor
   const cyclesQuery = useMemoFirebase(() => {
@@ -149,7 +156,11 @@ export default function HistoricoClientePage() {
       ? allOrders 
       : allOrders.filter(o => o.cycleId === selectedCycleId);
     
-    return [...filtered].sort((a, b) => new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime());
+    return [...filtered].sort((a, b) => {
+      const dateA = a.orderDate || "";
+      const dateB = b.orderDate || "";
+      return dateB.localeCompare(dateA);
+    });
   }, [allOrders, selectedCycleId]);
 
   const stats = useMemo(() => {
@@ -333,7 +344,7 @@ export default function HistoricoClientePage() {
       {/* LISTAGEM DE COMPRAS FILTRADAS */}
       <div className="space-y-6">
         <div className="flex flex-col px-2 gap-1">
-          <h2 className="text-base sm:text-2xl font-black text-primary uppercase tracking-tighter italic flex items-center gap-2 whitespace-nowrap truncate min-w-0">
+          <h2 className="text-base sm:text-2xl font-black text-primary uppercase tracking-tighter italic flex items-center gap-2 whitespace-nowrap overflow-hidden">
             <ShoppingBag className="size-5 sm:size-6 shrink-0" /> 
             <span className="truncate">Jornada: {selectedCycleName}</span>
           </h2>
@@ -462,5 +473,13 @@ export default function HistoricoClientePage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  );
+}
+
+export default function HistoricoClientePage() {
+  return (
+    <Suspense fallback={<div className="flex flex-col items-center justify-center py-32 gap-6 text-muted-foreground"><Loader2 className="size-16 animate-spin text-primary" /><p className="text-2xl font-black animate-pulse uppercase tracking-widest text-center">Iniciando arquivos elite...</p></div>}>
+      <HistoricoClienteContent />
+    </Suspense>
   );
 }

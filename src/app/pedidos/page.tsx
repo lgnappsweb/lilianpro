@@ -61,6 +61,7 @@ export default function PedidosPage() {
   const [activeFilter, setActiveFilter] = useState("todos");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCycleId, setSelectedCycleId] = useState<string>("all");
+  const [hasDefaulted, setHasDefaulted] = useState(false);
   const [orderToDelete, setOrderToDelete] = useState<any | null>(null);
   const [orderToPay, setOrderToPay] = useState<any | null>(null);
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
@@ -73,10 +74,11 @@ export default function PedidosPage() {
   const { data: settings } = useDoc(settingsRef);
 
   useEffect(() => {
-    if (settings?.activeCycleId && selectedCycleId === "all") {
+    if (settings?.activeCycleId && !hasDefaulted) {
       setSelectedCycleId(settings.activeCycleId);
+      setHasDefaulted(true);
     }
-  }, [settings?.activeCycleId]);
+  }, [settings?.activeCycleId, hasDefaulted]);
 
   // Busca Ciclos
   const cyclesQuery = useMemoFirebase(() => {
@@ -140,7 +142,11 @@ export default function PedidosPage() {
         o.clientName?.toLowerCase().includes(searchStr);
       const matchesFilter = activeFilter === "todos" || o.paymentStatus?.toLowerCase() === activeFilter;
       return matchesSearch && matchesFilter;
-    }).sort((a, b) => (a.clientName || "").localeCompare(b.clientName || ""));
+    }).sort((a, b) => {
+      const nameA = a.clientName || "";
+      const nameB = b.clientName || "";
+      return nameA.localeCompare(nameB);
+    });
   }, [orders, searchTerm, activeFilter, selectedCycleId]);
 
   const handleDeleteConfirm = () => {
@@ -300,22 +306,22 @@ export default function PedidosPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-2 w-full pt-4 border-t-2 border-muted/30">
-                <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2">
+                <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2">
                   <Link href={`/pedidos/${order.id}`}>
                     <FileText className="mr-1 size-3 sm:size-4" /> Ficha
                   </Link>
                 </Button>
-                <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2">
+                <Button variant="outline" asChild className="h-10 sm:h-12 font-black text-[11px] uppercase tracking-tighter rounded-xl border-2 hover:bg-primary/5 px-2">
                   <Link href={`/pedidos/${order.id}/editar`}>
                     <Edit className="mr-1 size-3 sm:size-4" /> Editar
                   </Link>
                 </Button>
                 {order.paymentStatus !== "Pago" && (
-                  <Button variant="outline" onClick={() => setOrderToPay(order)} className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 border-green-200 text-green-600 hover:bg-green-50 px-2">
+                  <Button variant="outline" onClick={() => setOrderToPay(order)} className="h-10 sm:h-12 font-black text-[11px] uppercase tracking-tighter rounded-xl border-2 border-green-200 text-green-600 hover:bg-green-50 px-2">
                     <CheckCircle2 className="mr-1 size-3 sm:size-4" /> Pagar
                   </Button>
                 )}
-                <Button variant="outline" onClick={() => setOrderToDelete(order)} className="h-10 sm:h-12 font-black text-[9px] sm:text-[11px] uppercase tracking-tighter rounded-xl border-2 text-destructive border-destructive/20 hover:bg-destructive/5 px-2">
+                <Button variant="outline" onClick={() => setOrderToDelete(order)} className="h-10 sm:h-12 font-black text-[11px] uppercase tracking-tighter rounded-xl border-2 text-destructive border-destructive/20 hover:bg-destructive/5 px-2">
                   <Trash2 className="mr-1 size-3 sm:size-4" /> Excluir
                 </Button>
               </div>
@@ -336,15 +342,15 @@ export default function PedidosPage() {
       <AlertDialog open={!!orderToPay} onOpenChange={(open) => !open && setOrderToPay(null)}>
         <AlertDialogContent className="rounded-[2rem] p-6 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto w-[92vw]">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-xl sm:text-4xl font-black text-primary uppercase italic">Confirmar Recebimento</AlertDialogTitle>
-            <AlertDialogDescription className="text-sm sm:text-xl font-bold mt-2">Data do pagamento de {orderToPay?.clientName}:</AlertDialogDescription>
+            <AlertDialogTitle className="text-xl sm:text-4xl font-black text-primary uppercase italic text-left">Confirmar Recebimento</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm sm:text-xl font-bold mt-2 text-left">Data do pagamento de {orderToPay?.clientName}:</AlertDialogDescription>
           </AlertDialogHeader>
           <div className="py-4">
             <Input type="date" value={paymentDate} onChange={(e) => setPaymentDate(e.target.value)} className="h-12 sm:h-16 text-lg sm:text-2xl font-black rounded-xl border-4 border-muted" />
           </div>
-          <AlertDialogFooter className="gap-2 sm:gap-4 mt-4">
-            <AlertDialogCancel className="h-12 sm:h-20 text-[10px] sm:text-lg font-black uppercase">Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmPayment} className="h-12 sm:h-20 text-[10px] sm:text-lg font-black bg-green-600 text-white uppercase">CONFIRMAR</AlertDialogAction>
+          <AlertDialogFooter className="gap-2 sm:gap-4 mt-4 flex-col sm:flex-row">
+            <AlertDialogCancel className="h-12 sm:h-20 text-[10px] sm:text-lg font-black uppercase rounded-xl sm:rounded-2xl border-4">Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmPayment} className="h-12 sm:h-20 text-[10px] sm:text-lg font-black bg-green-600 text-white uppercase rounded-xl sm:rounded-2xl shadow-xl">CONFIRMAR</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -352,12 +358,12 @@ export default function PedidosPage() {
       <AlertDialog open={!!orderToDelete} onOpenChange={(open) => !open && setOrderToDelete(null)}>
         <AlertDialogContent className="rounded-[2rem] p-6 sm:p-12 border-8 shadow-2xl max-w-2xl mx-auto w-[92vw]">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-xl sm:text-4xl font-black text-destructive uppercase italic">Remover Pedido?</AlertDialogTitle>
-            <AlertDialogDescription className="text-sm sm:text-xl font-bold">O pedido sairá da lista ativa do ciclo, mas continua no histórico permanente do cliente.</AlertDialogDescription>
+            <AlertDialogTitle className="text-xl sm:text-4xl font-black text-destructive uppercase italic text-left">Remover Pedido?</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm sm:text-xl font-bold text-left">O pedido sairá da lista ativa do ciclo, mas continua no histórico permanente do cliente.</AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="gap-2 sm:gap-4 mt-4">
-            <AlertDialogCancel className="h-12 sm:h-20 text-[10px] sm:text-lg font-black uppercase">Voltar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm} className="h-12 sm:h-20 text-[10px] sm:text-lg font-black bg-destructive text-white uppercase">REMOVER</AlertDialogAction>
+          <AlertDialogFooter className="gap-2 sm:gap-4 mt-4 flex-col sm:flex-row">
+            <AlertDialogCancel className="h-12 sm:h-20 text-[10px] sm:text-lg font-black uppercase rounded-xl sm:rounded-2xl border-4">Voltar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="h-12 sm:h-20 text-[10px] sm:text-lg font-black bg-destructive text-white uppercase rounded-xl sm:rounded-2xl shadow-xl">REMOVER</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
